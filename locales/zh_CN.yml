@@ -7,7 +7,7 @@ zh_CN:
       rounded_avatars: "圆形头像，作者头像带品牌故事环。"
       brand_gradient_logo: "站点标题/Logo 使用品牌渐变。"
       brand_gradient_buttons: "主要按钮使用品牌渐变。"
-      mobile_bottom_nav: "移动端显示底部导航栏。"
+      mobile_bottom_nav: "宽度小于 768px：Instagram 底部标签栏。"
       accent_color: "强调色/链接色。"
       instagram_desktop_shell: "桌面端把左侧边栏变成 Instagram 导航竖栏。"
       instagram_stories: "信息流顶部显示由分类生成的 Stories 横条。"
@@ -26,6 +26,7 @@ zh_CN:
       instagram_explore_search: "探索页使用 Instagram 搜索交互。"
       instagram_categories_page: "/categories 显示为 Instagram 主页卡片网格。"
       new_topic_composer_height: "创建话题编辑器的高度，占屏幕高度的百分比（0 为 Discourse 默认）。"
+      instagram_mobile_layout: "宽度小于 768px：Instagram 移动端顶栏与通栏帖子。"
   ig:
     categories:
       studios: "工作室 · %{count}"

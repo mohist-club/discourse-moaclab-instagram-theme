@@ -29,6 +29,7 @@ body:not(.admin-interface) {
 @import "studio";
 @import "search";
 @import "categories";
+@import "mobile-shell";
 
 html:not(:has(> body.admin-interface)) {
   background: var(--ig-page);

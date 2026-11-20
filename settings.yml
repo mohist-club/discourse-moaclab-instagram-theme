@@ -31,8 +31,8 @@ brand_gradient_buttons:
 mobile_bottom_nav:
   default: true
   description:
-    en: "Show an Instagram-style bottom navigation bar on mobile."
-    zh_CN: "移动端显示 Instagram 风格的底部导航栏。"
+    en: "Below 768px wide (phones and narrow windows): Instagram's bottom tab bar — Home, Explore, Create (Discourse's new-topic composer), Messages, Profile."
+    zh_CN: "宽度小于 768px 时（手机和窄窗口）：Instagram 底部标签栏——首页、探索、发帖（打开 Discourse 发帖编辑器）、消息、主页。"
 
 accent_color:
   type: string
@@ -150,3 +150,9 @@ new_topic_composer_height:
   description:
     en: "Height of the editor when creating a topic, in percent of the screen height (Discourse's default is 400px). If someone drags the editor to another height, Discourse remembers theirs. 0: Discourse's default."
     zh_CN: "创建话题时编辑器的默认高度，按屏幕高度的百分比（Discourse 默认 400px）。用户自己拖动过高度时，Discourse 会记住他的高度。填 0 使用 Discourse 默认。"
+
+instagram_mobile_layout:
+  default: true
+  description:
+    en: "Below 768px wide (phones and narrow windows): Discourse's header as Instagram's top bar (wordmark, search, heart = the native user menu, menu = the native sidebar drawer) and posts edge to edge with Instagram's mobile spacing."
+    zh_CN: "宽度小于 768px 时（手机和窄窗口）：Discourse 顶栏改为 Instagram 顶栏（Logo、搜索、爱心 = 原生用户菜单、菜单 = 原生侧边栏抽屉），帖子通栏显示、按 Instagram 移动端间距。"

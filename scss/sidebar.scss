@@ -16,37 +16,50 @@
 $ig-rail-collapsed: 72px;
 $ig-rail-expanded: 233px;
 
-body.ig-desktop-shell:not(.admin-interface) {
-  // ---- the rail fills the sidebar ----
-  .sidebar-wrapper .sidebar-container {
-    height: 100%;
-    border: 0;
-    background: transparent;
-  }
+// The rail takes over the sidebar only where the sidebar is a column
+// (>= 768px). Narrower, Discourse turns the sidebar into the hamburger
+// drawer: that drawer stays fully native (all links, labels and sections).
+@media (width >= 768px) {
+  body.ig-desktop-shell:not(.admin-interface) {
+    // ---- the rail fills the sidebar ----
+    .sidebar-wrapper .sidebar-container {
+      height: 100%;
+      border: 0;
+      background: transparent;
+    }
 
-  .sidebar-wrapper .sidebar-sections {
-    display: flex;
-    flex-direction: column;
-    padding: 0 11px 0 10px;
-    overflow: hidden;
-    transition: padding 0.2s ease;
-  }
+    .sidebar-wrapper .sidebar-sections {
+      display: flex;
+      flex-direction: column;
+      padding: 0 11px 0 10px;
+      overflow: hidden;
+      transition: padding 0.2s ease;
+    }
 
+    #ig-rail {
+      display: flex;
+      flex: 1 0 auto;
+      flex-direction: column;
+      padding: 8px 0 15px;
+    }
+
+    // Everything Discourse renders in the sidebar (community, custom
+    // sections such as 服务, categories, tags) stays in the DOM for the
+    // 社区与工具 menu but is never shown; only #ig-rail is visible.
+    .sidebar-wrapper .sidebar-sections > :not(#ig-rail),
+    .sidebar-wrapper .sidebar-footer-wrapper {
+      display: none;
+    }
+  }
+}
+
+@media (width < 768px) {
   #ig-rail {
-    display: flex;
-    flex: 1 0 auto;
-    flex-direction: column;
-    padding: 8px 0 15px;
-  }
-
-  // Everything Discourse renders in the sidebar (community, custom sections
-  // such as 服务, categories, tags — however they are wrapped) stays in the
-  // DOM for the 社区与工具 menu but is never shown; only #ig-rail is visible.
-  .sidebar-wrapper .sidebar-sections > :not(#ig-rail),
-  .sidebar-wrapper .sidebar-footer-wrapper {
     display: none;
   }
+}
 
+body.ig-desktop-shell:not(.admin-interface) {
   // ---- logo row: same column and size as the nav icons ----
   .ig-logo {
     position: relative;

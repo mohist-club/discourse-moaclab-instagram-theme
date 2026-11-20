@@ -1,0 +1,242 @@
+// =========================================================
+// Instagram mobile layout, below 768px — phones and narrow desktop
+// windows alike (instagram_mobile_layout + mobile_bottom_nav).
+//
+//   top bar: Discourse's own header as Instagram's — wordmark on the
+//     left, glyph buttons on the right (search, heart = the native user
+//     menu with notifications, menu = the native sidebar drawer)
+//   feed: posts edge to edge, Instagram's mobile spacing
+//   bottom tab bar: Home · Explore · Create · Messages · Profile
+//     (50px + safe area, hairline on top, filled glyph when active)
+// Admin pages stay Discourse-native.
+// =========================================================
+
+@mixin ig-mobile-glyph($asset, $size: 24px) {
+  background: currentcolor;
+  mask: url($asset) center / $size $size no-repeat;
+
+  > use {
+    display: none;
+  }
+}
+
+@media (width < 768px) {
+  body.ig-mobile-shell:not(.admin-interface) {
+    // ---- top bar ----
+    .d-header {
+      height: 60px;
+      border-bottom: 1px solid var(--ig-border);
+      background: var(--ig-page);
+      box-shadow: none;
+    }
+
+    .d-header .contents {
+      gap: 4px;
+      padding-inline: 12px 4px;
+    }
+
+    // Instagram's wordmark: the site logo, 32px tall
+    .d-header #site-logo {
+      max-height: 32px;
+      width: auto;
+    }
+
+    .d-header .d-header-icons {
+      gap: 0;
+    }
+
+    .d-header .d-header-icons .icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      color: var(--ig-ink);
+
+      &:hover,
+      &:focus-visible {
+        background: var(--ig-hover);
+      }
+
+      .d-icon {
+        width: 24px;
+        height: 24px;
+        color: var(--ig-ink);
+      }
+    }
+
+    .d-header .d-icon-magnifying-glass {
+      @include ig-mobile-glyph($ig-search);
+    }
+
+    .d-header .d-icon-bars {
+      @include ig-mobile-glyph($ig-menu);
+    }
+
+    // the user menu (notifications, bookmarks, profile, log out) shows as
+    // Instagram's heart; Discourse's own unread badges stay on it
+    #toggle-current-user {
+      position: relative;
+
+      img.avatar {
+        opacity: 0;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 24px;
+        height: 24px;
+        margin: -12px 0 0 -12px;
+        background: var(--ig-ink);
+        mask: url($ig-heart) center / 24px 24px no-repeat;
+      }
+
+      &[aria-expanded="true"]::before {
+        mask-image: url($ig-heart-filled);
+      }
+    }
+
+    // ---- feed: edge to edge ----
+    &[class*="navigation-"]:not([class*="archetype-"]) #main-outlet {
+      max-width: none;
+      padding-inline: 0;
+    }
+
+    .topic-list .ig-post {
+      max-width: none;
+      margin-bottom: 16px;
+    }
+
+    .ig-post__header {
+      min-height: 56px;
+      padding: 0 4px 0 12px;
+    }
+
+    .ig-post__media,
+    .ig-post__text {
+      border: 0;
+      border-radius: 0;
+    }
+
+    // carousels are swiped on phones, as in the app: no arrows
+    .ig-post__nav {
+      display: none;
+    }
+
+    .ig-post__actions {
+      padding: 8px 12px 0;
+    }
+
+    // the floating messages window is desktop-only
+    .ig-dock {
+      display: none;
+    }
+  }
+
+  // ---- bottom tab bar ----
+  body.ig-has-bottom-nav:not(.admin-interface) {
+    #main-outlet-wrapper,
+    #main-outlet {
+      padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+
+    // Discourse's own footer nav (back / forward / share) sits above ours
+    .footer-nav {
+      bottom: calc(50px + env(safe-area-inset-bottom));
+    }
+  }
+
+  .ig-bottom-nav:not([hidden]) {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 1000;
+    display: flex;
+    align-items: stretch;
+    height: 50px;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--ig-border);
+    background: var(--ig-page);
+  }
+}
+
+// wider than a phone: no tab bar
+@media (width >= 768px) {
+  .ig-bottom-nav {
+    display: none;
+  }
+}
+
+.ig-bottom-nav .ig-bottom-nav__item {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ig-ink);
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+.ig-bottom-nav__ico {
+  width: 24px;
+  height: 24px;
+  background: currentcolor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: 24px 24px;
+
+  &--home {
+    mask-image: url($ig-home);
+  }
+
+  &--explore {
+    mask-image: url($ig-explore);
+  }
+
+  &--create {
+    mask-image: url($ig-create);
+  }
+
+  &--messages {
+    mask-image: url($ig-messages);
+  }
+
+  &--profile {
+    mask-image: url($ig-user);
+  }
+}
+
+.ig-bottom-nav__item.active {
+  .ig-bottom-nav__ico--home {
+    mask-image: url($ig-home-filled);
+  }
+
+  .ig-bottom-nav__ico--explore {
+    mask-image: url($ig-explore-filled);
+  }
+
+  .ig-bottom-nav__ico--messages {
+    mask-image: url($ig-messages-filled);
+  }
+
+  .ig-bottom-nav__avatar {
+    box-shadow: 0 0 0 2px var(--ig-ink);
+  }
+}
+
+.ig-bottom-nav__avatar {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--ig-border);
+  border-radius: 50%;
+  object-fit: cover;
+}

@@ -85,6 +85,7 @@
   color: var(--ig-ink);
   font-size: 12px;
   line-height: 16px;
+  text-align: center;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -134,8 +135,10 @@
 
 // Phones: edge to edge, smaller rings like the app
 @media (width <= 767px) {
+  // Instagram mobile: a 10px band above, 8px below, rings 66px apart 12px
   .ig-stories {
-    margin-bottom: 12px;
+    margin: 0;
+    padding: 10px 0 8px;
   }
 
   .ig-stories__track {
@@ -143,9 +146,14 @@
     padding: 0 12px;
   }
 
-  .ig-story,
-  .ig-story__label {
+  .ig-story {
     flex-basis: 66px;
+    width: 66px;
+  }
+
+  // a width only: in the story's column, flex-basis would be its height
+  .ig-story__label {
+    flex: 0 0 auto;
     width: 66px;
     max-width: 66px;
   }
