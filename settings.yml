@@ -128,3 +128,9 @@ instagram_studio_profile:
   description:
     en: "Studio pages (subcategories of the categories in instagram_suggested_categories and instagram_explore_category) open with an Instagram profile header: logo in a story ring, name, topic / reply / active-member counts, description, about link, recent members, Follow (category notifications), New post (composer in the studio), Share, and Posts / Top tabs."
     zh_CN: "工作室页面（instagram_suggested_categories 和 instagram_explore_category 中类别下的二级类别）顶部显示 Instagram 主页样式：带彩环的 Logo、名称、帖子 / 回复 / 活跃成员数、简介、关于链接、近期成员，以及「关注」（类别通知）、「发帖」（在该工作室发帖）、分享按钮和「帖子 / 热门」标签页。"
+
+instagram_admin_style:
+  default: true
+  description:
+    en: "Desktop admin pages look like Instagram's settings: the rail stays on the left, the admin sidebar becomes a settings column (title, round search, grey headings, 48px rows), and cards, fields, switches and buttons take Instagram's shapes and colours. The admin pages themselves are unchanged."
+    zh_CN: "桌面端管理后台改为 Instagram「设置」样式：左栏导航保留，后台侧边栏变成设置栏（标题、圆形搜索框、灰色分组标题、48px 行），卡片、输入框、开关和按钮使用 Instagram 的形状与配色。后台页面的功能不变。"

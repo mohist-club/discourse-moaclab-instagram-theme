@@ -1,4 +1,5 @@
 import { apiInitializer } from "discourse/lib/api";
+import { i18n } from "discourse-i18n";
 
 // `settings` is injected as a global in Discourse theme JS.
 export default apiInitializer((api) => {
@@ -16,10 +17,17 @@ export default apiInitializer((api) => {
     "ig-card-feed": settings.card_feed,
     "ig-topic-style": settings.instagram_topic_style,
     "ig-auth-modal": settings.instagram_auth_modal,
+    "ig-admin-style": settings.instagram_admin_style,
   };
   for (const [cls, on] of Object.entries(flags)) {
     body.classList.toggle(cls, !!on);
   }
+
+  // title of the admin settings column (CSS content, see scss/admin.scss)
+  document.documentElement.style.setProperty(
+    "--ig-admin-title",
+    JSON.stringify(i18n(themePrefix("ig.admin.title")))
+  );
 
   // 3. mobile bottom navigation — read mobileView at render time (not during
   //    static initialization) to avoid the viewport-initialization deprecation.

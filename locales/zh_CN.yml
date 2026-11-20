@@ -23,7 +23,10 @@ zh_CN:
       instagram_post_gallery: "信息流卡片把首帖所有图片做成多图轮播。"
       instagram_qa_category: "右栏页脚「问答与求助」链接的类别 ID，默认 4 即 /c/faq/4。"
       instagram_studio_profile: "工作室页面顶部显示 Instagram 主页样式。"
+      instagram_admin_style: "桌面端管理后台使用 Instagram「设置」样式。"
   ig:
+    admin:
+      title: "管理员"
     studio:
       label: "工作室"
       posts: "帖子"

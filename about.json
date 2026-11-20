@@ -41,7 +41,7 @@
     "ig-refresh": "assets/ig-refresh.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.16.0",
+  "theme_version": "1.17.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
     "serialize_topic_op_likes_data": true,

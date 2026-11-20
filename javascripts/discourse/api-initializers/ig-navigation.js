@@ -309,8 +309,15 @@ function toolLinks() {
   const anchors = section
     ? [...section.querySelectorAll("a.sidebar-section-link")]
     : [];
-  return { name, links: linkItems(anchors, new Set()) };
+  const links = linkItems(anchors, new Set());
+  // the admin sidebar does not render the section: keep the last one seen
+  if (links.length) {
+    lastToolLinks = links;
+  }
+  return { name, links: links.length ? links : lastToolLinks };
 }
+
+let lastToolLinks = [];
 
 function linkItems(anchors, seen) {
   const items = [];
