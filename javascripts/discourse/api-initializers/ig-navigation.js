@@ -2,10 +2,11 @@ import { apiInitializer } from "discourse/lib/api";
 import { ajax } from "discourse/lib/ajax";
 
 // Instagram desktop shell:
-//  - brand wordmark + a fixed Instagram action group (search / create /
-//    activity / profile) injected at the top of the left rail
+//  - a fixed Instagram left rail (#ig-rail): logo glyph, Home / Explore /
+//    Messages / Search / Notifications / Create / Profile, and a bottom
+//    "More" button that opens a floating menu (like instagram.com)
 //  - a "stories" tray at the top of the discovery feed
-//  - a `ig-clean-feed` body flag so the feed shows only stories + posts
+//  - a right column (current user, suggestions, footer)
 export default apiInitializer((api) => {
   const siteSettings = api.container.lookup("service:site-settings");
 
@@ -13,6 +14,8 @@ export default apiInitializer((api) => {
   // initialization, to avoid discourse.static-viewport-initialization.
   const ensure = () => {
     try {
+      closeMorePanel();
+
       const site = api.container.lookup("service:site");
       const desktop = !site?.mobileView;
 
@@ -21,10 +24,6 @@ export default apiInitializer((api) => {
         document.body.classList.toggle(
           "ig-hide-header",
           !!settings.instagram_hide_header
-        );
-        document.body.classList.toggle(
-          "ig-compact-rail",
-          !!settings.instagram_compact_rail
         );
         ensureRail(api, siteSettings);
       }
@@ -63,15 +62,29 @@ function ensureRail(api, siteSettings) {
   const rail = document.createElement("div");
   rail.id = RAIL_ID;
 
-  // brand wordmark (Instagram logo slot)
-  const wordmark = document.createElement("a");
-  wordmark.className = "ig-wordmark";
-  wordmark.href = "/";
-  wordmark.textContent = siteSettings?.title || "Moaclab";
-  rail.append(wordmark);
+  // logo slot: Instagram shows only a glyph here. Use the site's small logo
+  // (what Discourse's own header uses), falling back to the site title.
+  const logo = document.createElement("a");
+  logo.className = "ig-logo";
+  logo.href = "/";
+  const logoUrl = siteSettings?.site_logo_small_url;
+  const title = siteSettings?.title || "Moaclab";
+  logo.setAttribute("aria-label", title);
+  if (logoUrl) {
+    const img = document.createElement("img");
+    img.src = logoUrl;
+    img.alt = title;
+    logo.append(img);
+  } else {
+    const text = document.createElement("span");
+    text.className = "ig-logo-text";
+    text.textContent = title;
+    logo.append(text);
+  }
+  rail.append(logo);
 
-  // primary nav, Instagram order: Home, Explore, Messages, Search,
-  // Notifications, Create, Profile
+  // primary nav, Instagram order: Home, Explore (Reels slot), Messages,
+  // Search, Notifications, Create, Profile
   const nav = document.createElement("nav");
   nav.className = "ig-rail-nav";
   nav.setAttribute("aria-label", "navigation");
@@ -122,23 +135,15 @@ function ensureRail(api, siteSettings) {
   }
   rail.append(nav);
 
-  // bottom group: "More" reveals the native sidebar sections (categories,
-  // admin, moderation, ...) so nothing becomes unreachable.
+  // bottom group, like Instagram's "More" + "Also from Meta":
+  //   更多       -> account menu (settings, activity, bookmarks, sign out)
+  //   社区与工具 -> every link from the native Discourse sidebar
   const foot = document.createElement("div");
   foot.className = "ig-rail-foot";
-
-  const more = document.createElement("button");
-  more.type = "button";
-  more.className = "ig-rail-link ig-rail-more";
-  more.setAttribute("aria-expanded", "false");
-  more.innerHTML = `<span class="ig-rail-ico ig-rail-ico--menu"></span><span class="ig-rail-label">${railLabel(
-    "more"
-  )}</span>`;
-  more.addEventListener("click", () => {
-    const open = document.body.classList.toggle("ig-more-open");
-    more.setAttribute("aria-expanded", String(open));
-  });
-  foot.append(more);
+  foot.append(
+    menuButton("more", "menu", () => accountGroups(user)),
+    menuButton("apps", "apps", () => nativeLinkGroups())
+  );
   rail.append(foot);
 
   sections.prepend(rail);
@@ -167,6 +172,174 @@ function railLink(it) {
 
   a.append(ico, label);
   return a;
+}
+
+// ---- floating menus (Instagram-style "More" panel) ----
+let morePanelCleanup = null;
+
+function menuButton(key, icon, groups) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "ig-rail-link ig-rail-menu-btn";
+  btn.dataset.key = key;
+  btn.setAttribute("aria-haspopup", "menu");
+  btn.setAttribute("aria-expanded", "false");
+  btn.innerHTML = `<span class="ig-rail-ico ig-rail-ico--${icon}"></span><span class="ig-rail-label">${railLabel(
+    key
+  )}</span>`;
+  btn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const wasOpen = btn.getAttribute("aria-expanded") === "true";
+    closeMorePanel();
+    if (!wasOpen) {
+      openMorePanel(groups(), btn);
+    }
+  });
+  return btn;
+}
+
+// account menu: what Instagram's "More" holds, mapped to Discourse
+function accountGroups(user) {
+  if (!user) {
+    return [
+      [
+        { href: "/login", icon: "profile", label: "登录" },
+        { href: "/signup", icon: "create", label: "注册" },
+      ],
+    ];
+  }
+  return [
+    [
+      { href: "/my/preferences", icon: "settings", label: "设置" },
+      { href: "/my/activity", icon: "activity", label: "你的动态" },
+      { href: "/my/activity/bookmarks", icon: "bookmark", label: "已收藏" },
+    ],
+    [
+      {
+        label: "退出",
+        // Discourse's own sign-out (same call as the user menu)
+        onClick: () => user.destroySession(),
+      },
+    ],
+  ];
+}
+
+// every link the native sidebar renders: categories, custom links such as
+// /typing and /viewer, admin, review ... read live so nothing is lost
+function nativeLinkGroups() {
+  const seen = new Set(["/"]);
+  const items = [];
+  document
+    .querySelectorAll(
+      ".sidebar-wrapper .sidebar-sections a.sidebar-section-link"
+    )
+    .forEach((link) => {
+      const href = link.getAttribute("href");
+      if (!href || seen.has(href)) {
+        return;
+      }
+      seen.add(href);
+      items.push({
+        href,
+        nativeIcon: link.querySelector(".sidebar-section-link-prefix"),
+        label: (
+          link.querySelector(".sidebar-section-link-content-text")
+            ?.textContent ||
+          link.textContent ||
+          ""
+        ).trim(),
+      });
+    });
+  return items.length ? [items] : [];
+}
+
+function openMorePanel(groups, anchor) {
+  const panel = document.createElement("div");
+  panel.className = "ig-more-panel";
+  panel.setAttribute("role", "menu");
+
+  for (const group of groups) {
+    if (!group.length) {
+      continue;
+    }
+    const g = document.createElement("div");
+    g.className = "ig-more-group";
+    for (const it of group) {
+      const el = document.createElement(it.href ? "a" : "button");
+      el.className = "ig-more-item";
+      el.setAttribute("role", "menuitem");
+      if (it.href) {
+        el.href = it.href;
+      } else {
+        el.type = "button";
+        el.addEventListener("click", () => {
+          closeMorePanel();
+          it.onClick?.();
+        });
+      }
+      if (it.nativeIcon) {
+        const ico = document.createElement("span");
+        ico.className = "ig-more-native-ico";
+        ico.append(it.nativeIcon.cloneNode(true));
+        el.append(ico);
+      } else if (it.icon) {
+        const ico = document.createElement("span");
+        ico.className = `ig-rail-ico ig-rail-ico--${it.icon}`;
+        el.append(ico);
+      }
+      const text = document.createElement("span");
+      text.textContent = it.label;
+      el.append(text);
+      g.append(el);
+    }
+    panel.append(g);
+  }
+  if (!panel.childElementCount) {
+    return;
+  }
+
+  document.body.append(panel);
+
+  // open above the button, left-aligned with the rail
+  const r = anchor.getBoundingClientRect();
+  panel.style.left = `${Math.max(8, r.left)}px`;
+  panel.style.bottom = `${Math.max(8, window.innerHeight - r.top + 8)}px`;
+
+  anchor.classList.add("active");
+  anchor.setAttribute("aria-expanded", "true");
+
+  const onPointer = (event) => {
+    if (!panel.contains(event.target) && !anchor.contains(event.target)) {
+      closeMorePanel();
+    }
+  };
+  const onKey = (event) => {
+    if (event.key === "Escape") {
+      closeMorePanel();
+      anchor.focus();
+    }
+  };
+  const onClick = (event) => {
+    if (event.target.closest("a")) {
+      closeMorePanel();
+    }
+  };
+  document.addEventListener("pointerdown", onPointer);
+  document.addEventListener("keydown", onKey);
+  panel.addEventListener("click", onClick);
+
+  morePanelCleanup = () => {
+    document.removeEventListener("pointerdown", onPointer);
+    document.removeEventListener("keydown", onKey);
+    panel.remove();
+    anchor.classList.remove("active");
+    anchor.setAttribute("aria-expanded", "false");
+  };
+}
+
+function closeMorePanel() {
+  morePanelCleanup?.();
+  morePanelCleanup = null;
 }
 
 function syncActive() {
@@ -282,6 +455,7 @@ function railLabel(key) {
     create: "创建",
     profile: "主页",
     more: "更多",
+    apps: "社区与工具",
     your_story: "你的故事",
   };
   return map[key] || key;

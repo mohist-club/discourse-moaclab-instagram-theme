@@ -6,7 +6,9 @@
 
 @media (width >= 768px) {
   body.ig-desktop-shell:not(.admin-interface) {
-    --d-sidebar-width: 245px;
+    // Instagram's rail is a 72px icon column; it expands on hover as an
+    // overlay (sidebar.scss), so the layout track never changes width.
+    --d-sidebar-width: 72px;
 
     // Minimal, Instagram-flat header
     .d-header {
@@ -20,12 +22,33 @@
       padding-top: 8px;
     }
   }
+}
 
-  // Tablet: collapse rail to an icon-only bar (Instagram 72px)
-  body.ig-desktop-shell:not(.admin-interface) {
-    @media (width <= 1263px) {
-      --d-sidebar-width: 73px;
-    }
+// Instagram's rail sits on the viewport's left edge. Discourse centres
+// #main-outlet-wrapper with a max-width, which left a grey strip to the left
+// of the rail, so make the wrapper full width while the rail is shown.
+@media (width >= 768px) {
+  body.ig-desktop-shell.has-sidebar-page:not(.admin-interface)
+    #main-outlet-wrapper {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  // Non-feed pages (topics, users, tool pages such as /typing and /viewer)
+  // keep Discourse's usual content width, centred right of the rail.
+  body.ig-desktop-shell.has-sidebar-page:not(
+      .admin-interface,
+      .tags-page,
+      [class*="navigation-"]
+    )
+    #main-outlet {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: var(--d-max-width, 1110px);
+    margin-inline: auto;
   }
 }
 
@@ -66,7 +89,7 @@
 // search and language. Gated by body.ig-hide-header (desktop).
 // =========================================================
 @media (width >= 768px) {
-  body.ig-hide-header.ig-desktop-shell:not(.admin-interface) {
+  body.ig-hide-header.ig-desktop-shell.has-sidebar-page:not(.admin-interface) {
     // collapse the header spacer so content starts at the very top
     .d-header-wrap {
       position: static;
@@ -120,12 +143,6 @@
 
     #main-outlet {
       padding-top: 20px;
-    }
-
-    // rail spans from the very top
-    &.has-sidebar-page .sidebar-wrapper {
-      top: 0;
-      height: 100dvh;
     }
   }
 }

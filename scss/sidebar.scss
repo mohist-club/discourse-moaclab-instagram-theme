@@ -1,60 +1,92 @@
 // =========================================================
-// Instagram left rail — 1:1 with instagram.com desktop nav.
-// A fixed custom nav (#ig-rail) replaces the native sidebar
-// content: logo, Home / Explore / Messages / Search /
-// Notifications / Create / Profile, and a bottom "More" that
-// reveals the native sections (categories, admin, moderation).
-// Active = filled glyph + bold label. Hover = soft grey pill.
-// Only with body.ig-desktop-shell.
+// Instagram left rail — 1:1 with the instagram.com desktop nav.
+//
+// Default: a 72px icon column (logo glyph on top, nav icons
+// vertically centred, More at the bottom), no divider.
+// Hover / keyboard focus: the rail expands to 245px as a white
+// overlay above the content (the layout track stays 72px),
+// labels fade in, and the row under the pointer gets a #f3f3f3
+// pill. Icons never move. Active row: filled glyph, bold label.
+//
+// #ig-rail (built in ig-navigation.js) replaces the native
+// sidebar content; More opens a floating menu that also lists
+// every native sidebar link. Only with body.ig-desktop-shell.
 // =========================================================
+
+$ig-rail-collapsed: 72px;
+$ig-rail-expanded: 233px;
+
 body.ig-desktop-shell:not(.admin-interface) {
-  // ---- the rail fills the sidebar as a flex column ----
-  .sidebar-wrapper .sidebar-container,
-  .sidebar-wrapper .sidebar-sections {
+  // ---- the rail fills the sidebar ----
+  .sidebar-wrapper .sidebar-container {
     height: 100%;
+    border: 0;
+    background: transparent;
   }
 
-  .sidebar-sections {
-    padding: 8px 12px 12px;
+  .sidebar-wrapper .sidebar-sections {
+    display: flex;
+    flex-direction: column;
+    padding: 0 11px 0 10px;
+    overflow: hidden;
+    transition: padding 0.2s ease;
   }
 
   #ig-rail {
     display: flex;
+    flex: 1 0 auto;
     flex-direction: column;
-    min-height: calc(100dvh - 24px);
+    padding: 8px 0 15px;
   }
 
-  // hide native sidebar sections by default; "More" reveals them
+  // Native sections stay in the DOM (the More menu reads their links) but
+  // are never shown; the native footer (keyboard shortcuts + fade) goes too.
   .sidebar-sections > .sidebar-section-wrapper,
-  .sidebar-sections > .sidebar-section {
+  .sidebar-sections > .sidebar-section,
+  .sidebar-wrapper .sidebar-footer-wrapper {
     display: none;
   }
 
-  // ---- brand wordmark (Instagram logo slot) ----
-  .ig-wordmark {
-    display: block;
-    max-width: 100%;
-    padding: 18px 12px 20px;
-    margin: 0;
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.3px;
+  // ---- logo glyph (top), centred on the 72px column ----
+  .ig-logo {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    margin-top: 6px;
+    padding: 0 13px;
     text-decoration: none;
-    background: var(--ig-gradient);
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+
+    img {
+      display: block;
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
   }
 
-  // ---- nav rows ----
+  .ig-logo-text {
+    max-width: 24px;
+    overflow: hidden;
+    color: var(--ig-ink);
+    font-size: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  // ---- primary nav: vertically centred between logo and More ----
   .ig-rail-nav {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 10px;
+    margin-block: auto;
+    padding-block: 16px;
+  }
+
+  .ig-rail-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .ig-rail-link {
@@ -63,22 +95,29 @@ body.ig-desktop-shell:not(.admin-interface) {
     align-items: center;
     gap: 16px;
     width: 100%;
-    padding: 12px;
+    height: 48px;
+    padding: 12px 12px 12px 13px;
     border: 0;
     border-radius: 8px;
     background: transparent;
     color: var(--ig-ink);
     font-family: inherit;
     font-size: 16px;
-    line-height: 20px;
     font-weight: 400;
+    line-height: 24px;
     text-align: left;
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background 0.1s ease;
 
     &:hover {
       background: var(--ig-hover);
+      color: var(--ig-ink);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ig-ink);
+      outline-offset: -2px;
     }
 
     &.active {
@@ -86,12 +125,17 @@ body.ig-desktop-shell:not(.admin-interface) {
     }
   }
 
+  // labels exist (accessible names) but are hidden until the rail expands
   .ig-rail-label {
     min-width: 0;
+    overflow: hidden;
     color: inherit;
+    text-overflow: ellipsis;
+    opacity: 0;
+    transition: opacity 0.15s ease;
   }
 
-  // ---- icons (outline by default, filled when active) ----
+  // ---- glyphs: outline by default ----
   .ig-rail-ico {
     position: relative;
     flex: 0 0 24px;
@@ -105,7 +149,7 @@ body.ig-desktop-shell:not(.admin-interface) {
       background: var(--ig-ink);
       mask-position: center;
       mask-repeat: no-repeat;
-      mask-size: 24px 24px;
+      mask-size: 27px 27px;
     }
 
     &--home::before {
@@ -132,8 +176,24 @@ body.ig-desktop-shell:not(.admin-interface) {
       mask-image: url($ig-create);
     }
 
+    &--profile::before {
+      mask-image: url($ig-user);
+    }
+
+    &--settings::before {
+      mask-image: url($ig-settings);
+    }
+
+    &--bookmark::before {
+      mask-image: url($ig-bookmark);
+    }
+
     &--menu::before {
       mask-image: url($ig-menu);
+    }
+
+    &--apps::before {
+      mask-image: url($ig-apps);
     }
 
     &--avatar {
@@ -142,6 +202,7 @@ body.ig-desktop-shell:not(.admin-interface) {
       }
 
       img {
+        display: block;
         width: 24px;
         height: 24px;
         border-radius: 50%;
@@ -150,7 +211,7 @@ body.ig-desktop-shell:not(.admin-interface) {
     }
   }
 
-  // filled glyphs on the active row
+  // ---- active: filled glyphs ----
   .ig-rail-link.active {
     .ig-rail-ico--home::before {
       mask-image: url($ig-home-filled);
@@ -176,102 +237,145 @@ body.ig-desktop-shell:not(.admin-interface) {
       mask-image: url($ig-create-filled);
     }
 
+    .ig-rail-ico--menu::before {
+      mask-image: url($ig-menu);
+    }
+
     .ig-rail-ico--avatar img {
       box-shadow: 0 0 0 2px var(--ig-ink);
     }
   }
 
-  // ---- bottom group: More ----
-  .ig-rail-foot {
-    margin-top: auto;
-    padding-top: 8px;
+  // ---- "More" floating menu (appended to <body>) ----
+  .ig-more-panel {
+    position: fixed;
+    z-index: 1100;
+    box-sizing: border-box;
+    width: 266px;
+    max-height: calc(100dvh - 96px);
+    padding: 8px;
+    overflow-y: auto;
+    border-radius: 16px;
+    background: var(--ig-elevated);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+    color: var(--ig-ink);
   }
 
-  // ---- revealed native sections (after clicking More) ----
-  &.ig-more-open .sidebar-sections > .sidebar-section-wrapper,
-  &.ig-more-open .sidebar-sections > .sidebar-section {
-    display: block;
+  .ig-more-group + .ig-more-group {
+    margin: 8px -8px 0;
+    padding: 8px 8px 0;
+    border-top: 6px solid var(--ig-pill);
   }
 
-  .sidebar-section-header-wrapper {
-    display: none;
-  }
-
-  .sidebar-section-link {
+  .ig-more-item {
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    gap: 12px;
     width: 100%;
-    padding: 10px 12px;
+    padding: 16px;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
     border-radius: 8px;
     color: var(--ig-ink);
     font-size: 14px;
+    line-height: 18px;
     text-decoration: none;
 
     &:hover {
       background: var(--ig-hover);
+      color: var(--ig-ink);
     }
   }
 
-  .sidebar-section-link-prefix {
-    margin-right: 14px;
+  .ig-more-item .ig-rail-ico {
+    flex-basis: 20px;
+    width: 20px;
+    height: 20px;
+
+    &::before {
+      mask-size: 22px 22px;
+    }
+  }
+
+  // icons cloned from the native sidebar
+  .ig-more-native-ico {
+    display: flex;
+    flex: 0 0 20px;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+
+    .sidebar-section-link-prefix {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      color: var(--ig-ink);
+    }
 
     .d-icon,
     img {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+    }
+
+    img {
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    .prefix-span {
+      display: block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
     }
   }
 }
 
 // =========================================================
-// Sticky full-height rail with a right divider (desktop)
+// Collapsed column + hover-expand overlay (desktop)
 // =========================================================
 @media (width >= 768px) {
-  body.ig-desktop-shell:not(.admin-interface).has-sidebar-page
+  body.ig-desktop-shell.has-sidebar-page:not(.admin-interface) {
     .sidebar-wrapper {
-    box-sizing: border-box;
+      z-index: 200;
+      box-sizing: border-box;
+      width: $ig-rail-collapsed;
+      overflow: hidden;
+      border: 0;
+      background: var(--ig-card);
+      overscroll-behavior-y: contain;
+      transition: width 0.2s ease;
+    }
+
+    // grow over the content, never pushing it (the grid track stays 72px)
+    .sidebar-wrapper:hover,
+    .sidebar-wrapper:has(:focus-visible) {
+      width: $ig-rail-expanded;
+
+      // Instagram slides the column 8px left as it expands (pill from x=2)
+      .sidebar-sections {
+        padding-left: 2px;
+      }
+
+      .ig-rail-label {
+        opacity: 1;
+      }
+    }
+  }
+
+  // with the top header hidden, the rail runs the full height
+  body.ig-desktop-shell.ig-hide-header.has-sidebar-page:not(.admin-interface)
+    .sidebar-wrapper {
     position: sticky;
     top: 0;
     height: 100dvh;
-    border-right: 1px solid var(--ig-border);
-    background: var(--ig-card);
-    overscroll-behavior-y: contain;
-  }
-}
-
-// =========================================================
-// Collapsed icon-only rail (Instagram's 768–1263px state)
-// =========================================================
-@media (width <= 1263px) and (width >= 768px) {
-  body.ig-desktop-shell:not(.admin-interface) {
-    .ig-wordmark {
-      font-size: 0;
-      padding: 18px 0 20px;
-      text-align: center;
-
-      &::before {
-        content: "";
-        display: block;
-        width: 24px;
-        height: 24px;
-        margin: 0 auto;
-        background: var(--ig-gradient);
-        mask: url($ig-create) center / contain no-repeat;
-      }
-    }
-
-    .ig-rail-label {
-      display: none;
-    }
-
-    .ig-rail-link {
-      justify-content: center;
-      padding: 12px 0;
-    }
-
-    .ig-rail-ico {
-      margin: 0;
-    }
   }
 }

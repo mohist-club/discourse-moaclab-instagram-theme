@@ -71,8 +71,3 @@ instagram_right_sidebar:
     en: "Desktop (>=1264px): show an Instagram-style right column with the current user, suggested users and footer links."
     zh_CN: "桌面端（≥1264px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、页脚链接）。"
 
-instagram_compact_rail:
-  default: true
-  description:
-    en: "Desktop: hide the category and tag sections in the left rail so it shows only Instagram-style core items (categories remain reachable via Explore and the Stories tray; admin/moderation links stay)."
-    zh_CN: "桌面端：隐藏左栏的分类和标签分区，只保留 Instagram 风格核心项（分类仍可从「探索」和 Stories 进入；管理员/审核等入口保留）。"
