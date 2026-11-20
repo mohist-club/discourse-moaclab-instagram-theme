@@ -1,5 +1,9 @@
 import { apiInitializer } from "discourse/lib/api";
 import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
+import { NotificationLevels } from "discourse/lib/notification-levels";
+import DiscourseURL from "discourse/lib/url";
+import Category from "discourse/models/category";
 import { i18n } from "discourse-i18n";
 
 // Instagram desktop shell:
@@ -638,7 +642,7 @@ function ensureRightSidebar(api, siteSettings) {
 
   const listEl = sugg.querySelector(".ig-right__list");
   if (parent) {
-    fillStudios(listEl, parent, site);
+    fillStudios(listEl, parent, site, user);
   } else {
     fillSuggestions(listEl);
   }
@@ -665,7 +669,7 @@ function categoryUrl(category, parent) {
     : `/c/${category.slug}/${category.id}`;
 }
 
-async function fillStudios(listEl, parent, site) {
+async function fillStudios(listEl, parent, site, user) {
   let studios = (site?.categories || []).filter(
     (c) => c.parent_category_id === parent.id
   );
@@ -715,12 +719,71 @@ async function fillStudios(listEl, parent, site) {
           <a class="ig-right__user" href="${url}">${escapeHtml(c.name)}</a>
           <span class="ig-right__sub">${escapeHtml(subtitle)}</span>
         </div>
-        <a class="ig-right__action" href="${url}">${escapeHtml(
-          t("right.view")
-        )}</a>
+        ${followButton(c.id, isFollowing(c.notification_level))}
       </div>`;
     })
     .join("");
+
+  listEl.addEventListener("click", (event) => {
+    const btn = event.target.closest(".ig-right__follow");
+    if (btn) {
+      toggleFollow(btn, user);
+    }
+  });
+}
+
+// Instagram's "Follow" = Discourse's native category notification level:
+// following a studio sets "watching first post" (a notification for each new
+// topic, not every reply); unfollowing returns it to normal.
+function isFollowing(level) {
+  return (
+    level === NotificationLevels.WATCHING ||
+    level === NotificationLevels.WATCHING_FIRST_POST
+  );
+}
+
+function followButton(categoryId, following) {
+  return `<button type="button" class="ig-right__action ig-right__follow${
+    following ? " is-following" : ""
+  }" data-category-id="${categoryId}" aria-pressed="${following}">${escapeHtml(
+    t(following ? "right.following" : "right.follow")
+  )}</button>`;
+}
+
+async function toggleFollow(btn, user) {
+  if (!user) {
+    DiscourseURL.routeTo("/login");
+    return;
+  }
+  if (btn.disabled) {
+    return;
+  }
+
+  const id = parseInt(btn.dataset.categoryId, 10);
+  const following = btn.classList.contains("is-following");
+  const level = following
+    ? NotificationLevels.REGULAR
+    : NotificationLevels.WATCHING_FIRST_POST;
+
+  btn.disabled = true;
+  try {
+    const category = Category.findById(id);
+    if (category) {
+      await category.setNotification(level);
+    } else {
+      await ajax(`/category/${id}/notifications`, {
+        type: "POST",
+        data: { notification_level: level },
+      });
+    }
+    btn.classList.toggle("is-following", !following);
+    btn.setAttribute("aria-pressed", String(!following));
+    btn.textContent = t(following ? "right.follow" : "right.following");
+  } catch (error) {
+    popupAjaxError(error);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 let suggestionCache = null;

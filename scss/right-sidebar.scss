@@ -106,15 +106,35 @@
   line-height: 16px;
 }
 
-.ig-right a.ig-right__action {
+.ig-right .ig-right__action {
   flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--ig-link);
+  font-family: inherit;
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
+  cursor: pointer;
 
   &:hover {
     color: var(--ig-ink);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  // Instagram: once followed the action reads "Following" in ink
+  &.is-following {
+    color: var(--ig-ink);
+
+    &:hover {
+      color: var(--ig-muted);
+    }
   }
 }
 

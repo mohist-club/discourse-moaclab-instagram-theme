@@ -60,6 +60,8 @@ en:
       suggested: "Suggested for you"
       see_all: "See all"
       view: "View"
+      follow: "Follow"
+      following: "Following"
       fallback_subtitle: "Active community member"
       topics:
         one: "%{count} topic"

@@ -58,6 +58,8 @@ zh_CN:
       suggested: "为你推荐"
       see_all: "查看全部"
       view: "查看"
+      follow: "关注"
+      following: "已关注"
       fallback_subtitle: "社区活跃成员"
       topics: "%{count} 个话题"
       about: "关于"
