@@ -268,10 +268,20 @@ export default class Item extends Component {
 
   // ---- gallery ----
   watchGallery = modifier((element) => {
-    if (!settings.instagram_post_gallery || !this.thumbnail) {
+    // grid tiles (Explore, suggested topics) show only the first image, so
+    // they never load the post: a screenful of tiles stays one request
+    if (
+      !settings.instagram_post_gallery ||
+      !this.thumbnail ||
+      inGrid(element)
+    ) {
       return;
     }
     return whenNearViewport(element, () => {
+      // the page may have become a grid after this card rendered
+      if (inGrid(element)) {
+        return;
+      }
       this.firstPost()
         .then((post) => {
           if (!this.isDestroying && !this.isDestroyed) {
