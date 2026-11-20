@@ -173,8 +173,8 @@ function ensureRail(api, siteSettings) {
   const foot = document.createElement("div");
   foot.className = "ig-rail-foot";
   foot.append(
-    menuButton("more", "menu", () => accountGroups(user)),
-    menuButton("apps", "apps", () => nativeLinkGroups())
+    menuButton("more", "menu", () => accountGroups(user, api)),
+    menuButton("apps", "apps", () => toolGroups())
   );
   rail.append(foot);
 
@@ -230,26 +230,56 @@ function menuButton(key, icon, groups) {
   return btn;
 }
 
-// account menu: what Instagram's "More" holds, mapped to Discourse
-function accountGroups(user) {
+// More: settings, invite, your activity, saved, all categories, dark mode,
+// admin (staff), log out — each the native Discourse page or action
+function accountGroups(user, api) {
+  const interfaceColor = api.container.lookup("service:interface-color");
+  const darkMode = interfaceColor?.selectorAvailable
+    ? {
+        icon: "moon",
+        label: t("menu.dark_mode"),
+        toggle: true,
+        checked: () => !!interfaceColor.darkModeActive,
+        // Discourse's own colour-mode switch (cookie + stylesheet flip)
+        onToggle: () =>
+          interfaceColor.darkModeActive
+            ? interfaceColor.forceLightMode()
+            : interfaceColor.forceDarkMode(),
+      }
+    : null;
+  const allCategories = {
+    href: "/categories",
+    icon: "grid",
+    label: t("menu.categories"),
+  };
+
   if (!user) {
     return [
       [
         { href: "/login", icon: "profile", label: t("menu.log_in") },
         { href: "/signup", icon: "create", label: t("menu.sign_up") },
       ],
+      [allCategories, darkMode].filter(Boolean),
     ];
   }
   return [
     [
       { href: "/my/preferences", icon: "settings", label: t("menu.settings") },
+      user.can_invite_to_forum
+        ? { href: "/new-invite", icon: "share", label: t("menu.invite") }
+        : null,
       { href: "/my/activity", icon: "history", label: t("menu.your_activity") },
       {
         href: "/my/activity/bookmarks",
         icon: "bookmark",
         label: t("menu.saved"),
       },
-    ],
+      allCategories,
+      darkMode,
+      user.staff
+        ? { href: "/admin", icon: "shield", label: t("menu.admin") }
+        : null,
+    ].filter(Boolean),
     [
       {
         label: t("menu.log_out"),
@@ -260,33 +290,63 @@ function accountGroups(user) {
   ];
 }
 
-// every link the native sidebar renders: categories, custom links such as
-// /typing and /viewer, admin, review ... read live so nothing is lost
-function nativeLinkGroups() {
-  const seen = new Set(["/"]);
+// The sidebar section named in instagram_tools_section (服务: Typing,
+// 图纸预览, 团购 …), read live so labels, links and icons stay whatever the
+// sidebar says. Shared by the 社区与工具 menu and the right-column module.
+function toolLinks() {
+  const name = String(settings.instagram_tools_section || "").trim();
+  const sections = [
+    ...document.querySelectorAll(
+      ".sidebar-wrapper .sidebar-section-wrapper, .sidebar-wrapper .sidebar-section"
+    ),
+  ];
+  const section = sections.find(
+    (sec) =>
+      sec
+        .querySelector(".sidebar-section-header-text, .sidebar-section-header")
+        ?.textContent.trim() === name
+  );
+  const anchors = section
+    ? [...section.querySelectorAll("a.sidebar-section-link")]
+    : [];
+  return { name, links: linkItems(anchors, new Set()) };
+}
+
+function linkItems(anchors, seen) {
   const items = [];
-  document
-    .querySelectorAll(
-      ".sidebar-wrapper .sidebar-sections a.sidebar-section-link"
-    )
-    .forEach((link) => {
-      const href = link.getAttribute("href");
-      if (!href || seen.has(href)) {
-        return;
-      }
-      seen.add(href);
-      items.push({
-        href,
-        nativeIcon: link.querySelector(".sidebar-section-link-prefix"),
-        label: (
-          link.querySelector(".sidebar-section-link-content-text")
-            ?.textContent ||
-          link.textContent ||
-          ""
-        ).trim(),
-      });
+  for (const link of anchors) {
+    const href = link.getAttribute("href");
+    if (!href || seen.has(href)) {
+      continue;
+    }
+    seen.add(href);
+    items.push({
+      href,
+      nativeIcon: link.querySelector(".sidebar-section-link-prefix"),
+      label: (
+        link.querySelector(".sidebar-section-link-content-text")?.textContent ||
+        link.textContent ||
+        ""
+      ).trim(),
     });
-  return items.length ? [items] : [];
+  }
+  return items;
+}
+
+// 社区与工具: the tools section; if the site has no such section, every
+// native sidebar link instead, so nothing becomes unreachable
+function toolGroups() {
+  const { links } = toolLinks();
+  if (links.length) {
+    return [links];
+  }
+  const all = linkItems(
+    document.querySelectorAll(
+      ".sidebar-wrapper .sidebar-sections a.sidebar-section-link"
+    ),
+    new Set(["/"])
+  );
+  return all.length ? [all] : [];
 }
 
 function openMorePanel(groups, anchor) {
@@ -306,6 +366,18 @@ function openMorePanel(groups, anchor) {
       el.setAttribute("role", "menuitem");
       if (it.href) {
         el.href = it.href;
+      } else if (it.toggle) {
+        // a switch: flips in place, the menu stays open
+        el.type = "button";
+        el.setAttribute("role", "menuitemcheckbox");
+        el.classList.add("ig-more-item--toggle");
+        const sync = () =>
+          el.setAttribute("aria-checked", String(!!it.checked()));
+        sync();
+        el.addEventListener("click", () => {
+          it.onToggle();
+          sync();
+        });
       } else {
         el.type = "button";
         el.addEventListener("click", () => {
@@ -326,6 +398,12 @@ function openMorePanel(groups, anchor) {
       const text = document.createElement("span");
       text.textContent = it.label;
       el.append(text);
+      if (it.toggle) {
+        const sw = document.createElement("span");
+        sw.className = "ig-more-switch";
+        sw.setAttribute("aria-hidden", "true");
+        el.append(sw);
+      }
       g.append(el);
     }
     panel.append(g);
@@ -765,19 +843,21 @@ function ensureRightSidebar(api, siteSettings) {
     aside.append(tools);
   }
 
-  // 4. footer
+  // 4. footer: site pages, then all categories, tags and the Q&A category
+  const qa = qaCategory(site);
   const links = [
-    ["/about", "about"],
-    ["/faq", "faq"],
-    ["/badges", "badges"],
-    ["/u", "users"],
-    ["/tos", "tos"],
-    ["/privacy", "privacy"],
-    ["/categories", "categories"],
+    ["/about", t("right.about")],
+    ["/faq", t("right.faq")],
+    ["/badges", t("right.badges")],
+    ["/u", t("right.users")],
+    ["/tos", t("right.tos")],
+    ["/privacy", t("right.privacy")],
+    ["/categories", t("right.categories")],
+    ["/tags", t("right.tags")],
+    qa ? [qa.url || `/c/${qa.slug}/${qa.id}`, qa.name] : null,
   ]
-    .map(
-      ([href, key]) => `<a href="${href}">${escapeHtml(t(`right.${key}`))}</a>`
-    )
+    .filter(Boolean)
+    .map(([href, label]) => `<a href="${href}">${escapeHtml(label)}</a>`)
     .join('<span aria-hidden="true"> · </span>');
 
   const footer = document.createElement("footer");
@@ -808,6 +888,19 @@ function ensureRightSidebar(api, siteSettings) {
       sugg.querySelector(".ig-right__refresh")
     );
   });
+}
+
+// the 问答与求助 category (by name, else a Q&A-like slug)
+const QA_NAMES = ["问答与求助"];
+const QA_SLUGS = ["qa", "q-a", "help", "questions", "support"];
+
+function qaCategory(site) {
+  const categories = site?.categories || [];
+  return (
+    categories.find((c) => QA_NAMES.includes(c.name?.trim())) ||
+    categories.find((c) => QA_SLUGS.includes(c.slug?.toLowerCase())) ||
+    null
+  );
 }
 
 function meBlock(user) {
@@ -849,22 +942,8 @@ function authBlock(title) {
 // The sidebar's 服务 custom section (name in instagram_tools_section), read
 // live so labels, links and icons stay whatever the sidebar says.
 function toolsBlock() {
-  const name = String(settings.instagram_tools_section || "").trim();
-  const sections = [
-    ...document.querySelectorAll(
-      ".sidebar-wrapper .sidebar-section-wrapper, .sidebar-wrapper .sidebar-section"
-    ),
-  ];
-  const section = sections.find(
-    (sec) =>
-      sec
-        .querySelector(".sidebar-section-header-text, .sidebar-section-header")
-        ?.textContent.trim() === name
-  );
-  const anchors = section
-    ? [...section.querySelectorAll("a.sidebar-section-link")]
-    : [];
-  if (!anchors.length) {
+  const { name, links } = toolLinks();
+  if (!links.length) {
     return null;
   }
 
@@ -877,32 +956,20 @@ function toolsBlock() {
   head.append(h2);
   block.append(head);
 
-  const seen = new Set();
-  for (const link of anchors) {
-    const href = link.getAttribute("href");
-    if (!href || seen.has(href)) {
-      continue;
-    }
-    seen.add(href);
-
+  for (const item of links) {
     const row = document.createElement("a");
     row.className = "ig-right__row ig-right__tool";
-    row.href = href;
+    row.href = item.href;
 
     const icon = document.createElement("span");
     icon.className = "ig-right__tool-icon";
-    const prefix = link.querySelector(".sidebar-section-link-prefix");
-    if (prefix) {
-      icon.append(prefix.cloneNode(true));
+    if (item.nativeIcon) {
+      icon.append(item.nativeIcon.cloneNode(true));
     }
 
     const label = document.createElement("span");
     label.className = "ig-right__user";
-    label.textContent = (
-      link.querySelector(".sidebar-section-link-content-text")?.textContent ||
-      link.textContent ||
-      ""
-    ).trim();
+    label.textContent = item.label;
 
     const open = document.createElement("span");
     open.className = "ig-right__action";

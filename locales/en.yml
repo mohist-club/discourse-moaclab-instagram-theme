@@ -35,6 +35,10 @@ en:
       more: "More"
       apps: "Community & tools"
     menu:
+      invite: "Invite"
+      categories: "All categories"
+      dark_mode: "Dark mode"
+      admin: "Admin"
       settings: "Settings"
       your_activity: "Your activity"
       saved: "Saved"
@@ -87,7 +91,8 @@ en:
       users: "Users"
       tos: "Terms"
       privacy: "Privacy"
-      categories: "Categories"
+      categories: "All categories"
+      tags: "Tags"
     messages:
       title: "Messages"
       unread:

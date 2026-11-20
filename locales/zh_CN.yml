@@ -35,6 +35,10 @@ zh_CN:
       more: "更多"
       apps: "社区与工具"
     menu:
+      invite: "邀请"
+      categories: "所有类别"
+      dark_mode: "深色模式"
+      admin: "管理员"
       settings: "设置"
       your_activity: "你的动态"
       saved: "已收藏"
@@ -83,7 +87,8 @@ zh_CN:
       users: "用户"
       tos: "条款"
       privacy: "隐私"
-      categories: "分类"
+      categories: "所有类别"
+      tags: "标签"
     messages:
       title: "消息"
       unread: "%{count} 条未读"
