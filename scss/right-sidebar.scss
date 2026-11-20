@@ -9,7 +9,7 @@
 // Injected by ig-navigation.js as a sibling of #main-outlet.
 // =========================================================
 .ig-right {
-  display: none; // becomes a grid column at >=1264px on discovery
+  display: none; // becomes a grid column at >=1160px on discovery
   box-sizing: border-box;
   color: var(--ig-ink);
   font-size: 14px;
@@ -23,7 +23,8 @@
 
 // rail | space | feed 630 | 64 | right 319 | space — only while the right
 // column exists (discovery + desktop shell + wide)
-@media (width >= 1264px) {
+// Instagram keeps the column down to 1160px (rail 72 + 630 + 64 + 319 + 64)
+@media (width >= 1160px) {
   body.ig-rightcol.ig-desktop-shell:not(.admin-interface)
     #main-outlet-wrapper:has(.ig-right) {
     // Instagram's right column keeps 64px on both sides; with that the
