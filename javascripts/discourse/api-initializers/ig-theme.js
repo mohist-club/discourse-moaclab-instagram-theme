@@ -14,6 +14,7 @@ export default apiInitializer((api) => {
     "ig-gradient-buttons": settings.brand_gradient_buttons,
     "ig-round-avatars": settings.rounded_avatars,
     "ig-card-feed": settings.card_feed,
+    "ig-topic-style": settings.instagram_topic_style,
   };
   for (const [cls, on] of Object.entries(flags)) {
     body.classList.toggle(cls, !!on);

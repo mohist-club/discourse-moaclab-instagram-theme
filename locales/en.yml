@@ -17,6 +17,7 @@ en:
       instagram_messages_dock: "Show the floating Messages dock with your personal messages (desktop)."
       instagram_suggested_categories: "Right column suggestions: subcategories (studios) of these category IDs; empty uses 键盘 and 键帽库."
       instagram_tools_section: "Sidebar section shown as the tools module in the right column."
+      instagram_topic_style: "Topic pages keep the native layout with the theme's look."
   ig:
     rail:
       home: "Home"

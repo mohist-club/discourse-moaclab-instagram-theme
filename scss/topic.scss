@@ -1,48 +1,348 @@
-// Topic view — frame the posts like Instagram post / comment cards.
-.ig-card-feed {
+// =========================================================
+// Topic page: Discourse's own layout and behaviour, restyled to
+// match the theme. Nothing moves; only colour, type, borders and
+// icons change. Gated by body.ig-topic-style (setting
+// instagram_topic_style) — off restores the native look.
+// =========================================================
+
+// Swap a Discourse icon for one of the theme's Instagram glyphs in
+// place: the <svg> keeps its box, its <use> is hidden and the glyph is
+// painted as a mask in currentColor.
+@mixin ig-icon-swap($asset) {
+  background-color: currentcolor;
+  mask: url($asset) center / contain no-repeat;
+
+  > use {
+    display: none;
+  }
+}
+
+body.ig-topic-style:not(.admin-interface) {
+  // ---- title, category, tags ----
   #topic-title {
-    max-width: var(--topic-body-width, 740px);
-    margin-inline: auto;
+    h1,
+    .fancy-title {
+      color: var(--ig-ink);
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+
+    .badge-category__name {
+      color: var(--ig-ink);
+      font-weight: 600;
+    }
   }
 
-  .post-stream {
-    max-width: var(--topic-body-width, 740px);
-    margin-inline: auto;
+  // tags read as Instagram hashtags
+  .topic-area,
+  #topic-title,
+  .more-topics__container {
+    .discourse-tags .discourse-tag {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--ig-hashtag);
+      font-size: 14px;
+
+      &::before {
+        content: "#";
+        display: inline;
+        width: auto;
+        height: auto;
+        margin: 0;
+        background: none;
+      }
+    }
+
+    .discourse-tags .discourse-tag + .discourse-tag {
+      margin-left: 6px;
+    }
   }
 
-  .post-stream .topic-post {
-    margin-bottom: 16px;
+  // ---- posts ----
+  .topic-post {
+    .topic-body,
+    .topic-avatar {
+      border-top-color: var(--ig-border);
+    }
+
+    .topic-meta-data {
+      .names a,
+      .first.username a,
+      .full-name a {
+        color: var(--ig-ink);
+        font-weight: 600;
+      }
+
+      .second,
+      .user-title,
+      .post-infos,
+      .post-date,
+      .relative-date {
+        color: var(--ig-muted);
+      }
+    }
+
+    .cooked {
+      color: var(--ig-ink);
+
+      a:not(.mention, .hashtag-cooked, .badge-category__wrapper) {
+        color: var(--ig-hashtag);
+      }
+
+      img:not(.emoji, .avatar, .site-icon, .onebox-avatar) {
+        border-radius: 4px;
+      }
+
+      aside.quote,
+      blockquote {
+        border-left: 3px solid var(--ig-border-strong);
+        background: var(--ig-pill);
+      }
+
+      aside.quote .title {
+        border-left: 0;
+        background: transparent;
+        color: var(--ig-muted);
+      }
+
+      aside.onebox {
+        border: 1px solid var(--ig-border);
+        border-radius: 8px;
+      }
+
+      code,
+      pre code {
+        border-radius: 4px;
+        background: var(--ig-pill);
+      }
+    }
   }
 
-  .post-stream .topic-post .topic-body {
-    @include ig-card;
-    padding: 14px 16px;
+  // post menu: flat Instagram glyphs, grey on hover, red heart
+  .topic-post .post-controls {
+    .btn,
+    button {
+      background: transparent;
+      color: var(--ig-ink);
+
+      &:hover,
+      &:focus-visible {
+        background: transparent;
+        color: var(--ig-muted);
+      }
+    }
+
+    .like-count,
+    .post-action-menu__like-count {
+      color: var(--ig-ink);
+      font-weight: 600;
+    }
+
+    .has-like,
+    .liked,
+    .toggle-like.has-like {
+      color: var(--ig-like);
+
+      &:hover {
+        color: var(--ig-like);
+      }
+    }
   }
 
-  .post-stream .topic-post .topic-avatar {
-    border: 0;
-    padding: 14px 4px 0 0;
+  .topic-post .post-controls,
+  #topic-footer-buttons {
+    .d-icon-d-unliked {
+      @include ig-icon-swap($ig-heart);
+    }
+
+    .d-icon-d-liked {
+      @include ig-icon-swap($ig-heart-filled);
+      color: var(--ig-like);
+    }
+
+    .d-icon-reply {
+      @include ig-icon-swap($ig-comment);
+    }
+
+    .d-icon-d-post-share {
+      @include ig-icon-swap($ig-share);
+    }
+
+    .d-icon-far-bookmark {
+      @include ig-icon-swap($ig-bookmark);
+    }
+
+    .d-icon-bookmark,
+    .d-icon-discourse-bookmark-clock {
+      @include ig-icon-swap($ig-bookmark-filled);
+    }
+
+    .d-icon-ellipsis,
+    .d-icon-ellipsis-h {
+      @include ig-icon-swap($ig-dots);
+    }
   }
-}
 
-// Post action row — airy icons, heart turns red when liked
-.topic-post .post-controls .actions .btn {
-  background: transparent;
-  color: var(--ig-ink);
-  padding: 6px 8px;
+  // small actions ("closed this topic", splits …) and time gaps
+  .small-action {
+    color: var(--ig-muted);
 
-  &:hover {
+    .topic-avatar {
+      border-top-color: transparent;
+    }
+
+    .small-action-desc {
+      border-top-color: var(--ig-border);
+    }
+  }
+
+  .time-gap {
+    color: var(--ig-muted);
+  }
+
+  // ---- topic map (views, likes, links, people) ----
+  .topic-map {
+    border: 1px solid var(--ig-border);
+    border-radius: 8px;
     background: transparent;
-    color: var(--ig-accent);
+    color: var(--ig-muted);
+
+    .number,
+    .topic-map__stat-value,
+    h4 {
+      color: var(--ig-ink);
+    }
   }
-}
 
-.topic-post .post-controls .double-button .like.has-like .d-icon,
-.topic-post .post-controls .like-count.highlight-action {
-  color: var(--ig-love);
-}
+  // ---- timeline ----
+  .timeline-container {
+    .timeline-scrollarea {
+      border-left-color: var(--ig-border);
+    }
 
-// Cooked media rounded like Instagram
-.cooked img:not(.emoji, .avatar) {
-  border-radius: var(--ig-radius);
+    .timeline-handle {
+      background: var(--ig-ink);
+    }
+
+    .timeline-date-wrapper,
+    .timeline-replies,
+    .timeline-ago {
+      color: var(--ig-muted);
+    }
+  }
+
+  // ---- footer buttons: Instagram's grey secondary / blue primary ----
+  #topic-footer-buttons {
+    .btn {
+      border: 0;
+      border-radius: 8px;
+      background: var(--ig-pill);
+      color: var(--ig-ink);
+      font-weight: 600;
+
+      &:hover {
+        background: var(--ig-pill-hover);
+        color: var(--ig-ink);
+      }
+    }
+
+    .btn-primary,
+    .btn.create {
+      background: var(--ig-accent);
+      color: #fff;
+
+      &:hover {
+        background: var(--ig-accent);
+        color: #fff;
+        filter: brightness(0.92);
+      }
+    }
+  }
+
+  // ---- suggested / related topics: Instagram's "more posts" grid ----
+  .more-topics__container {
+    .topic-list,
+    .topic-list tbody {
+      display: block;
+      width: 100%;
+    }
+
+    .topic-list-header {
+      display: none;
+    }
+
+    .topic-list tbody {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      border: 0;
+    }
+
+    .topic-list-item {
+      display: block;
+      padding: 0;
+      border: 0;
+
+      &,
+      &:hover,
+      &.selected,
+      &.visited {
+        background: transparent;
+      }
+
+      > td {
+        display: block;
+        padding: 0;
+      }
+    }
+
+    .ig-post {
+      position: relative;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      aspect-ratio: 1;
+    }
+
+    .ig-post__header,
+    .ig-post__actions,
+    .ig-post__caption,
+    .ig-post__comments,
+    .ig-post__tags {
+      display: none;
+    }
+
+    .ig-post__media {
+      height: 100%;
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 0;
+    }
+
+    // text-only topics: a square tile with the title
+    .ig-post__text {
+      box-sizing: border-box;
+      height: 100%;
+      padding: 14px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: var(--ig-pill);
+    }
+
+    .ig-post__title {
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    .ig-post__excerpt .topic-excerpt {
+      -webkit-line-clamp: 4;
+    }
+
+    .ig-post:hover {
+      opacity: 0.85;
+    }
+  }
 }

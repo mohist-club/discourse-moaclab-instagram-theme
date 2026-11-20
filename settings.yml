@@ -90,3 +90,9 @@ instagram_tools_section:
   description:
     en: "Title of the sidebar section whose links (Typing, drawings, group buys …) appear as a module in the right column. Empty hides the module."
     zh_CN: "右栏「服务」模块读取的侧边栏分区标题（如 Typing、图纸、团购所在的分区）。留空则不显示该模块。"
+
+instagram_topic_style:
+  default: true
+  description:
+    en: "Topic pages keep Discourse's own layout and behaviour but use the theme's look: Instagram icons in the post menu (red heart), hashtag tags, flat quotes / topic map / timeline, and suggested topics as a 3-column grid."
+    zh_CN: "帖子详情页保留 Discourse 原生布局与逻辑，样式统一到主题：帖子菜单换成 Instagram 图标（红心）、标签显示为 #话题、引用/统计/时间轴扁平化、推荐话题为三列网格。"

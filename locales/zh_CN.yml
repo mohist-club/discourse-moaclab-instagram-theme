@@ -17,6 +17,7 @@ zh_CN:
       instagram_messages_dock: "桌面端右下角显示消息浮窗（Discourse 私信）。"
       instagram_suggested_categories: "右栏「为你推荐」使用这些 ID 的类别下的二级类别（工作室）；留空用「键盘」「键帽库」。"
       instagram_tools_section: "右栏「服务」模块读取的侧边栏分区标题。"
+      instagram_topic_style: "帖子详情页沿用原生布局，样式统一到主题。"
   ig:
     rail:
       home: "首页"
