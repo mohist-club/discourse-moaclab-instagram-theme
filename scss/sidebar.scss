@@ -46,11 +46,7 @@ body.ig-desktop-shell:not(.admin-interface) {
   .sidebar-wrapper .sidebar-footer-wrapper {
     display: none;
   }
-}
 
-// The rail itself (and its More menu): also drawn on admin pages when
-// instagram_admin_style is on — there it is a fixed column (admin.scss).
-body.ig-desktop-shell:is(:not(.admin-interface), .ig-admin-style) {
   // ---- logo row: same column and size as the nav icons ----
   .ig-logo {
     position: relative;
@@ -496,7 +492,7 @@ body.ig-desktop-shell:is(:not(.admin-interface), .ig-admin-style) {
   }
 }
 
-// admin pages without the Instagram admin style: no rail in the sidebar
-body.admin-interface:not(.ig-admin-style) #ig-rail {
+// admin pages keep Discourse's own sidebar: never show the rail there
+body.admin-interface #ig-rail {
   display: none;
 }

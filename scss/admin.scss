@@ -1,278 +1,129 @@
 // =========================================================
-// Admin pages as Instagram's settings (instagram_admin_style),
-// desktop only:
-//   72px rail (fixed, expands on hover) | 360px settings column
-//   (title, round search, grey section headings, 48px rows with
-//   icons, grey pill on the current page) | content: bold page
-//   title, rounded bordered cards, rounded fields, black switches,
-//   blue primary / grey secondary buttons.
-// The admin sidebar, filter and pages stay Discourse's own.
+// Admin pages in the theme's look (instagram_admin_style).
+//
+// Discourse's own admin layout and behaviour are untouched: the
+// header, the admin sidebar (collapsible sections, filter, back to
+// forum), page headers, settings and their controls all stay
+// native. Only colours and shapes follow the theme: white sidebar
+// with a hairline, a round grey filter, grey section headings,
+// rounded rows with a grey pill on the current page, rounded
+// bordered cards, rounded fields, black switches, blue / grey
+// buttons. Light and dark through the theme's CSS variables.
 // =========================================================
+body.ig-admin-style.admin-interface {
+  // ---- sidebar ----
+  .sidebar-wrapper {
+    border-right: 1px solid var(--ig-border);
+    background: var(--ig-page);
+  }
 
-$ig-admin-rail: 72px;
-$ig-admin-column: 360px;
+  .sidebar-wrapper .sidebar-container {
+    border: 0;
+    background: transparent;
+  }
 
-@media (width >= 1000px) {
-  body.ig-admin-style.ig-desktop-shell.admin-interface.has-sidebar-page {
-    --d-sidebar-width: #{$ig-admin-rail + $ig-admin-column};
+  .sidebar-sections__back-to-forum {
+    color: var(--ig-muted);
 
-    // Instagram's settings have no top bar: the rail does that job
-    .d-header-wrap {
-      display: none;
+    &:hover {
+      color: var(--ig-ink);
     }
+  }
 
-    // ---- left: rail + settings column ----
-    .sidebar-wrapper {
-      position: sticky;
-      top: 0;
-      height: 100dvh;
-      border-right: 1px solid var(--ig-border);
-      background: var(--ig-page);
-    }
+  .sidebar-filter {
+    border: 0;
+    border-radius: 22px;
+    background: var(--ig-btn-secondary);
 
-    .sidebar-wrapper .sidebar-container {
-      height: 100%;
+    .sidebar-filter__input-container,
+    .sidebar-filter__input {
       border: 0;
       background: transparent;
+      box-shadow: none;
+      color: var(--ig-ink);
     }
 
-    .sidebar-wrapper .sidebar-sections {
-      position: relative;
-      box-sizing: border-box;
-      padding: 0 24px 32px #{$ig-admin-rail + 28px};
-
-      // the column title (text from the theme's locale, see ig-theme.js)
-      &::before {
-        content: var(--ig-admin-title, "");
-        display: block;
-        padding: 36px 0 20px 4px;
-        color: var(--ig-ink);
-        font-size: 24px;
-        font-weight: 700;
-        line-height: 30px;
-      }
-    }
-
-    #ig-rail {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      z-index: 400;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      width: $ig-admin-rail;
-      padding: 8px 11px 15px 10px;
-      overflow: hidden;
-      background: var(--ig-page);
-      transition:
-        width 0.2s ease,
-        box-shadow 0.2s ease;
-
-      &:hover,
-      &:has(:focus-visible) {
-        width: 233px;
-        padding-left: 2px;
-        box-shadow: 1px 0 0 var(--ig-border);
-
-        .ig-rail-label,
-        .ig-logo-word {
-          opacity: 1;
-        }
-
-        .ig-logo--full .ig-logo-glyph {
-          opacity: 0;
-        }
-      }
-    }
-
-    // back to the forum: a quiet first row
-    .sidebar-sections__back-to-forum {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin: 0 0 12px;
-      padding: 0 12px;
+    .sidebar-filter__input::placeholder {
       color: var(--ig-muted);
-      font-size: 14px;
-      text-decoration: none;
+    }
+  }
 
-      &:hover {
-        color: var(--ig-ink);
-      }
+  .sidebar-section-header,
+  .sidebar-section-header-text {
+    color: var(--ig-muted);
+    font-weight: 600;
+  }
+
+  .sidebar-section-link-wrapper .sidebar-section-link {
+    border-radius: 8px;
+    color: var(--ig-ink);
+
+    .sidebar-section-link-content-text,
+    .sidebar-section-link-prefix,
+    .sidebar-section-link-prefix .d-icon {
+      color: var(--ig-ink);
     }
 
-    // search: a round grey pill with Instagram's glass
-    .sidebar-filter {
-      position: relative;
-      box-sizing: border-box;
-      height: 44px;
-      margin: 0 0 16px;
-      padding: 0 16px 0 44px;
-      border: 0;
-      border-radius: 22px;
+    &:hover {
+      background: var(--ig-hover);
+    }
+
+    &.active {
       background: var(--ig-btn-secondary);
 
-      &::before {
-        content: "";
-        position: absolute;
-        top: 12px;
-        left: 16px;
-        width: 20px;
-        height: 20px;
-        background: var(--ig-muted);
-        mask: url($ig-search) center / 20px 20px no-repeat;
-      }
-
-      .sidebar-filter__input-container,
-      .sidebar-filter__input {
-        height: 100%;
-        border: 0;
-        background: transparent;
-        box-shadow: none;
-        color: var(--ig-ink);
-        font-size: 16px;
-      }
-
-      .sidebar-filter__input::placeholder {
-        color: var(--ig-muted);
-      }
-    }
-
-    // section headings: grey, bold, 14px
-    .sidebar-section-wrapper {
-      margin-bottom: 20px;
-      padding: 0;
-    }
-
-    .sidebar-section-header-wrapper {
-      padding: 0 4px;
-    }
-
-    .sidebar-section-header {
-      color: var(--ig-muted);
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .sidebar-section-header-caret {
-      display: none;
-    }
-
-    // rows: 48px, 24px icon, 16px label, rounded grey pill when current
-    .sidebar-section-link-wrapper .sidebar-section-link {
-      box-sizing: border-box;
-      gap: 16px;
-      height: 48px;
-      padding: 0 12px;
-      border-radius: 12px;
-      color: var(--ig-ink);
-      font-size: 16px;
-
-      .sidebar-section-link-prefix {
-        width: 24px;
-        margin: 0;
-        color: var(--ig-ink);
-
-        .d-icon {
-          width: 22px;
-          height: 22px;
-          font-size: 22px;
-          color: var(--ig-ink);
-        }
-      }
-
       .sidebar-section-link-content-text {
-        color: var(--ig-ink);
-      }
-
-      &:hover {
-        background: var(--ig-hover);
-      }
-
-      &.active {
-        background: var(--ig-btn-secondary);
-        font-weight: 400;
+        font-weight: 600;
       }
     }
+  }
 
-    // ---- content ----
-    #main-outlet {
-      padding: 48px 48px 64px;
-    }
+  // ---- content ----
+  .d-page-header__title {
+    color: var(--ig-ink);
+    font-weight: 700;
+  }
 
-    .d-page-header__title {
-      color: var(--ig-ink);
-      font-size: 24px;
-      font-weight: 700;
-      line-height: 30px;
-    }
+  .d-page-header__description,
+  .admin-config-area-card__description,
+  .setting-value .desc {
+    color: var(--ig-muted);
+  }
 
-    .d-page-header__description {
-      color: var(--ig-muted);
-    }
+  .admin-config-area-card {
+    border: 1px solid var(--ig-border);
+    border-radius: 12px;
+    background: var(--ig-page);
+    box-shadow: none;
+  }
 
-    .admin-config-area-card,
-    .admin-detail .row.setting {
-      box-sizing: border-box;
-      padding: 20px 24px;
-      border: 1px solid var(--ig-border);
-      border-radius: 16px;
-      background: var(--ig-page);
-      box-shadow: none;
-    }
+  .admin-config-area-card__title {
+    color: var(--ig-ink);
+    font-weight: 600;
+  }
 
-    .admin-detail .row.setting {
-      margin-bottom: 12px;
-    }
+  .admin-contents {
+    input:is(
+      [type="text"],
+      [type="email"],
+      [type="url"],
+      [type="number"],
+      [type="password"],
+      [type="search"]
+    ),
+    textarea,
+    .select-kit .select-kit-header {
+      border-color: var(--ig-border);
+      border-radius: 8px;
 
-    .admin-config-area-card__title,
-    .setting-label h3,
-    .setting-label__heading {
-      color: var(--ig-ink);
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .setting-value .desc,
-    .admin-config-area-card__description {
-      color: var(--ig-muted);
-    }
-
-    .admin-contents {
-      input:is(
-        [type="text"],
-        [type="email"],
-        [type="url"],
-        [type="number"],
-        [type="password"],
-        [type="search"]
-      ),
-      textarea,
-      .select-kit .select-kit-header {
-        border: 1px solid var(--ig-border);
-        border-radius: 12px;
-        background: var(--ig-page);
-        color: var(--ig-ink);
-
-        &:focus,
-        &:focus-within {
-          border-color: var(--ig-muted);
-          outline: none;
-          box-shadow: none;
-        }
+      &:focus,
+      &:focus-within {
+        border-color: var(--ig-muted);
+        outline: none;
+        box-shadow: none;
       }
     }
 
-    // switches: black when on, as on Instagram
-    .d-toggle-switch__checkbox[aria-checked="true"]
-      .d-toggle-switch__checkbox-slider {
-      background: var(--ig-ink);
-    }
-
-    // buttons
-    .admin-contents .btn-primary {
+    .btn-primary {
       border-radius: 8px;
       background: var(--ig-btn-primary);
       color: #fff;
@@ -288,8 +139,7 @@ $ig-admin-column: 360px;
       }
     }
 
-    .admin-contents .btn-default {
-      border: 0;
+    .btn-default {
       border-radius: 8px;
       background: var(--ig-btn-secondary);
       color: var(--ig-ink);
@@ -303,10 +153,11 @@ $ig-admin-column: 360px;
         background: var(--ig-btn-secondary-hover);
       }
     }
+  }
 
-    // the rail's More menu opens next to the fixed rail
-    .ig-more-panel {
-      z-index: 1100;
-    }
+  // switches: black when on, as in the rest of the theme
+  .d-toggle-switch__checkbox[aria-checked="true"]
+    .d-toggle-switch__checkbox-slider {
+    background: var(--ig-ink);
   }
 }

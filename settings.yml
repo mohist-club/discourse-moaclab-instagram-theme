@@ -132,5 +132,5 @@ instagram_studio_profile:
 instagram_admin_style:
   default: true
   description:
-    en: "Desktop admin pages look like Instagram's settings: the rail stays on the left, the admin sidebar becomes a settings column (title, round search, grey headings, 48px rows), and cards, fields, switches and buttons take Instagram's shapes and colours. The admin pages themselves are unchanged."
-    zh_CN: "桌面端管理后台改为 Instagram「设置」样式：左栏导航保留，后台侧边栏变成设置栏（标题、圆形搜索框、灰色分组标题、48px 行），卡片、输入框、开关和按钮使用 Instagram 的形状与配色。后台页面的功能不变。"
+    en: "Admin pages take the theme's colours and shapes (white sidebar, round filter, grey headings, rounded rows and cards, black switches, blue / grey buttons). Discourse's own admin layout, header, sidebar and controls are unchanged; the left rail is not shown in admin."
+    zh_CN: "管理后台使用主题的配色与形状（白色侧边栏、圆形搜索框、灰色分组标题、圆角行与卡片、黑色开关、蓝 / 灰按钮）。后台的布局、顶栏、侧边栏和各项操作仍是 Discourse 原生的；后台不显示左栏导航。"

@@ -24,13 +24,21 @@ export default apiInitializer((api) => {
       const site = api.container.lookup("service:site");
       const desktop = !site?.mobileView;
 
+      // admin keeps Discourse's own sidebar, header and navigation
+      const admin = isAdminPage();
+      if (admin) {
+        document.getElementById(RAIL_ID)?.remove();
+      }
+
       if (settings.instagram_desktop_shell && desktop) {
         document.body.classList.add("ig-desktop-shell");
         document.body.classList.toggle(
           "ig-hide-header",
           !!settings.instagram_hide_header
         );
-        ensureRail(api, siteSettings);
+        if (!admin) {
+          ensureRail(api, siteSettings);
+        }
       }
       // Explore: the configured category (and its subcategories) as a grid
       const explore = isExplorePage(site);
@@ -62,6 +70,13 @@ export default apiInitializer((api) => {
 });
 
 const RAIL_ID = "ig-rail";
+
+function isAdminPage() {
+  return (
+    window.location.pathname.startsWith("/admin") ||
+    document.body.classList.contains("admin-interface")
+  );
+}
 
 function ensureRail(api, siteSettings) {
   const sections = document.querySelector(".sidebar-wrapper .sidebar-sections");

@@ -23,10 +23,8 @@ en:
       instagram_post_gallery: "Feed cards show all first-post images as a carousel."
       instagram_qa_category: "Q&A category ID linked in the right column footer (default 4 = /c/faq/4)."
       instagram_studio_profile: "Studio pages open with an Instagram profile header."
-      instagram_admin_style: "Desktop admin pages in Instagram settings style."
+      instagram_admin_style: "Admin pages in the theme's colours and shapes; native layout and controls."
   ig:
-    admin:
-      title: "Admin"
     studio:
       label: "Studio"
       posts: " posts"
