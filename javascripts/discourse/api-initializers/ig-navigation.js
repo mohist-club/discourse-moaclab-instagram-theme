@@ -844,7 +844,11 @@ function ensureRightSidebar(api, siteSettings) {
   aside.className = "ig-right";
 
   // 1. you — or, logged out, the sign-up / log-in module
-  aside.append(user ? meBlock(user) : authBlock(title));
+  // logged out there is no "you" row: log in / sign up live in the rail's
+  // More menu (and every rail item that needs an account leads to /login)
+  if (user) {
+    aside.append(meBlock(user));
+  }
 
   // 2. suggested studios
   const sugg = document.createElement("section");
@@ -939,23 +943,6 @@ function meBlock(user) {
       t("right.profile")
     )}</a>`;
   return me;
-}
-
-// Logged out: Discourse's own /signup and /login (they open the native
-// sign-up / log-in flow); replaces the buttons in the top-right corner.
-function authBlock(title) {
-  const auth = document.createElement("section");
-  auth.className = "ig-right__auth";
-  auth.innerHTML = `
-    <h2 class="ig-right__auth-title">${escapeHtml(
-      t("right.auth_title", { site: title })
-    )}</h2>
-    <p class="ig-right__auth-text">${escapeHtml(t("right.auth_text"))}</p>
-    <a class="ig-right__btn ig-right__btn--primary" href="/signup">${escapeHtml(
-      t("right.sign_up")
-    )}</a>
-    <a class="ig-right__btn" href="/login">${escapeHtml(t("right.log_in"))}</a>`;
-  return auth;
 }
 
 // The sidebar's 服务 custom section (name in instagram_tools_section), read

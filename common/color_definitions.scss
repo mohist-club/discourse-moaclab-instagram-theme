@@ -21,6 +21,14 @@ $ig-love: #ed4956; // like / heart red
   // page behind a pop-up: rgb(0 0 0 / 65%) flattened onto the page colour
   --ig-backdrop: #{dark-light-choose(#595959, #000)};
 
+  // log-in / sign-up: base behind the aurora, aurora strength, glass edge
+  --ig-auth-base: #{dark-light-choose(#f6f4fb, #060609)};
+  --ig-auth-glow: #{dark-light-choose(0.45, 0.6)};
+  --ig-auth-card-border: #{dark-light-choose(
+      rgb(255 255 255 / 70%),
+      rgb(255 255 255 / 10%)
+    )};
+
   // text
   --ig-ink: #{dark-light-choose(#0c1014, #f5f5f5)};
   --ig-muted: #{dark-light-choose(#6e7175, #a8a8a8)};

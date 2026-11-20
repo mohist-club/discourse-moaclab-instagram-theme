@@ -1,4 +1,5 @@
 import { apiInitializer } from "discourse/lib/api";
+import { rememberPage } from "../lib/ig-last-page";
 
 // `settings` is injected as a global in Discourse theme JS.
 export default apiInitializer((api) => {
@@ -21,6 +22,9 @@ export default apiInitializer((api) => {
   for (const [cls, on] of Object.entries(flags)) {
     body.classList.toggle(cls, !!on);
   }
+
+  // the page before log-in / sign-up, for their close button and Esc
+  api.onPageChange((url) => rememberPage(url));
 
   // 3. mobile bottom navigation — read mobileView at render time (not during
   //    static initialization) to avoid the viewport-initialization deprecation.

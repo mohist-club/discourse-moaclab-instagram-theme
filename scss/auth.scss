@@ -9,10 +9,15 @@
 // the field, a blue full-width button, a hairline, then
 // "没有账户？注册" on one line; social log-in buttons below the form.
 // The close button sits at the top-right of the screen, as on
-// instagram.com. Phones get the same card without the backdrop.
+// instagram.com; Esc closes too (ig-auth-head.gjs).
+//
+// Behind the card: a slow aurora of Instagram's brand colours
+// (still when the system asks for reduced motion); the card is
+// frosted glass that rises in; the main button carries the brand
+// gradient.
 // =========================================================
 body.ig-auth-modal:is(.login-page, .signup-page) {
-  background: var(--ig-page);
+  background: var(--ig-auth-base);
 
   // the card carries the logo, so the header is not needed
   .d-header-wrap {
@@ -21,10 +26,34 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
 
   .login-fullpage,
   .signup-fullpage {
+    position: relative;
     box-sizing: border-box;
     justify-content: center;
     min-height: 100dvh;
     padding: 32px 16px;
+    overflow: hidden;
+
+    // the aurora
+    &::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      z-index: 0;
+      background:
+        radial-gradient(38% 38% at 22% 30%, #f7c50d, transparent 70%),
+        radial-gradient(34% 34% at 78% 22%, #d1099f, transparent 70%),
+        radial-gradient(44% 44% at 72% 82%, #4f5bd5, transparent 70%),
+        radial-gradient(34% 34% at 26% 84%, #ea3748, transparent 70%);
+      opacity: var(--ig-auth-glow);
+      filter: blur(70px);
+      animation: ig-aurora 26s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    > * {
+      position: relative;
+      z-index: 1;
+    }
   }
 
   .login-fullpage > .alert,
@@ -42,11 +71,30 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     align-items: stretch;
     gap: 0;
     width: 100%;
-    max-width: 400px;
-    padding: 36px 40px 28px;
-    border-radius: var(--ig-radius-lg);
-    background: var(--ig-modal);
+    max-width: 420px;
+    padding: 40px 40px 32px;
+    border-radius: 24px;
     color: var(--ig-ink);
+
+    // "backwards", not "both": a transform kept after the animation would
+    // trap the fixed close button inside the card
+    animation: ig-auth-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+
+    // frosted glass on a layer behind the content: a filter on the card
+    // itself would trap the screen-corner close button inside it
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border: 1px solid var(--ig-auth-card-border);
+      border-radius: inherit;
+      background: color-mix(in srgb, var(--ig-modal) 80%, transparent);
+      box-shadow:
+        0 24px 80px rgb(0 0 0 / 22%),
+        inset 0 1px 0 rgb(255 255 255 / 12%);
+      backdrop-filter: blur(24px) saturate(160%);
+    }
   }
 
   .login-left-side,
@@ -84,21 +132,35 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     }
   }
 
+  // a round glass button; "Esc" sits beside it on desktop
   .ig-auth-head__close {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 40px;
-    height: 40px;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     color: var(--ig-ink);
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
 
     &::before {
       content: "";
       position: absolute;
       inset: 0;
       background: currentcolor;
-      mask: url($ig-close) center / 18px 18px no-repeat;
+      mask: url($ig-close) center / 16px 16px no-repeat;
     }
+
+    &:hover {
+      background: var(--ig-hover);
+      transform: rotate(90deg);
+    }
+  }
+
+  .ig-auth-head__esc {
+    display: none;
   }
 
   // ---- heading ----
@@ -108,11 +170,12 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
   }
 
   .login-title {
-    margin: 0 0 16px;
-    color: var(--ig-muted);
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 20px;
+    margin: 0 0 20px;
+    color: var(--ig-ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 28px;
+    letter-spacing: -0.2px;
   }
 
   .signup-progress-bar {
@@ -139,27 +202,27 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
       box-sizing: border-box;
       width: 100%;
       min-width: 0;
-      height: 38px;
+      height: 46px;
       margin: 0;
-      padding: 9px 8px 7px;
+      padding: 12px 12px 10px;
       border: 1px solid var(--ig-modal-border);
-      border-radius: 3px;
+      border-radius: 12px;
       background: var(--ig-field);
       color: var(--ig-ink);
       font-size: 14px;
       line-height: 20px;
 
       &:focus {
-        border-color: var(--ig-muted);
+        border-color: var(--ig-btn-primary);
         outline: none;
-        box-shadow: none;
+        box-shadow: 0 0 0 3px rgb(74 92 249 / 18%);
       }
     }
 
     // the label lives inside the field and shrinks to its top edge
     label.alt-placeholder {
-      top: 10px;
-      left: 9px;
+      top: 14px;
+      left: 13px;
       max-width: calc(100% - 18px);
       padding: 0;
       background: transparent;
@@ -170,8 +233,8 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
 
     input:focus + label.alt-placeholder,
     input.value-entered + label.alt-placeholder {
-      top: 3px;
-      left: 9px;
+      top: 6px;
+      left: 13px;
       padding: 0;
       background: transparent;
       font-size: 10px;
@@ -179,7 +242,7 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     }
 
     input:is(:focus, .value-entered):has(+ label.alt-placeholder) {
-      padding: 14px 8px 2px;
+      padding: 20px 12px 4px;
     }
 
     .user-field label.control-label {
@@ -246,20 +309,28 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     }
   }
 
+  // the main button: Instagram's brand gradient, lifting on hover
   .login-page-cta .login-page-cta__login,
   .signup-page-cta .signup-page-cta__signup {
     order: 0;
     flex: 1 0 100%;
     width: 100%;
-    min-height: 36px;
-    margin: 8px 0 0;
+    min-height: 44px;
+    margin: 12px 0 0;
     padding: 0 16px;
     border: 0;
-    border-radius: var(--ig-radius);
-    background: var(--ig-accent);
+    border-radius: 12px;
+    background: var(--ig-story-ring);
+    background-size: 160% 160%;
+    background-position: 0% 50%;
+    box-shadow: 0 8px 24px rgb(209 9 159 / 28%);
     color: #fff;
-    font-size: 14px !important;
+    font-size: 15px !important;
     font-weight: 600;
+    transition:
+      background-position 0.5s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
 
     .d-icon {
       color: #fff;
@@ -267,14 +338,23 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
 
     &:hover,
     &:focus-visible {
-      background: var(--ig-accent);
+      background: var(--ig-story-ring);
+      background-size: 160% 160%;
+      background-position: 100% 50%;
+      box-shadow: 0 12px 30px rgb(209 9 159 / 36%);
       color: #fff;
-      filter: brightness(0.92);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.99);
     }
 
     &:disabled,
     &.disabled {
-      opacity: 0.7;
+      box-shadow: none;
+      opacity: 0.6;
+      transform: none;
     }
   }
 
@@ -347,11 +427,11 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     .btn-social {
       justify-content: center;
       width: 100%;
-      min-height: 36px;
+      min-height: 44px;
       margin: 0;
       padding: 0 16px;
       border: 1px solid var(--ig-modal-border);
-      border-radius: var(--ig-radius);
+      border-radius: 12px;
       background: transparent;
       color: var(--ig-ink);
       font-size: 14px;
@@ -364,26 +444,86 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
   }
 }
 
-// desktop: the pop-up — dimmed page, floating card, close at the screen corner
+// desktop: close at the screen corner with its Esc hint
 @media (width >= 768px) {
   body.ig-auth-modal:is(.login-page, .signup-page) {
-    background: var(--ig-backdrop);
-
-    .login-body,
-    .signup-body {
-      box-shadow: 0 8px 40px rgb(0 0 0 / 25%);
-    }
-
     .ig-auth-head__close {
       position: fixed;
-      top: 12px;
-      right: 12px;
+      top: 16px;
+      right: 16px;
       z-index: 2;
-      color: #fff;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--ig-auth-card-border);
+      background: color-mix(in srgb, var(--ig-modal) 60%, transparent);
+      backdrop-filter: blur(12px);
 
       &::before {
-        mask-size: 22px 22px;
+        mask-size: 18px 18px;
       }
+    }
+
+    .ig-auth-head__esc {
+      position: absolute;
+      top: 50%;
+      right: 54px;
+      display: block;
+      padding: 2px 6px;
+      border: 1px solid var(--ig-auth-card-border);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--ig-modal) 60%, transparent);
+      color: var(--ig-muted);
+      font-family: inherit;
+      font-size: 11px;
+      line-height: 16px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .ig-auth-head__close:hover {
+      transform: none;
+
+      &::before {
+        transform: rotate(90deg);
+        transition: transform 0.2s ease;
+      }
+    }
+  }
+}
+
+@keyframes ig-aurora {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.08);
+  }
+
+  100% {
+    transform: translate3d(-4%, 3%, 0) rotate(-6deg) scale(1.04);
+  }
+}
+
+@keyframes ig-auth-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ig-auth-modal:is(.login-page, .signup-page) {
+    .login-fullpage::before,
+    .signup-fullpage::before,
+    .login-body,
+    .signup-body {
+      animation: none;
     }
   }
 }

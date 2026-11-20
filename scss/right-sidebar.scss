@@ -218,61 +218,8 @@
   }
 }
 
-// ---- logged out: sign-up / log-in module (replaces the corner buttons) ----
-.ig-right__auth {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 20px;
-  border: 1px solid var(--ig-border);
-  border-radius: 8px;
-}
-
-.ig-right__auth-title {
-  margin: 0;
-  color: var(--ig-ink);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-.ig-right__auth-text {
-  margin: 0 0 4px;
-  color: var(--ig-muted);
-  font-size: 14px;
-  line-height: 18px;
-}
-
-.ig-right a.ig-right__btn {
-  display: block;
-  padding: 7px 16px;
-  border-radius: 8px;
-  background: var(--ig-pill);
-  color: var(--ig-ink);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 18px;
-  text-align: center;
-
-  &:hover {
-    background: var(--ig-pill-hover);
-  }
-
-  &--primary {
-    background: var(--ig-accent);
-    color: #fff;
-
-    &:hover {
-      background: var(--ig-accent);
-      color: #fff;
-      filter: brightness(0.92);
-    }
-  }
-}
-
 // The top-right 注册 / 登录 buttons are not part of the Instagram shell:
-// signing in lives in the rail's 更多 menu and, on the feed, in the
-// right-column module above. Hidden on every shell page (feed, topic, …).
+// signing in lives in the rail's 更多 menu. Hidden on every shell page.
 @media (width >= 768px) {
   body.ig-desktop-shell.has-sidebar-page:not(.admin-interface) .d-header {
     .auth-buttons,
