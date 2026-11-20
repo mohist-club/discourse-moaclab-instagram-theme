@@ -22,6 +22,10 @@ export default apiInitializer((api) => {
           "ig-hide-header",
           !!settings.instagram_hide_header
         );
+        document.body.classList.toggle(
+          "ig-compact-rail",
+          !!settings.instagram_compact_rail
+        );
         ensureRail(api, siteSettings);
       }
       if (settings.instagram_clean_feed && desktop) {
@@ -80,6 +84,12 @@ function ensureRail(api, siteSettings) {
       href: "/search",
       icon: "search",
       label: railLabel("search"),
+    },
+    {
+      key: "explore",
+      href: "/categories",
+      icon: "explore",
+      label: railLabel("explore"),
     },
     {
       key: "create",
@@ -235,6 +245,7 @@ function railLabel(key) {
   const map = {
     home: "首页",
     search: "搜索",
+    explore: "探索",
     create: "创建",
     activity: "动态",
     profile: "我的",

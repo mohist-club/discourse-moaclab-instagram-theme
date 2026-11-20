@@ -263,6 +263,10 @@ body.ig-desktop-shell:not(.admin-interface) {
       mask-image: url($ig-search);
     }
 
+    &--explore::before {
+      mask-image: url($ig-explore);
+    }
+
     &--create::before {
       mask-image: url($ig-create);
     }
@@ -313,4 +317,22 @@ body.ig-desktop-shell:not(.admin-interface)
   .sidebar-section-content
   .sidebar-section-link:has(.sidebar-section-link-prefix .d-icon-house) {
   display: none;
+}
+
+// =========================================================
+// Compact rail: hide the long category / tag sections so the
+// rail shows only Instagram-style core items. Categories are
+// reached via Explore and the Stories tray. Admin / moderation
+// stay (they live in the community section). Gated by
+// body.ig-compact-rail.
+// =========================================================
+body.ig-compact-rail.ig-desktop-shell:not(.admin-interface) {
+  .sidebar-wrapper {
+    .sidebar-section[data-section-name="categories"],
+    .sidebar-section-wrapper[data-section-name="categories"],
+    .sidebar-section[data-section-name="tags"],
+    .sidebar-section-wrapper[data-section-name="tags"] {
+      display: none;
+    }
+  }
 }
