@@ -22,6 +22,7 @@ $ig-love: #ed4956; // like / heart red
   --ig-accent: #{$ig-accent};
   --ig-love: #{$ig-love};
   --ig-pill: #{dark-light-choose(#efefef, #1a1a1a)};
+  --ig-hover: #{dark-light-choose(rgb(0, 0, 0, 0.05), rgb(255, 255, 255, 0.1))};
   --ig-pill-hover: #{dark-light-choose(#e4e4e4, #262626)};
 
   // brand gradient (logo / story ring / optional buttons)

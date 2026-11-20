@@ -59,25 +59,36 @@ function ensureRail(api, siteSettings) {
   }
 
   const user = api.getCurrentUser();
+  const u = user?.username;
   const rail = document.createElement("div");
   rail.id = RAIL_ID;
 
+  // brand wordmark (Instagram logo slot)
   const wordmark = document.createElement("a");
   wordmark.className = "ig-wordmark";
   wordmark.href = "/";
   wordmark.textContent = siteSettings?.title || "Moaclab";
   rail.append(wordmark);
 
+  // primary nav, Instagram order: Home, Explore, Messages, Search,
+  // Notifications, Create, Profile
   const nav = document.createElement("nav");
   nav.className = "ig-rail-nav";
-  nav.setAttribute("aria-label", "Instagram");
+  nav.setAttribute("aria-label", "navigation");
 
   const items = [
+    { key: "home", href: "/", icon: "home", label: railLabel("home") },
     {
-      key: "home",
-      href: "/",
-      icon: "home",
-      label: railLabel("home"),
+      key: "explore",
+      href: "/categories",
+      icon: "explore",
+      label: railLabel("explore"),
+    },
+    {
+      key: "messages",
+      href: u ? `/u/${u}/messages` : "/login",
+      icon: "messages",
+      label: railLabel("messages"),
     },
     {
       key: "search",
@@ -86,10 +97,10 @@ function ensureRail(api, siteSettings) {
       label: railLabel("search"),
     },
     {
-      key: "explore",
-      href: "/categories",
-      icon: "explore",
-      label: railLabel("explore"),
+      key: "activity",
+      href: u ? `/u/${u}/notifications` : "/login",
+      icon: "activity",
+      label: railLabel("activity"),
     },
     {
       key: "create",
@@ -97,55 +108,75 @@ function ensureRail(api, siteSettings) {
       icon: "create",
       label: railLabel("create"),
     },
-  ];
-  if (user) {
-    items.push({
-      key: "activity",
-      href: `/u/${user.username}/notifications`,
-      icon: "activity",
-      label: railLabel("activity"),
-    });
-    items.push({
+    {
       key: "profile",
-      href: `/u/${user.username}/summary`,
-      avatar: user.avatar_template?.replace("{size}", "48"),
+      href: u ? `/u/${u}/summary` : "/login",
+      avatar: user?.avatar_template?.replace("{size}", "48"),
+      icon: "profile",
       label: railLabel("profile"),
-    });
-  }
+    },
+  ];
 
   for (const it of items) {
-    const a = document.createElement("a");
-    a.className = "ig-rail-link";
-    a.href = it.href;
-    a.dataset.key = it.key;
+    nav.append(railLink(it));
+  }
+  rail.append(nav);
 
-    const ico = document.createElement("span");
-    if (it.avatar) {
-      ico.className = "ig-rail-ico ig-rail-ico--avatar";
-      const img = document.createElement("img");
-      img.src = it.avatar;
-      img.alt = "";
-      ico.append(img);
-    } else {
-      ico.className = `ig-rail-ico ig-rail-ico--${it.icon}`;
-    }
+  // bottom group: "More" reveals the native sidebar sections (categories,
+  // admin, moderation, ...) so nothing becomes unreachable.
+  const foot = document.createElement("div");
+  foot.className = "ig-rail-foot";
 
-    const label = document.createElement("span");
-    label.className = "ig-rail-label";
-    label.textContent = it.label;
+  const more = document.createElement("button");
+  more.type = "button";
+  more.className = "ig-rail-link ig-rail-more";
+  more.setAttribute("aria-expanded", "false");
+  more.innerHTML = `<span class="ig-rail-ico ig-rail-ico--menu"></span><span class="ig-rail-label">${railLabel(
+    "more"
+  )}</span>`;
+  more.addEventListener("click", () => {
+    const open = document.body.classList.toggle("ig-more-open");
+    more.setAttribute("aria-expanded", String(open));
+  });
+  foot.append(more);
+  rail.append(foot);
 
-    a.append(ico, label);
-    nav.append(a);
+  sections.prepend(rail);
+}
+
+function railLink(it) {
+  const a = document.createElement("a");
+  a.className = "ig-rail-link";
+  a.href = it.href;
+  a.dataset.key = it.key;
+
+  const ico = document.createElement("span");
+  if (it.avatar) {
+    ico.className = "ig-rail-ico ig-rail-ico--avatar";
+    const img = document.createElement("img");
+    img.src = it.avatar;
+    img.alt = "";
+    ico.append(img);
+  } else {
+    ico.className = `ig-rail-ico ig-rail-ico--${it.icon}`;
   }
 
-  rail.append(nav);
-  sections.prepend(rail);
+  const label = document.createElement("span");
+  label.className = "ig-rail-label";
+  label.textContent = it.label;
+
+  a.append(ico, label);
+  return a;
 }
 
 function syncActive() {
   const path = window.location.pathname;
-  document.querySelectorAll("#ig-rail .ig-rail-link").forEach((a) => {
+  document.querySelectorAll("#ig-rail a.ig-rail-link").forEach((a) => {
     const href = a.getAttribute("href");
+    if (!href || href === "/login") {
+      a.classList.remove("active");
+      return;
+    }
     const active = href === "/" ? path === "/" : path.startsWith(href);
     a.classList.toggle("active", active);
   });
@@ -244,11 +275,13 @@ function storyNode({ href, label, mine, color, avatarUrl, fallback }) {
 function railLabel(key) {
   const map = {
     home: "首页",
-    search: "搜索",
     explore: "探索",
+    messages: "消息",
+    search: "搜索",
+    activity: "通知",
     create: "创建",
-    activity: "动态",
-    profile: "我的",
+    profile: "主页",
+    more: "更多",
     your_story: "你的故事",
   };
   return map[key] || key;

@@ -1,30 +1,40 @@
 // =========================================================
-// Instagram left rail — restyle of the native Discourse
-// sidebar: flat icon+label rows, hover pills, brand wordmark,
-// Instagram line icons. Active only with body.ig-desktop-shell.
+// Instagram left rail — 1:1 with instagram.com desktop nav.
+// A fixed custom nav (#ig-rail) replaces the native sidebar
+// content: logo, Home / Explore / Messages / Search /
+// Notifications / Create / Profile, and a bottom "More" that
+// reveals the native sections (categories, admin, moderation).
+// Active = filled glyph + bold label. Hover = soft grey pill.
+// Only with body.ig-desktop-shell.
 // =========================================================
-
-// Map Discourse d-icon names -> Instagram line-icon assets
-$ig-sidebar-icons: (
-  ("house", "home", "house-chimney"): $ig-home,
-  ("magnifying-glass", "search"): $ig-search,
-  ("compass", "discourse-compass", "globe"): $ig-explore,
-  ("circle-plus", "plus", "square-plus"): $ig-create,
-  ("bell", "far-bell", "heart", "far-heart"): $ig-heart,
-  ("envelope", "far-envelope", "comment", "comments", "far-comment"):
-    $ig-messages,
-  ("bookmark", "far-bookmark"): $ig-bookmark,
-  ("user", "users", "user-group", "circle-user"): $ig-user,
-  ("gear", "wrench", "sliders"): $ig-settings,
-  ("bars", "list", "ellipsis", "ellipsis-vertical"): $ig-menu,
-);
-
 body.ig-desktop-shell:not(.admin-interface) {
-  // Brand wordmark injected at the top of the rail by JS
+  // ---- the rail fills the sidebar as a flex column ----
+  .sidebar-wrapper .sidebar-container,
+  .sidebar-wrapper .sidebar-sections {
+    height: 100%;
+  }
+
+  .sidebar-sections {
+    padding: 8px 12px 12px;
+  }
+
+  #ig-rail {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - 24px);
+  }
+
+  // hide native sidebar sections by default; "More" reveals them
+  .sidebar-sections > .sidebar-section-wrapper,
+  .sidebar-sections > .sidebar-section {
+    display: none;
+  }
+
+  // ---- brand wordmark (Instagram logo slot) ----
   .ig-wordmark {
     display: block;
     max-width: 100%;
-    padding: 18px 12px 14px;
+    padding: 18px 12px 20px;
     margin: 0;
     font-size: 17px;
     font-weight: 700;
@@ -40,197 +50,35 @@ body.ig-desktop-shell:not(.admin-interface) {
     text-overflow: ellipsis;
   }
 
-  :is(.sidebar-wrapper, .sidebar-hamburger-dropdown) {
-    --d-sidebar-row-height: 48px;
-
-    .sidebar-container {
-      border: 0;
-      background: var(--ig-card);
-    }
-
-    .sidebar-sections {
-      padding: 4px 12px 12px;
-    }
-
-    // Flat list — hide section headers/carets for the IG look
-    .sidebar-section-header-wrapper {
-      display: none;
-    }
-
-    .sidebar-section-wrapper,
-    .sidebar-section-content,
-    .sidebar-section-link-wrapper {
-      border: 0;
-      padding: 0;
-      margin: 0;
-      gap: 0;
-    }
-
-    // Instagram nav rows: icon + label, pill hover
-    .sidebar-section-link {
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      width: 100%;
-      height: 48px;
-      min-height: 48px;
-      padding: 12px !important;
-      margin: 2px 0;
-      border: 0;
-      border-radius: 10px;
-      color: var(--ig-ink);
-      background: transparent;
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 20px;
-      text-decoration: none;
-
-      &:hover {
-        background: var(--ig-pill);
-      }
-
-      &.active,
-      &.exact-url-match,
-      &[aria-current="page"] {
-        font-weight: 700;
-        background: transparent;
-      }
-    }
-
-    .sidebar-section-link-content-text {
-      min-width: 0;
-      color: inherit;
-    }
-
-    .sidebar-section-link-prefix {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 24px;
-      width: 24px;
-      height: 24px;
-      margin-right: 16px;
-
-      .d-icon,
-      img {
-        width: 24px;
-        height: 24px;
-        font-size: 24px;
-        object-fit: contain;
-      }
-    }
-
-    // Swap neutral nav icons for Instagram line icons
-    @each $names, $asset in $ig-sidebar-icons {
-      @each $name in $names {
-        .sidebar-section-link-prefix:has(.d-icon-#{$name}) {
-          &::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: var(--ig-ink);
-            mask: url($asset) center / 24px 24px no-repeat;
-            pointer-events: none;
-          }
-
-          .d-icon {
-            visibility: hidden;
-          }
-        }
-      }
-    }
-
-    // active row -> bold icon (Instagram fills the glyph; we bold it)
-    .sidebar-section-link.active .sidebar-section-link-prefix::before,
-    .sidebar-section-link[aria-current="page"]
-      .sidebar-section-link-prefix::before {
-      mask-size: 24px 24px;
-      filter: none;
-    }
-  }
-
-  // Sticky full-height rail with right divider
-  @media (width >= 768px) {
-    &.has-sidebar-page .sidebar-wrapper {
-      box-sizing: border-box;
-      position: sticky;
-      top: 0;
-      height: 100dvh;
-      border-right: 1px solid var(--ig-border);
-      background: var(--ig-card);
-      overscroll-behavior-y: contain;
-
-      .sidebar-container {
-        height: 100%;
-      }
-    }
-  }
-
-  // Tablet: icon-only rail (hide labels + wordmark text)
-  @media (width <= 1263px) and (width >= 768px) {
-    .ig-wordmark {
-      font-size: 0;
-
-      &::before {
-        content: "";
-        display: block;
-        width: 24px;
-        height: 24px;
-        margin: 0 auto;
-        background: var(--ig-gradient);
-        mask: url($ig-create) center / contain no-repeat;
-      }
-    }
-
-    :is(.sidebar-wrapper) {
-      .sidebar-section-link-content-text {
-        display: none;
-      }
-
-      .sidebar-section-link {
-        justify-content: center;
-        padding: 12px 0 !important;
-      }
-
-      .sidebar-section-link-prefix {
-        margin-right: 0;
-      }
-    }
-  }
-}
-
-// =========================================================
-// Injected Instagram action group at the top of the rail
-// (#ig-rail: wordmark + search / create / activity / profile)
-// =========================================================
-body.ig-desktop-shell:not(.admin-interface) {
-  #ig-rail {
-    padding: 0 0 4px;
-  }
-
+  // ---- nav rows ----
   .ig-rail-nav {
     display: flex;
     flex-direction: column;
-    margin-top: 4px;
+    gap: 4px;
   }
 
   .ig-rail-link {
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    gap: 16px;
     width: 100%;
-    height: 48px;
     padding: 12px;
-    margin: 2px 0;
-    border-radius: 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
     color: var(--ig-ink);
-    text-decoration: none;
+    font-family: inherit;
     font-size: 16px;
     line-height: 20px;
+    font-weight: 400;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.1s ease;
 
     &:hover {
-      background: var(--ig-pill);
+      background: var(--ig-hover);
     }
 
     &.active {
@@ -238,12 +86,17 @@ body.ig-desktop-shell:not(.admin-interface) {
     }
   }
 
+  .ig-rail-label {
+    min-width: 0;
+    color: inherit;
+  }
+
+  // ---- icons (outline by default, filled when active) ----
   .ig-rail-ico {
     position: relative;
     flex: 0 0 24px;
     width: 24px;
     height: 24px;
-    margin-right: 16px;
 
     &::before {
       content: "";
@@ -259,20 +112,28 @@ body.ig-desktop-shell:not(.admin-interface) {
       mask-image: url($ig-home);
     }
 
+    &--explore::before {
+      mask-image: url($ig-explore);
+    }
+
+    &--messages::before {
+      mask-image: url($ig-messages);
+    }
+
     &--search::before {
       mask-image: url($ig-search);
     }
 
-    &--explore::before {
-      mask-image: url($ig-explore);
+    &--activity::before {
+      mask-image: url($ig-heart);
     }
 
     &--create::before {
       mask-image: url($ig-create);
     }
 
-    &--activity::before {
-      mask-image: url($ig-heart);
+    &--menu::before {
+      mask-image: url($ig-menu);
     }
 
     &--avatar {
@@ -289,13 +150,117 @@ body.ig-desktop-shell:not(.admin-interface) {
     }
   }
 
-  // bold the glyph on the active injected row
-  .ig-rail-link.active .ig-rail-ico::before {
-    mask-size: 24px 24px;
+  // filled glyphs on the active row
+  .ig-rail-link.active {
+    .ig-rail-ico--home::before {
+      mask-image: url($ig-home-filled);
+    }
+
+    .ig-rail-ico--explore::before {
+      mask-image: url($ig-explore-filled);
+    }
+
+    .ig-rail-ico--messages::before {
+      mask-image: url($ig-messages-filled);
+    }
+
+    .ig-rail-ico--search::before {
+      mask-image: url($ig-search-filled);
+    }
+
+    .ig-rail-ico--activity::before {
+      mask-image: url($ig-heart-filled);
+    }
+
+    .ig-rail-ico--create::before {
+      mask-image: url($ig-create-filled);
+    }
+
+    .ig-rail-ico--avatar img {
+      box-shadow: 0 0 0 2px var(--ig-ink);
+    }
   }
 
-  // Tablet icon-only rail hides injected labels too
-  @media (width <= 1263px) and (width >= 768px) {
+  // ---- bottom group: More ----
+  .ig-rail-foot {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  // ---- revealed native sections (after clicking More) ----
+  &.ig-more-open .sidebar-sections > .sidebar-section-wrapper,
+  &.ig-more-open .sidebar-sections > .sidebar-section {
+    display: block;
+  }
+
+  .sidebar-section-header-wrapper {
+    display: none;
+  }
+
+  .sidebar-section-link {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--ig-ink);
+    font-size: 14px;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--ig-hover);
+    }
+  }
+
+  .sidebar-section-link-prefix {
+    margin-right: 14px;
+
+    .d-icon,
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// =========================================================
+// Sticky full-height rail with a right divider (desktop)
+// =========================================================
+@media (width >= 768px) {
+  body.ig-desktop-shell:not(.admin-interface).has-sidebar-page
+    .sidebar-wrapper {
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    border-right: 1px solid var(--ig-border);
+    background: var(--ig-card);
+    overscroll-behavior-y: contain;
+  }
+}
+
+// =========================================================
+// Collapsed icon-only rail (Instagram's 768–1263px state)
+// =========================================================
+@media (width <= 1263px) and (width >= 768px) {
+  body.ig-desktop-shell:not(.admin-interface) {
+    .ig-wordmark {
+      font-size: 0;
+      padding: 18px 0 20px;
+      text-align: center;
+
+      &::before {
+        content: "";
+        display: block;
+        width: 24px;
+        height: 24px;
+        margin: 0 auto;
+        background: var(--ig-gradient);
+        mask: url($ig-create) center / contain no-repeat;
+      }
+    }
+
     .ig-rail-label {
       display: none;
     }
@@ -306,43 +271,7 @@ body.ig-desktop-shell:not(.admin-interface) {
     }
 
     .ig-rail-ico {
-      margin-right: 0;
-    }
-  }
-}
-
-// Hide the native sidebar "Home" link — Instagram Home now lives in #ig-rail
-body.ig-desktop-shell:not(.admin-interface)
-  .sidebar-wrapper
-  .sidebar-section-content
-  .sidebar-section-link:has(.sidebar-section-link-prefix .d-icon-house) {
-  display: none;
-}
-
-// =========================================================
-// Compact rail: hide the long category / tag sections so the
-// rail shows only Instagram-style core items. Categories are
-// reached via Explore and the Stories tray. Admin / moderation
-// stay (they live in the community section). Gated by
-// body.ig-compact-rail.
-// =========================================================
-body.ig-compact-rail.ig-desktop-shell:not(.admin-interface) {
-  .sidebar-wrapper {
-    // whole default sections, when the version exposes a section name
-    .sidebar-section[data-section-name="categories"],
-    .sidebar-section-wrapper[data-section-name="categories"],
-    .sidebar-section[data-section-name="tags"],
-    .sidebar-section-wrapper[data-section-name="tags"],
-    // robust fallback: hide the category / tag links by their href
-    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href^="/c/"]),
-    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href^="/tag/"]),
-    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href="/categories"]),
-    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href="/tags"]),
-    a.sidebar-section-link[href^="/c/"],
-    a.sidebar-section-link[href^="/tag/"],
-    a.sidebar-section-link[href="/categories"],
-    a.sidebar-section-link[href="/tags"] {
-      display: none;
+      margin: 0;
     }
   }
 }
