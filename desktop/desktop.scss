@@ -1,8 +1,11 @@
 // Instagram — desktop tweaks
-.ig-card-feed #main-outlet {
-  margin: 0 auto;
-}
+// Admin pages stay Discourse-native: nothing here applies there.
+body:not(.admin-interface) {
+  &.ig-card-feed #main-outlet {
+    margin: 0 auto;
+  }
 
-.d-header-icons .d-icon {
-  font-size: 1.15em;
+  .d-header-icons .d-icon {
+    font-size: 1.15em;
+  }
 }

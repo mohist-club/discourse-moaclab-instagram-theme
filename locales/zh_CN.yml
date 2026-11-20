@@ -23,7 +23,6 @@ zh_CN:
       instagram_post_gallery: "信息流卡片把首帖所有图片做成多图轮播。"
       instagram_qa_category: "右栏页脚「问答与求助」链接的类别 ID，默认 4 即 /c/faq/4。"
       instagram_studio_profile: "工作室页面顶部显示 Instagram 主页样式。"
-      instagram_admin_style: "管理后台使用主题配色与形状，布局和操作保持原生。"
       instagram_explore_search: "探索页使用 Instagram 搜索交互。"
       instagram_categories_page: "/categories 显示为 Instagram 主页卡片网格。"
   ig:

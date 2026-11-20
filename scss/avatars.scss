@@ -1,27 +1,30 @@
 // Circular avatars + Instagram story ring on the topic author.
-.ig-round-avatars {
-  img.avatar {
-    border-radius: 50%;
-  }
-
-  .topic-avatar img.avatar,
-  .topic-list .posters img.avatar {
-    border-radius: 50%;
-  }
-
-  // story-ring on the first post's author avatar
-  .topic-post:first-of-type .topic-avatar {
-    .avatar {
-      padding: 2px;
-      background: var(--ig-gradient);
-      box-sizing: content-box;
+// Admin pages stay Discourse-native: nothing here applies there.
+body:not(.admin-interface) {
+  &.ig-round-avatars {
+    img.avatar {
       border-radius: 50%;
     }
 
-    .avatar img,
-    img.avatar {
-      border: 2px solid var(--ig-card);
+    .topic-avatar img.avatar,
+    .topic-list .posters img.avatar {
       border-radius: 50%;
+    }
+
+    // story-ring on the first post's author avatar
+    .topic-post:first-of-type .topic-avatar {
+      .avatar {
+        padding: 2px;
+        background: var(--ig-gradient);
+        box-sizing: content-box;
+        border-radius: 50%;
+      }
+
+      .avatar img,
+      img.avatar {
+        border: 2px solid var(--ig-card);
+        border-radius: 50%;
+      }
     }
   }
 }

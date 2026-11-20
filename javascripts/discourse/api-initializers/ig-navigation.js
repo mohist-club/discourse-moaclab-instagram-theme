@@ -24,10 +24,19 @@ export default apiInitializer((api) => {
       const site = api.container.lookup("service:site");
       const desktop = !site?.mobileView;
 
-      // admin keeps Discourse's own sidebar, header and navigation
-      const admin = isAdminPage();
-      if (admin) {
+      // admin pages stay Discourse-native: none of the theme's shell
+      if (isAdminPage()) {
         document.getElementById(RAIL_ID)?.remove();
+        document.querySelector(".ig-stories")?.remove();
+        document.querySelector(".ig-right")?.remove();
+        document.body.classList.remove(
+          "ig-desktop-shell",
+          "ig-hide-header",
+          "ig-clean-feed",
+          "ig-rightcol",
+          "ig-explore"
+        );
+        return;
       }
 
       if (settings.instagram_desktop_shell && desktop) {
@@ -36,9 +45,7 @@ export default apiInitializer((api) => {
           "ig-hide-header",
           !!settings.instagram_hide_header
         );
-        if (!admin) {
-          ensureRail(api, siteSettings);
-        }
+        ensureRail(api, siteSettings);
       }
       // Explore: the configured category (and its subcategories) as a grid
       const explore = isExplorePage(site);

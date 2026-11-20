@@ -11,10 +11,10 @@
 // =========================================================
 
 // Discovery pages: one 630px feed column, posts centred in it
-body.navigation-topics,
-body.navigation-categories,
-body[class*="navigation-"]:not([class*="archetype-"]),
-body.tags-page {
+body.navigation-topics:not(.admin-interface),
+body.navigation-categories:not(.admin-interface),
+body[class*="navigation-"]:not([class*="archetype-"], .admin-interface),
+body.tags-page:not(.admin-interface) {
   #main-outlet {
     box-sizing: border-box;
     width: 100%;

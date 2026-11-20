@@ -4,7 +4,9 @@
 // --ig-accent custom prop, both set in
 // javascripts/discourse/api-initializers/ig-theme.js
 // =========================================================
-:root {
+// Admin pages stay Discourse-native: radii, background and font apply
+// everywhere else only.
+body:not(.admin-interface) {
   --d-button-border-radius: 8px;
   --d-nav-pill-border-radius: 20px;
   --d-input-border-radius: 8px;
@@ -25,15 +27,14 @@
 @import "auth";
 @import "explore";
 @import "studio";
-@import "admin";
 @import "search";
 @import "categories";
 
-html {
+html:not(:has(> body.admin-interface)) {
   background: var(--ig-page);
 }
 
-body {
+body:not(.admin-interface) {
   font-family: var(--ig-font);
   letter-spacing: -0.1px;
   color: var(--ig-ink);

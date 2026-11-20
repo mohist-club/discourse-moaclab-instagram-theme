@@ -1,71 +1,74 @@
 // Instagram — mobile tweaks + bottom navigation bar
-#main-outlet-wrapper {
-  gap: 0 !important;
-}
-
-// full-bleed cards on phones, like the Instagram app
-// Instagram's app: media runs edge to edge, no side borders or radius
-.topic-list .ig-post {
-  max-width: none;
-}
-
-.ig-post__media,
-.ig-post__text {
-  border-inline: 0;
-  border-radius: 0;
-}
-
-.ig-card-feed .post-stream .topic-post .topic-body {
-  border-radius: 0;
-  border-inline: 0;
-}
-
-// =========================================================
-// Bottom navigation (injected as .ig-bottom-nav by the
-// api-initializer when the mobile_bottom_nav setting is on)
-// =========================================================
-.ig-has-bottom-nav {
-  #main-outlet-wrapper,
-  #main-outlet {
-    padding-bottom: 60px;
+// Admin pages stay Discourse-native: nothing here applies there.
+body:not(.admin-interface) {
+  #main-outlet-wrapper {
+    gap: 0 !important;
   }
-}
 
-.ig-bottom-nav {
-  position: fixed;
-  inset: auto 0 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  height: 50px;
-  background: var(--header_background);
-  border-top: 1px solid var(--ig-border);
-  padding-bottom: env(safe-area-inset-bottom);
+  // full-bleed cards on phones, like the Instagram app
+  // Instagram's app: media runs edge to edge, no side borders or radius
+  .topic-list .ig-post {
+    max-width: none;
+  }
 
-  a {
-    flex: 1;
+  .ig-post__media,
+  .ig-post__text {
+    border-inline: 0;
+    border-radius: 0;
+  }
+
+  &.ig-card-feed .post-stream .topic-post .topic-body {
+    border-radius: 0;
+    border-inline: 0;
+  }
+
+  // =========================================================
+  // Bottom navigation (injected as .ig-bottom-nav by the
+  // api-initializer when the mobile_bottom_nav setting is on)
+  // =========================================================
+  &.ig-has-bottom-nav {
+    #main-outlet-wrapper,
+    #main-outlet {
+      padding-bottom: 60px;
+    }
+  }
+
+  .ig-bottom-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 1000;
     display: flex;
+    justify-content: space-around;
     align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--ig-ink);
-    text-decoration: none;
+    height: 50px;
+    background: var(--header_background);
+    border-top: 1px solid var(--ig-border);
+    padding-bottom: env(safe-area-inset-bottom);
 
-    svg {
-      width: 24px;
-      height: 24px;
+    a {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--ig-ink);
+      text-decoration: none;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      &.active {
+        color: var(--ig-accent);
+      }
     }
 
-    &.active {
-      color: var(--ig-accent);
+    .ig-avatar-mini img {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--ig-border);
     }
-  }
-
-  .ig-avatar-mini img {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1px solid var(--ig-border);
   }
 }

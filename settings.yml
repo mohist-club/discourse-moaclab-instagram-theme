@@ -129,11 +129,6 @@ instagram_studio_profile:
     en: "Studio pages (subcategories of the categories in instagram_suggested_categories and instagram_explore_category) open with an Instagram profile header: logo in a story ring, name, topic / reply / active-member counts, description, about link, recent members, Follow (category notifications), New post (composer in the studio), Share, and Posts / Top tabs."
     zh_CN: "工作室页面（instagram_suggested_categories 和 instagram_explore_category 中类别下的二级类别）顶部显示 Instagram 主页样式：带彩环的 Logo、名称、帖子 / 回复 / 活跃成员数、简介、关于链接、近期成员，以及「关注」（类别通知）、「发帖」（在该工作室发帖）、分享按钮和「帖子 / 热门」标签页。"
 
-instagram_admin_style:
-  default: true
-  description:
-    en: "Admin pages take the theme's colours and shapes (white sidebar, round filter, grey headings, rounded rows and cards, black switches, blue / grey buttons). Discourse's own admin layout, header, sidebar and controls are unchanged; the left rail is not shown in admin."
-    zh_CN: "管理后台使用主题的配色与形状（白色侧边栏、圆形搜索框、灰色分组标题、圆角行与卡片、黑色开关、蓝 / 灰按钮）。后台的布局、顶栏、侧边栏和各项操作仍是 Discourse 原生的；后台不显示左栏导航。"
 
 instagram_explore_search:
   default: true

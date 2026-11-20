@@ -9,7 +9,8 @@ export default apiInitializer((api) => {
   const accent = (settings.accent_color || "#0095f6").trim();
   document.documentElement.style.setProperty("--ig-accent", accent);
 
-  // 2. toggle feature classes from boolean settings (viewport-independent)
+  // 2. feature classes from boolean settings — never on admin pages, which
+  //    stay Discourse-native (re-checked on every page change)
   const flags = {
     "ig-gradient-logo": settings.brand_gradient_logo,
     "ig-gradient-buttons": settings.brand_gradient_buttons,
@@ -17,20 +18,31 @@ export default apiInitializer((api) => {
     "ig-card-feed": settings.card_feed,
     "ig-topic-style": settings.instagram_topic_style,
     "ig-auth-modal": settings.instagram_auth_modal,
-    "ig-admin-style": settings.instagram_admin_style,
   };
-  for (const [cls, on] of Object.entries(flags)) {
-    body.classList.toggle(cls, !!on);
-  }
+  const applyFlags = () => {
+    const admin = isAdminPage();
+    for (const [cls, on] of Object.entries(flags)) {
+      body.classList.toggle(cls, !!on && !admin);
+    }
+  };
+  applyFlags();
+  api.onPageChange(applyFlags);
 
   // the page before log-in / sign-up, for their close button and Esc
   api.onPageChange((url) => rememberPage(url));
 
   // 3. mobile bottom navigation — read mobileView at render time (not during
   //    static initialization) to avoid the viewport-initialization deprecation.
+  //    Hidden on admin pages.
   let built = false;
   api.onPageChange(() => {
-    if (built || !settings.mobile_bottom_nav) {
+    const admin = isAdminPage();
+    const nav = document.querySelector(".ig-bottom-nav");
+    if (nav) {
+      nav.hidden = admin;
+    }
+    body.classList.toggle("ig-has-bottom-nav", built && !admin);
+    if (built || admin || !settings.mobile_bottom_nav) {
       return;
     }
     const site = api.container.lookup("service:site");
@@ -41,6 +53,13 @@ export default apiInitializer((api) => {
     }
   });
 });
+
+function isAdminPage() {
+  return (
+    window.location.pathname.startsWith("/admin") ||
+    document.body.classList.contains("admin-interface")
+  );
+}
 
 function svg(paths) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;

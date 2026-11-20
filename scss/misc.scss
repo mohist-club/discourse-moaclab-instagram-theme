@@ -1,22 +1,25 @@
 // Odds and ends: category badges, links, composer.
-a:not(.btn, .badge-category):hover {
-  color: var(--ig-accent);
-}
+// Admin pages stay Discourse-native: nothing here applies there.
+body:not(.admin-interface) {
+  a:not(.btn, .badge-category):hover {
+    color: var(--ig-accent);
+  }
 
-.badge-category__wrapper .badge-category {
-  border-radius: 20px;
-  font-weight: 600;
-  padding: 2px 10px;
-}
+  .badge-category__wrapper .badge-category {
+    border-radius: 20px;
+    font-weight: 600;
+    padding: 2px 10px;
+  }
 
-.badge-category__wrapper {
-  border-left: 0;
-}
+  .badge-category__wrapper {
+    border-left: 0;
+  }
 
-#reply-control {
-  border-top: 1px solid var(--ig-border);
+  #reply-control {
+    border-top: 1px solid var(--ig-border);
 
-  .btn-primary {
-    border-radius: var(--ig-radius);
+    .btn-primary {
+      border-radius: var(--ig-radius);
+    }
   }
 }
