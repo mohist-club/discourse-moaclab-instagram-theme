@@ -29,3 +29,13 @@ export function countPage() {
 export function canGoBackInApp() {
   return pagesShown > 1;
 }
+
+// The topic of the current page, from the router (the "topic" route or one
+// of its parents), or null.
+export function currentTopic(router) {
+  let route = router?.currentRoute;
+  while (route && route.name !== "topic") {
+    route = route.parent;
+  }
+  return route?.attributes || null;
+}

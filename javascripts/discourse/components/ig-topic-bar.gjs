@@ -4,7 +4,7 @@ import { action } from "@ember/object";
 import { service } from "@ember/service";
 import DiscourseURL from "discourse/lib/url";
 import { i18n } from "discourse-i18n";
-import { canGoBackInApp } from "../lib/ig-last-page";
+import { canGoBackInApp, currentTopic } from "../lib/ig-last-page";
 
 // Instagram's top bar on phones for a post or a profile: a back arrow and
 // "帖子" (topic pages) or the username (profile pages). Rendered in the
@@ -13,6 +13,7 @@ import { canGoBackInApp } from "../lib/ig-last-page";
 export default class IgTopicBar extends Component {
   @service router;
   @service composer;
+  @service currentUser;
 
   get route() {
     return this.router.currentRouteName || "";
@@ -31,7 +32,23 @@ export default class IgTopicBar extends Component {
     );
   }
 
+  // a private message: the other people in the conversation
+  get messagePeople() {
+    const topic = currentTopic(this.router);
+    if (topic?.archetype !== "private_message") {
+      return null;
+    }
+    const me = this.currentUser?.username;
+    const names = (topic.details?.allowed_users || [])
+      .map((u) => u.username)
+      .filter((name) => name && name !== me);
+    return names.length ? names.join("、") : null;
+  }
+
   get title() {
+    if (this.messagePeople) {
+      return this.messagePeople;
+    }
     if (this.isMessages) {
       return i18n(themePrefix("ig.rail.messages"));
     }

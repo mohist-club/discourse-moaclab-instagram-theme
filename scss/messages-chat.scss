@@ -1,0 +1,273 @@
+// =========================================================
+// Private message conversations on phones (< 768px) as Instagram's
+// chat (instagram_mobile_layout). Discourse's own topic view —
+// posts, post menus, reply flow — restyled, nothing replaced:
+//   top bar: ‹ back + the other people's names (ig-topic-bar.gjs)
+//   subject: small and centred under the bar
+//   their messages: 28px avatar at the bubble's foot, grey bubble left
+//   your messages (.current-user-post): blue bubble right, no avatar
+//   bubble: 22px radius, 8px 14px padding, at most 78% wide; the time
+//     and Discourse's post actions small and grey underneath
+//   bottom: "发消息…" bar (ig-comment-bar.gjs); no tab bar here
+// Imported after mobile-topic.scss, which it overrides for PMs.
+// =========================================================
+
+@media (width < 768px) {
+  body.ig-mobile-shell.archetype-private_message:not(.admin-interface) {
+    // ---- subject, small and centred ----
+    #topic-title {
+      padding: 8px 16px 12px;
+      text-align: center;
+
+      .fancy-title,
+      h1 {
+        color: var(--ig-muted);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 18px;
+      }
+    }
+
+    .topic-map {
+      display: none;
+    }
+
+    .topic-post {
+      margin: 0;
+      padding: 0;
+
+      article.boxed {
+        border: 0;
+      }
+    }
+
+    .topic-post + .topic-post .topic-body {
+      border-top: 0;
+    }
+
+    .topic-post .topic-avatar .post-avatar-user-info {
+      display: none;
+    }
+
+    // ---- one message per row ----
+    .topic-post .post__row,
+    .topic-post article > .row,
+    article#post_1 .post__row,
+    article#post_1 > .row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 2px 12px;
+    }
+
+    .topic-post .topic-avatar {
+      flex: 0 0 28px;
+      width: 28px;
+      margin-bottom: 26px; // the bubble's foot, above the actions + time row
+
+      img.avatar {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        background: none;
+      }
+    }
+
+    // bubble on its own line, then one small row: actions · time
+    .topic-post .topic-body {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      justify-content: flex-start;
+      min-width: 0;
+      max-width: 78%;
+
+      &::after {
+        content: "";
+        order: 1;
+        flex-basis: 100%;
+      }
+    }
+
+    .topic-post .topic-body > * {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    // time after the actions; names are not shown in a conversation
+    .topic-post .topic-meta-data {
+      order: 3;
+      min-height: 0;
+      margin: 0 4px;
+
+      .names {
+        display: none;
+      }
+
+      .post-infos {
+        margin: 0;
+        font-size: 11px;
+      }
+    }
+
+    .topic-post .regular.contents,
+    .topic-post .post__regular {
+      display: contents;
+    }
+
+    // ---- the bubble ----
+    .topic-post .cooked,
+    article#post_1 .cooked {
+      order: 0;
+      box-sizing: border-box;
+      max-width: 100%;
+      margin: 0;
+      padding: 8px 14px;
+      border-radius: 22px;
+      background: var(--ig-btn-secondary);
+      color: var(--ig-ink);
+      font-size: 15px;
+      line-height: 20px;
+      overflow-wrap: anywhere;
+
+      p {
+        margin: 0 0 6px;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+
+      // pictures sit inside the bubble, rounded, never full bleed
+      .lightbox-wrapper,
+      > p > img:not(.emoji, .avatar, .site-icon),
+      > img:not(.emoji, .avatar, .site-icon) {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        margin: 4px 0;
+        border-radius: 14px;
+
+        img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 14px;
+        }
+      }
+    }
+
+    // ---- your messages: right, blue ----
+    .topic-post.current-user-post {
+      .post__row,
+      article > .row {
+        flex-direction: row-reverse;
+      }
+
+      .topic-avatar {
+        display: none;
+      }
+
+      .topic-body {
+        justify-content: flex-end;
+      }
+
+      .cooked {
+        background: var(--ig-btn-primary);
+        color: #fff;
+
+        a,
+        a:visited {
+          color: #fff;
+          text-decoration: underline;
+        }
+
+        aside.quote,
+        blockquote {
+          border-left-color: rgb(255 255 255 / 50%);
+          background: rgb(255 255 255 / 15%);
+          color: #fff;
+        }
+      }
+
+      .post-menu-area .actions {
+        justify-content: flex-end;
+      }
+    }
+
+    // ---- Discourse's actions: a small grey row under each bubble ----
+    .topic-post .post-menu-area,
+    article#post_1 .post-controls {
+      order: 2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .topic-post .post-controls .actions {
+      display: flex;
+      align-items: center;
+      gap: 0;
+
+      .double-button {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        align-items: center;
+      }
+    }
+
+    .topic-post .post-controls .actions .btn,
+    .topic-post .post-controls .actions .double-button .btn {
+      min-height: 26px;
+      padding: 2px 6px;
+      color: var(--ig-muted);
+      font-size: 11px;
+    }
+
+    .topic-post .post-controls .d-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+    }
+
+    .topic-post .post-controls .actions .post-action-menu__bookmark {
+      margin-left: 0;
+    }
+
+    // ---- small actions (invited, archived …) centred ----
+    .small-action {
+      justify-content: center;
+      padding: 8px 16px;
+      border: 0;
+      color: var(--ig-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    // ---- bottom: the message bar at the very bottom, no tab bar ----
+    .ig-bottom-nav {
+      display: none;
+    }
+
+    .ig-comment-bar {
+      bottom: 0;
+      height: calc(56px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .ig-comment-bar__field {
+      padding: 8px 14px;
+      border: 1px solid var(--ig-border);
+      border-radius: 22px;
+    }
+
+    #main-outlet-wrapper,
+    #main-outlet {
+      padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+
+    #topic-progress-wrapper,
+    #topic-progress-wrapper.docked {
+      bottom: calc(68px + env(safe-area-inset-bottom));
+    }
+  }
+}

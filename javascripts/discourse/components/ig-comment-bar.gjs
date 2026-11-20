@@ -3,6 +3,7 @@ import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { i18n } from "discourse-i18n";
+import { currentTopic } from "../lib/ig-last-page";
 
 // Instagram's "Add a comment…" bar on phones, fixed above the tab bar on
 // topic pages. Tapping it presses Discourse's own reply button (log-in for
@@ -22,12 +23,21 @@ export default class IgCommentBar extends Component {
     return this.currentUser?.avatar_template?.replace("{size}", "64");
   }
 
+  get isMessage() {
+    return currentTopic(this.router)?.archetype === "private_message";
+  }
+
+  // a conversation reads "Message…", a post "Add a comment…"
   get placeholder() {
-    return i18n(themePrefix("ig.topic.add_comment"));
+    return i18n(
+      themePrefix(this.isMessage ? "ig.topic.message" : "ig.topic.add_comment")
+    );
   }
 
   get postLabel() {
-    return i18n(themePrefix("ig.topic.post"));
+    return i18n(
+      themePrefix(this.isMessage ? "ig.topic.send" : "ig.topic.post")
+    );
   }
 
   @action

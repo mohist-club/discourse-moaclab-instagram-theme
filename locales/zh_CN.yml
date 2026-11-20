@@ -35,6 +35,8 @@ zh_CN:
       all_topics: "查看全部帖子"
       no_topics: "还没有帖子"
     topic:
+      message: "发消息…"
+      send: "发送"
       title: "帖子"
       back: "返回"
       add_comment: "添加评论…"

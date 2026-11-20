@@ -35,6 +35,8 @@ en:
       all_topics: "See all posts"
       no_topics: "No posts yet"
     topic:
+      message: "Message…"
+      send: "Send"
       title: "Post"
       back: "Back"
       add_comment: "Add a comment…"
