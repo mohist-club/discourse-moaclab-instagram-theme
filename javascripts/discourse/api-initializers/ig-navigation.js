@@ -62,25 +62,42 @@ function ensureRail(api, siteSettings) {
   const rail = document.createElement("div");
   rail.id = RAIL_ID;
 
-  // logo slot: Instagram shows only a glyph here. Use the site's small logo
-  // (what Discourse's own header uses), falling back to the site title.
+  // Logo row: collapsed it shows the small logo at nav-icon size; expanded
+  // it crossfades to the full logo (its text part) — or, when the site has
+  // no separate full logo, shows the site title as the row's label.
   const logo = document.createElement("a");
-  logo.className = "ig-logo";
   logo.href = "/";
-  const logoUrl = siteSettings?.site_logo_small_url;
   const title = siteSettings?.title || "Moaclab";
+  const smallUrl = siteSettings?.site_logo_small_url;
+  const fullUrl = siteSettings?.site_logo_url;
+  const useFull = !!fullUrl && fullUrl !== smallUrl;
+  logo.className = `ig-logo ${useFull ? "ig-logo--full" : "ig-logo--text"}`;
   logo.setAttribute("aria-label", title);
-  if (logoUrl) {
+
+  const glyph = document.createElement("span");
+  glyph.className = "ig-logo-glyph";
+  if (smallUrl || fullUrl) {
     const img = document.createElement("img");
-    img.src = logoUrl;
-    img.alt = title;
-    logo.append(img);
+    img.src = smallUrl || fullUrl;
+    img.alt = "";
+    glyph.append(img);
   } else {
-    const text = document.createElement("span");
-    text.className = "ig-logo-text";
-    text.textContent = title;
-    logo.append(text);
+    glyph.classList.add("ig-logo-glyph--letter");
+    glyph.textContent = title.trim().charAt(0).toUpperCase();
   }
+  logo.append(glyph);
+
+  const word = document.createElement("span");
+  word.className = "ig-logo-word";
+  if (useFull) {
+    const img = document.createElement("img");
+    img.src = fullUrl;
+    img.alt = "";
+    word.append(img);
+  } else {
+    word.textContent = title;
+  }
+  logo.append(word);
   rail.append(logo);
 
   // primary nav, Instagram order: Home, Explore (Reels slot), Messages,
@@ -211,7 +228,7 @@ function accountGroups(user) {
   return [
     [
       { href: "/my/preferences", icon: "settings", label: "设置" },
-      { href: "/my/activity", icon: "activity", label: "你的动态" },
+      { href: "/my/activity", icon: "history", label: "你的动态" },
       { href: "/my/activity/bookmarks", icon: "bookmark", label: "已收藏" },
     ],
     [

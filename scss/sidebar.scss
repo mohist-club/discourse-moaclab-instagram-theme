@@ -39,39 +39,90 @@ body.ig-desktop-shell:not(.admin-interface) {
     padding: 8px 0 15px;
   }
 
-  // Native sections stay in the DOM (the More menu reads their links) but
-  // are never shown; the native footer (keyboard shortcuts + fade) goes too.
-  .sidebar-sections > .sidebar-section-wrapper,
-  .sidebar-sections > .sidebar-section,
+  // Everything Discourse renders in the sidebar (community, custom sections
+  // such as 服务, categories, tags — however they are wrapped) stays in the
+  // DOM for the 社区与工具 menu but is never shown; only #ig-rail is visible.
+  .sidebar-wrapper .sidebar-sections > :not(#ig-rail),
   .sidebar-wrapper .sidebar-footer-wrapper {
     display: none;
   }
 
-  // ---- logo glyph (top), centred on the 72px column ----
+  // ---- logo row: same column and size as the nav icons ----
   .ig-logo {
+    position: relative;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
+    gap: 16px;
     height: 48px;
     margin-top: 6px;
-    padding: 0 13px;
+    padding: 0 12px 0 13px;
+    color: var(--ig-ink);
     text-decoration: none;
+    white-space: nowrap;
 
-    img {
-      display: block;
-      flex: 0 0 24px;
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
+    &:hover,
+    &:focus {
+      color: var(--ig-ink);
+      text-decoration: none;
     }
   }
 
-  .ig-logo-text {
-    max-width: 24px;
+  // 24px slot like the icons; the logo itself is drawn at 28px because
+  // logo files carry their own padding, so it reads as the same size
+  .ig-logo-glyph {
+    display: flex;
+    flex: 0 0 24px;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    transition: opacity 0.15s ease;
+
+    img {
+      display: block;
+      flex: 0 0 28px;
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    &--letter {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+  }
+
+  .ig-logo-word {
+    min-width: 0;
     overflow: hidden;
-    color: var(--ig-ink);
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    white-space: nowrap;
+    letter-spacing: -0.2px;
+    text-overflow: ellipsis;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  // full logo (icon + wordmark) sits exactly over the small logo
+  .ig-logo--full .ig-logo-word {
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    transform: translateY(-50%);
+
+    img {
+      display: block;
+      width: auto;
+      max-width: 190px;
+      height: 28px;
+      object-fit: contain;
+      object-position: left center;
+    }
   }
 
   // ---- primary nav: vertically centred between logo and More ----
@@ -149,7 +200,7 @@ body.ig-desktop-shell:not(.admin-interface) {
       background: var(--ig-ink);
       mask-position: center;
       mask-repeat: no-repeat;
-      mask-size: 27px 27px;
+      mask-size: 24px 24px;
     }
 
     &--home::before {
@@ -186,6 +237,10 @@ body.ig-desktop-shell:not(.admin-interface) {
 
     &--bookmark::before {
       mask-image: url($ig-bookmark);
+    }
+
+    &--history::before {
+      mask-image: url($ig-activity);
     }
 
     &--menu::before {
@@ -297,7 +352,7 @@ body.ig-desktop-shell:not(.admin-interface) {
     height: 20px;
 
     &::before {
-      mask-size: 22px 22px;
+      mask-size: 20px 20px;
     }
   }
 
@@ -365,8 +420,13 @@ body.ig-desktop-shell:not(.admin-interface) {
         padding-left: 2px;
       }
 
-      .ig-rail-label {
+      .ig-rail-label,
+      .ig-logo-word {
         opacity: 1;
+      }
+
+      .ig-logo--full .ig-logo-glyph {
+        opacity: 0;
       }
     }
   }

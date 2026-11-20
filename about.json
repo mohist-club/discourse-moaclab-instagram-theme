@@ -24,10 +24,11 @@
     "ig-heart-filled": "assets/ig-heart-filled.svg",
     "ig-search-filled": "assets/ig-search-filled.svg",
     "ig-create-filled": "assets/ig-create-filled.svg",
-    "ig-apps": "assets/ig-apps.svg"
+    "ig-apps": "assets/ig-apps.svg",
+    "ig-activity": "assets/ig-activity.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.4.0",
+  "theme_version": "1.5.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
     "topic_thumbnail_sizes": [
