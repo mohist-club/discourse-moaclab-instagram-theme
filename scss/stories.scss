@@ -165,3 +165,15 @@
     display: none;
   }
 }
+
+// Seen: Instagram swaps the gradient for a thin grey ring (avatar keeps size)
+.ig-story.is-seen {
+  .ig-story__ring {
+    padding: 1.5px;
+    background: var(--ig-border-strong);
+  }
+
+  .ig-story__avatar {
+    border-width: 4px;
+  }
+}

@@ -162,3 +162,17 @@
   margin: 18px 0 0;
   text-transform: uppercase;
 }
+
+// studios without a logo: first letter on the category colour
+.ig-right__letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}

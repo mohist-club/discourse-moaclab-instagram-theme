@@ -32,7 +32,7 @@ export default apiInitializer((api) => {
         document.body.classList.add("ig-clean-feed");
       }
       if (settings.instagram_stories) {
-        ensureStories(api, site);
+        ensureStories(api);
       }
       if (settings.instagram_right_sidebar && desktop) {
         document.body.classList.add("ig-rightcol");
@@ -385,15 +385,21 @@ function isDiscovery() {
   return !!onList && !inTopic;
 }
 
-function ensureStories(api, site) {
+// ---- Stories: people who posted most recently (Instagram's tray) ----
+// Source: Discourse's latest-posts endpoint (public posts only). A ring opens
+// that person's latest post; opened rings turn grey like Instagram's "seen",
+// remembered only in this browser.
+const STORY_TTL = 2 * 60 * 1000;
+const STORY_MAX = 20;
+const SEEN_KEY = "ig-stories-seen";
+let storyCache = null;
+
+function ensureStories(api) {
   const existing = document.querySelector(".ig-stories");
+  const list = isDiscovery()
+    ? document.querySelector("#main-outlet .topic-list")
+    : null;
 
-  if (!isDiscovery()) {
-    existing?.remove();
-    return;
-  }
-
-  const list = document.querySelector("#main-outlet .topic-list");
   if (!list) {
     existing?.remove();
     return;
@@ -403,31 +409,12 @@ function ensureStories(api, site) {
   }
   existing?.remove();
 
-  // Instagram's tray shows the accounts you follow; ours shows top-level
-  // categories (their logo when set, else a letter on the category colour).
-  const categories = (site?.categories || []).filter(
-    (c) => !c.parent_category_id
-  );
-  if (!categories.length) {
-    return;
-  }
-
   const tray = document.createElement("section");
   tray.className = "ig-stories";
   tray.setAttribute("aria-label", t("stories.label"));
 
   const track = document.createElement("div");
   track.className = "ig-stories__track";
-  for (const c of categories) {
-    track.append(
-      storyNode({
-        href: `/c/${c.slug}/${c.id}`,
-        label: c.name,
-        color: c.color,
-        imageUrl: c.uploaded_logo?.url,
-      })
-    );
-  }
   tray.append(track);
 
   const prev = storyNav("prev", -1, track);
@@ -440,9 +427,85 @@ function ensureStories(api, site) {
     next.hidden = track.scrollLeft >= max - 1;
   };
   track.addEventListener("scroll", syncNav, { passive: true });
+  prev.hidden = next.hidden = true;
 
   list.parentElement.insertBefore(tray, list);
-  syncNav();
+
+  loadStoryItems(api).then((items) => {
+    if (!tray.isConnected) {
+      return;
+    }
+    if (!items.length) {
+      tray.remove();
+      return;
+    }
+    const seen = readSeen();
+    // unseen first (newest first), then seen — as Instagram orders it
+    const ordered = [
+      ...items.filter((i) => !seen.has(i.postId)),
+      ...items.filter((i) => seen.has(i.postId)),
+    ];
+    for (const item of ordered) {
+      track.append(storyNode({ ...item, seen: seen.has(item.postId) }));
+    }
+    syncNav();
+  });
+}
+
+async function loadStoryItems(api) {
+  if (storyCache && Date.now() - storyCache.at < STORY_TTL) {
+    return storyCache.items;
+  }
+
+  const me = api.getCurrentUser()?.username;
+  try {
+    const result = await ajax("/posts.json");
+    const people = new Set();
+    const items = [];
+    for (const post of result?.latest_posts || []) {
+      if (
+        !post.username ||
+        post.user_id <= 0 ||
+        post.username === me ||
+        (post.post_type && post.post_type !== 1) ||
+        people.has(post.username)
+      ) {
+        continue;
+      }
+      people.add(post.username);
+      items.push({
+        postId: post.id,
+        label: post.username,
+        href: `/t/${post.topic_slug}/${post.topic_id}/${post.post_number}`,
+        imageUrl: post.avatar_template?.replace("{size}", "160"),
+      });
+      if (items.length >= STORY_MAX) {
+        break;
+      }
+    }
+    storyCache = { at: Date.now(), items };
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+function readSeen() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function markSeen(postId) {
+  try {
+    const seen = [...readSeen()].filter((id) => id !== postId);
+    seen.push(postId);
+    localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-300)));
+  } catch {
+    // storage unavailable: the ring just stays coloured
+  }
 }
 
 function storyNav(direction, sign, track) {
@@ -456,10 +519,14 @@ function storyNav(direction, sign, track) {
   return btn;
 }
 
-function storyNode({ href, label, color, imageUrl }) {
+function storyNode({ href, label, imageUrl, postId, seen }) {
   const a = document.createElement("a");
-  a.className = "ig-story";
+  a.className = `ig-story${seen ? " is-seen" : ""}`;
   a.href = href;
+  a.addEventListener("click", () => {
+    markSeen(postId);
+    a.classList.add("is-seen");
+  });
 
   const ring = document.createElement("span");
   ring.className = "ig-story__ring";
@@ -472,9 +539,6 @@ function storyNode({ href, label, color, imageUrl }) {
     img.alt = "";
     av.append(img);
   } else {
-    if (color) {
-      av.style.background = `#${color}`;
-    }
     av.textContent = (label || "·").trim().charAt(0);
   }
 
@@ -533,12 +597,16 @@ function ensureRightSidebar(api, siteSettings) {
     aside.append(me);
   }
 
+  const site = api.container.lookup("service:site");
+  const parent = suggestedParent(site);
   const sugg = document.createElement("section");
   sugg.className = "ig-right__sugg";
   sugg.innerHTML = `
     <div class="ig-right__head">
       <h2>${escapeHtml(t("right.suggested"))}</h2>
-      <a href="/u">${escapeHtml(t("right.see_all"))}</a>
+      <a href="${parent ? categoryUrl(parent) : "/u"}">${escapeHtml(
+        t("right.see_all")
+      )}</a>
     </div>
     <div class="ig-right__list"></div>`;
   aside.append(sugg);
@@ -568,7 +636,91 @@ function ensureRightSidebar(api, siteSettings) {
 
   wrap.append(aside);
 
-  fillSuggestions(sugg.querySelector(".ig-right__list"));
+  const listEl = sugg.querySelector(".ig-right__list");
+  if (parent) {
+    fillStudios(listEl, parent, site);
+  } else {
+    fillSuggestions(listEl);
+  }
+}
+
+// "Suggested for you" = the studios: subcategories of the keyboard category.
+// The parent comes from the instagram_suggested_category setting, or the
+// top-level category named 键盘; with neither, fall back to active users.
+function suggestedParent(site) {
+  const categories = site?.categories || [];
+  const id = parseInt(settings.instagram_suggested_category, 10);
+  return (
+    (id && categories.find((c) => c.id === id)) ||
+    categories.find(
+      (c) => !c.parent_category_id && c.name?.trim() === "键盘"
+    ) ||
+    null
+  );
+}
+
+function categoryUrl(category, parent) {
+  return parent
+    ? `/c/${parent.slug}/${category.slug}/${category.id}`
+    : `/c/${category.slug}/${category.id}`;
+}
+
+async function fillStudios(listEl, parent, site) {
+  let studios = (site?.categories || []).filter(
+    (c) => c.parent_category_id === parent.id
+  );
+  if (!studios.length) {
+    // lazily loaded categories: ask Discourse for the subcategories
+    try {
+      const result = await ajax("/categories.json", {
+        data: { parent_category_id: parent.id },
+      });
+      studios = result?.category_list?.categories || [];
+    } catch {
+      studios = [];
+    }
+  }
+  if (!listEl.isConnected) {
+    return;
+  }
+  if (!studios.length) {
+    listEl.closest(".ig-right__sugg")?.remove();
+    return;
+  }
+
+  // a fresh handful each visit, so every studio gets seen
+  const picks = [...studios];
+  for (let i = picks.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [picks[i], picks[j]] = [picks[j], picks[i]];
+  }
+
+  listEl.innerHTML = picks
+    .slice(0, 5)
+    .map((c) => {
+      const url = categoryUrl(c, parent);
+      const logo = c.uploaded_logo?.url;
+      const avatar = logo
+        ? `<img src="${escapeHtml(logo)}" alt="">`
+        : `<span class="ig-right__letter" style="background:#${escapeHtml(
+            c.color || "8e8e8e"
+          )}">${escapeHtml((c.name || "·").trim().charAt(0))}</span>`;
+      const subtitle =
+        (c.description_text || "").trim() ||
+        t("right.topics", { count: c.topic_count || 0 });
+      return `
+      <div class="ig-right__row">
+        <a class="ig-right__avatar" href="${url}">${avatar}</a>
+        <div class="ig-right__text">
+          <a class="ig-right__user" href="${url}">${escapeHtml(c.name)}</a>
+          <span class="ig-right__sub">${escapeHtml(subtitle)}</span>
+        </div>
+        <a class="ig-right__action" href="${url}">${escapeHtml(
+          t("right.view")
+        )}</a>
+      </div>`;
+    })
+    .join("");
 }
 
 let suggestionCache = null;
