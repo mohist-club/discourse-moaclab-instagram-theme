@@ -14,6 +14,7 @@ zh_CN:
       instagram_clean_feed: "信息流隐藏欢迎横幅、搜索与筛选标签（桌面端）。"
       instagram_hide_header: "桌面端隐藏顶部头部（头像菜单浮在右上角）。"
       instagram_right_sidebar: "宽屏桌面显示 Instagram 风格右侧栏。"
+      instagram_messages_dock: "桌面端右下角显示消息浮窗（Discourse 私信）。"
   ig:
     rail:
       home: "首页"
@@ -64,3 +65,12 @@ zh_CN:
       tos: "条款"
       privacy: "隐私"
       categories: "分类"
+    messages:
+      title: "消息"
+      unread: "%{count} 条未读"
+      new_message: "新消息"
+      collapse: "收起"
+      see_all: "查看全部消息"
+      empty: "还没有私信"
+      loading: "正在加载…"
+      unread_dot: "未读"

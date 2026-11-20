@@ -1,0 +1,276 @@
+// =========================================================
+// Instagram floating Messages dock (instagram.com, 2026)
+// measured: fully rounded white pill ~248×54, soft shadow,
+// Direct glyph 16px in, bold 16px label, 3 stacked 24px avatars
+// on the right. Expanded: 360px panel with the conversation list.
+// Component: javascripts/discourse/components/ig-messages-dock.gjs
+// =========================================================
+.ig-glyph--compose {
+  mask-image: url($ig-compose);
+}
+
+.ig-glyph--chevron-down {
+  mask-image: url($ig-chevron);
+  transform: rotate(90deg);
+}
+
+.ig-dock {
+  position: fixed;
+  right: 24px;
+  bottom: 16px;
+  z-index: 900; // under the composer, modals and menus
+  color: var(--ig-ink);
+  font-family: inherit;
+}
+
+// never on top of a conversation itself
+body.archetype-private_message .ig-dock {
+  display: none;
+}
+
+// ---- collapsed pill ----
+.ig-dock__pill {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 248px;
+  height: 54px;
+  padding: 0 18px 0 16px;
+  border: 0;
+  border-radius: 27px;
+  background: var(--ig-elevated);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+  color: var(--ig-ink);
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ig-ink);
+    outline-offset: 2px;
+  }
+}
+
+.ig-dock__pill-icon {
+  position: relative;
+  display: block;
+  flex: 0 0 24px;
+}
+
+.ig-dock__badge {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 2px solid var(--ig-elevated);
+  border-radius: 9px;
+  background: var(--ig-like);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+.ig-dock__pill-label {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.ig-dock__stack {
+  display: flex;
+  margin-left: auto;
+
+  img {
+    box-sizing: border-box;
+    display: block;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--ig-elevated);
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--ig-pill);
+
+    & + img {
+      margin-left: -2px;
+    }
+  }
+}
+
+// ---- expanded panel ----
+.ig-dock__panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  height: min(560px, calc(100dvh - 32px));
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--ig-elevated);
+  box-shadow: 0 4px 24px rgb(0 0 0 / 18%);
+}
+
+.ig-dock__head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  height: 56px;
+  padding: 0 8px 0 20px;
+  border-bottom: 1px solid var(--ig-border);
+}
+
+.ig-dock__title {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  color: var(--ig-ink);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.ig-dock__head-count {
+  color: var(--ig-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.ig-dock__icon-btn {
+  display: flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ig-ink);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--ig-hover);
+  }
+}
+
+.ig-dock__list {
+  flex: 1;
+  padding: 8px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ig-dock__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  color: var(--ig-ink);
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    background: var(--ig-hover);
+    color: var(--ig-ink);
+    text-decoration: none;
+  }
+}
+
+.ig-dock__avatar {
+  display: block;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--ig-pill);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ig-dock__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ig-dock__name {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ig-dock__preview {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  color: var(--ig-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ig-dock__subject {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ig-dock__time {
+  flex: 0 0 auto;
+}
+
+.ig-dock__row.is-unread {
+  .ig-dock__name,
+  .ig-dock__preview {
+    color: var(--ig-ink);
+    font-weight: 600;
+  }
+}
+
+.ig-dock__dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ig-link);
+}
+
+.ig-dock__empty {
+  margin: 48px 20px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.ig-dock a.ig-dock__all {
+  flex: 0 0 auto;
+  padding: 14px 20px;
+  border-top: 1px solid var(--ig-border);
+  color: var(--ig-link);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}

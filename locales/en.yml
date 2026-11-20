@@ -14,6 +14,7 @@ en:
       instagram_clean_feed: "Hide welcome banner, search and filter tabs on the feed (desktop)."
       instagram_hide_header: "Hide the top Discourse header on desktop (avatar menu floats top-right)."
       instagram_right_sidebar: "Show the Instagram-style right column on wide desktop."
+      instagram_messages_dock: "Show the floating Messages dock with your personal messages (desktop)."
   ig:
     rail:
       home: "Home"
@@ -66,3 +67,14 @@ en:
       tos: "Terms"
       privacy: "Privacy"
       categories: "Categories"
+    messages:
+      title: "Messages"
+      unread:
+        one: "%{count} unread"
+        other: "%{count} unread"
+      new_message: "New message"
+      collapse: "Collapse"
+      see_all: "See all messages"
+      empty: "No messages yet"
+      loading: "Loading…"
+      unread_dot: "Unread"

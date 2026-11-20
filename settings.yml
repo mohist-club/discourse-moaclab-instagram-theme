@@ -71,3 +71,8 @@ instagram_right_sidebar:
     en: "Desktop (>=1264px): show an Instagram-style right column with the current user, suggested users and footer links."
     zh_CN: "桌面端（≥1264px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、页脚链接）。"
 
+instagram_messages_dock:
+  default: true
+  description:
+    en: "Desktop: show Instagram's floating Messages dock (bottom right), listing your Discourse personal messages."
+    zh_CN: "桌面端：右下角显示 Instagram 风格的「消息」浮窗，列出你的 Discourse 私信。"
