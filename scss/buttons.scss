@@ -1,0 +1,48 @@
+// Instagram buttons: flat blue by default, optional brand gradient.
+.btn {
+  border-radius: var(--ig-radius);
+  font-weight: 600;
+}
+
+.btn.btn-primary,
+#create-topic {
+  background: var(--ig-accent);
+  border: 0;
+  color: #fff;
+
+  &:hover,
+  &:focus {
+    background: var(--ig-accent);
+    filter: brightness(0.92);
+  }
+}
+
+.btn.btn-flat {
+  color: var(--ig-accent);
+  font-weight: 600;
+}
+
+.ig-gradient-buttons {
+  .btn.btn-primary,
+  #create-topic {
+    background: var(--ig-gradient);
+
+    &:hover {
+      filter: brightness(1.05);
+    }
+  }
+}
+
+// Nav pills as Instagram-like underline tabs
+.list-controls .nav-pills > li > a {
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--ig-muted);
+
+  &.active {
+    background: transparent;
+    color: var(--ig-ink);
+    border-radius: 0;
+    box-shadow: inset 0 -2px 0 var(--ig-ink);
+  }
+}

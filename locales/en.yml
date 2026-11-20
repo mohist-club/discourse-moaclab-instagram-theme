@@ -1,0 +1,11 @@
+en:
+  theme_metadata:
+    description: "A clean black & white Instagram-style theme for Moaclab (Discourse)."
+    settings:
+      card_feed: "Render the topic list as Instagram-style post cards."
+      show_like_count: "Show a like button with its count on each feed card."
+      rounded_avatars: "Circular avatars with a brand story-ring on the author."
+      brand_gradient_logo: "Use the brand gradient on the site title / logo."
+      brand_gradient_buttons: "Use the brand gradient on primary buttons."
+      mobile_bottom_nav: "Show a bottom navigation bar on mobile."
+      accent_color: "Accent / link color."

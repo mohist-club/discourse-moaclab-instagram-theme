@@ -1,0 +1,53 @@
+{
+  "about_url": "https://github.com/mohist-club/discourse-moaclab-instagram-theme",
+  "license_url": null,
+  "assets": {
+    "ig-share": "assets/ig-share.svg",
+    "nav-home": "assets/nav-home.svg",
+    "nav-search": "assets/nav-search.svg",
+    "nav-create": "assets/nav-create.svg",
+    "nav-activity": "assets/nav-activity.svg",
+    "nav-profile": "assets/nav-profile.svg"
+  },
+  "name": "Moaclab Instagram",
+  "theme_version": "1.0.0",
+  "modifiers": {
+    "serialize_topic_excerpts": true,
+    "topic_thumbnail_sizes": [[600, 600], [1080, 1080]]
+  },
+  "color_schemes": {
+    "Instagram Light": {
+      "primary": "262626",
+      "primary-medium": "606060",
+      "primary-low-mid": "8e8e8e",
+      "secondary": "ffffff",
+      "tertiary": "0095f6",
+      "quaternary": "d62976",
+      "header_background": "ffffff",
+      "header_primary": "262626",
+      "highlight": "fafafa",
+      "selected": "efefef",
+      "hover": "fafafa",
+      "danger": "ed4956",
+      "success": "0095f6",
+      "love": "ed4956"
+    },
+    "Instagram Dark": {
+      "primary": "fafafa",
+      "primary-medium": "a8a8a8",
+      "primary-low-mid": "8e8e8e",
+      "secondary": "000000",
+      "tertiary": "0095f6",
+      "quaternary": "d62976",
+      "header_background": "000000",
+      "header_primary": "fafafa",
+      "highlight": "1a1a1a",
+      "selected": "262626",
+      "hover": "121212",
+      "danger": "ed4956",
+      "success": "0095f6",
+      "love": "ed4956"
+    }
+  },
+  "components": []
+}

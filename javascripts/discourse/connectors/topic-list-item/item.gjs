@@ -1,0 +1,272 @@
+import Component from "@glimmer/component";
+import { tracked } from "@glimmer/tracking";
+import { get } from "@ember/helper";
+import { on } from "@ember/modifier";
+import { action } from "@ember/object";
+import { service } from "@ember/service";
+import ShareTopicModal from "discourse/components/modal/share-topic";
+import PluginOutlet from "discourse/components/plugin-outlet";
+import TopicExcerpt from "discourse/components/topic-list/topic-excerpt";
+import TopicLink from "discourse/components/topic-list/topic-link";
+import UnreadIndicator from "discourse/components/topic-list/unread-indicator";
+import TopicPostBadges from "discourse/components/topic-post-badges";
+import TopicStatus from "discourse/components/topic-status";
+import avatar from "discourse/helpers/avatar";
+import categoryLink from "discourse/helpers/category-link";
+import icon from "discourse/helpers/d-icon";
+import discourseTags from "discourse/helpers/discourse-tags";
+import formatDate from "discourse/helpers/format-date";
+import lazyHash from "discourse/helpers/lazy-hash";
+import topicFeaturedLink from "discourse/helpers/topic-featured-link";
+import { deferAnonymousAction } from "discourse/lib/anonymous-action";
+import { wantsNewWindow } from "discourse/lib/intercept-click";
+import { i18n } from "discourse-i18n";
+
+export default class Item extends Component {
+  @service currentUser;
+  @service modal;
+
+  @tracked liked = false;
+  @tracked likeCount;
+  @tracked likePost;
+  @tracked isTogglingLike = false;
+
+  get imageRatioStyle() {
+    const thumbnail = this.args.outletArgs.topic.thumbnails?.[0];
+    const ratio = Number(thumbnail?.width) / Number(thumbnail?.height);
+    const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 4 / 3;
+    return `--moaclab-image-ratio: ${Math.min(2, Math.max(1, safeRatio))}`;
+  }
+
+  get newDotText() {
+    return this.currentUser?.trust_level > 0
+      ? ""
+      : i18n("filters.new.lower_title");
+  }
+
+  @action
+  onTitleFocus(event) {
+    event.target.closest(".topic-list-item").classList.add("selected");
+  }
+
+  @action
+  onTitleBlur(event) {
+    event.target.closest(".topic-list-item").classList.remove("selected");
+  }
+
+  @action
+  openTopic(event) {
+    if (event.target.closest("a:not(.raw-link), button, .badge-wrapper")) {
+      return;
+    }
+
+    const { navigateToTopic, topic } = this.args.outletArgs;
+
+    if (wantsNewWindow(event)) {
+      window.open(topic.lastUnreadUrl, "_blank");
+    } else {
+      navigateToTopic(topic, topic.lastUnreadUrl);
+    }
+  }
+
+  @action
+  share(event) {
+    event.stopPropagation();
+    this.modal.show(ShareTopicModal, {
+      model: { topic: this.args.outletArgs.topic },
+    });
+  }
+
+  get topicLikeCount() {
+    return this.likeCount ?? this.args.outletArgs.topic.like_count ?? 0;
+  }
+
+  get canToggleLike() {
+    if (!this.currentUser) {
+      return !this.args.outletArgs.topic.archived;
+    }
+
+    return this.likePost ? this.likePost.canToggleLike : true;
+  }
+
+  get likeDisabled() {
+    return this.isTogglingLike || !this.canToggleLike;
+  }
+
+  @action
+  async toggleLike(event) {
+    event.stopPropagation();
+
+    if (this.isTogglingLike || !this.canToggleLike) {
+      return;
+    }
+
+    this.isTogglingLike = true;
+
+    try {
+      const topic = this.args.outletArgs.topic;
+      const post = this.likePost ?? (await topic.firstPost());
+      this.likePost = post;
+      this.liked = post.liked;
+
+      if (!this.currentUser) {
+        await deferAnonymousAction(this, "like_post", { post_id: post.id });
+        return;
+      }
+
+      if (!post.canToggleLike) {
+        return;
+      }
+
+      const wasLiked = post.liked;
+      await post.likeAction.togglePromise(post);
+      this.liked = post.liked;
+
+      if (wasLiked !== post.liked) {
+        this.likeCount = Math.max(
+          0,
+          Number(this.topicLikeCount) + (post.liked ? 1 : -1)
+        );
+      }
+    } finally {
+      this.isTogglingLike = false;
+    }
+  }
+
+  <template>
+    {{! template-lint-disable no-invalid-interactive }}
+    <div
+      {{on "click" this.openTopic}}
+      class="custom-topic-layout moaclab-feed-item"
+    >
+      <div class="custom-topic-layout_meta">
+        <span class="custom-topic-layout_meta-posted">
+          <a
+            class="moaclab-feed-author"
+            data-user-card={{get @outletArgs "topic.posters.0.user.username"}}
+            href="/u/{{get @outletArgs 'topic.posters.0.user.username'}}"
+          >
+            {{avatar
+              (get @outletArgs "topic.posters.0.user")
+              imageSize="small"
+            }}
+            <span>{{get @outletArgs "topic.posters.0.user.username"}}</span>
+          </a>
+          <span class="bullet-separator" aria-hidden="true">&bull;</span>
+          {{formatDate
+            @outletArgs.topic.createdAt
+            format="medium"
+            noTitle="true"
+            leaveAgo="true"
+          }}
+        </span>
+
+        {{#unless @outletArgs.hideCategory}}
+          {{#unless @outletArgs.topic.isPinnedUncategorized}}
+            <PluginOutlet
+              @name="topic-list-before-category"
+              @outletArgs={{lazyHash topic=@outletArgs.topic}}
+            />
+            {{categoryLink @outletArgs.topic.category}}
+          {{/unless}}
+        {{/unless}}
+      </div>
+
+      <h2 class="link-top-line">
+        <TopicStatus @topic={{@outletArgs.topic}} />
+
+        <TopicLink
+          {{on "focus" this.onTitleFocus}}
+          {{on "blur" this.onTitleBlur}}
+          @topic={{@outletArgs.topic}}
+          class="raw-link raw-topic-link"
+        />
+
+        {{#if @outletArgs.topic.featured_link}}
+          {{topicFeaturedLink @outletArgs.topic}}
+        {{/if}}
+
+        <PluginOutlet
+          @name="topic-list-after-title"
+          @outletArgs={{lazyHash topic=@outletArgs.topic}}
+        />
+
+        <UnreadIndicator @topic={{@outletArgs.topic}} />
+
+        {{#if @outletArgs.showTopicPostBadges}}
+          <TopicPostBadges
+            @unreadPosts={{@outletArgs.topic.unread_posts}}
+            @unseen={{@outletArgs.topic.unseen}}
+            @newDotText={{this.newDotText}}
+            @url={{@outletArgs.topic.lastUnreadUrl}}
+          />
+        {{/if}}
+      </h2>
+
+      <div class="link-bottom-line">
+        {{discourseTags
+          @outletArgs.topic
+          mode="list"
+          tagsForUser=@outletArgs.tagsForUser
+        }}
+      </div>
+
+      {{#if @outletArgs.topic.thumbnails}}
+        <div class="custom-topic-layout_image" style={{this.imageRatioStyle}}>
+          <img
+            alt={{@outletArgs.topic.title}}
+            loading="lazy"
+            decoding="async"
+            height={{get @outletArgs "topic.thumbnails.0.height"}}
+            width={{get @outletArgs "topic.thumbnails.0.width"}}
+            src={{get @outletArgs "topic.thumbnails.0.url"}}
+          />
+        </div>
+      {{/if}}
+
+      {{#unless @outletArgs.topic.thumbnails}}
+        <div class="custom-topic-layout_excerpt">
+          <TopicExcerpt @topic={{@outletArgs.topic}} />
+        </div>
+      {{/unless}}
+
+      <div class="custom-topic-layout_bottom-bar">
+        {{#if settings.show_like_count}}
+          <button
+            type="button"
+            class="like-toggle {{if this.liked 'has-liked'}}"
+            title={{i18n
+              (if this.liked "post.controls.undo_like" "post.controls.like")
+            }}
+            aria-pressed={{this.liked}}
+            disabled={{this.likeDisabled}}
+            {{on "click" this.toggleLike}}
+          >
+            {{icon (if this.liked "d-liked" "d-unliked")}}
+            {{this.topicLikeCount}}
+            <span class="sr-only">
+              {{i18n
+                (if this.liked "post.controls.undo_like" "post.controls.like")
+              }}
+            </span>
+          </button>
+        {{/if}}
+
+        <a
+          class="reply-count"
+          href={{@outletArgs.topic.lastUnreadUrl}}
+          title={{i18n "replies"}}
+        >
+          {{icon "far-comment"}}
+          {{@outletArgs.topic.replyCount}}
+          <span class="sr-only">{{i18n "replies"}}</span>
+        </a>
+
+        <button type="button" {{on "click" this.share}} class="share-toggle">
+          <span class="moaclab-share-icon" aria-hidden="true"></span>
+          {{i18n "post.quote_share"}}
+        </button>
+      </div>
+    </div>
+  </template>
+}

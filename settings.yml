@@ -1,0 +1,42 @@
+card_feed:
+  default: true
+  description:
+    en: "Render the topic list as Instagram-style post cards."
+    zh_CN: "将话题列表渲染为 Instagram 风格的帖子卡片。"
+
+show_like_count:
+  default: true
+  description:
+    en: "Show a like (heart) button with its count on each feed card."
+    zh_CN: "在每张信息流卡片上显示点赞（红心）按钮及其数量。"
+
+rounded_avatars:
+  default: true
+  description:
+    en: "Display avatars as circles, with a brand story-ring on the topic author."
+    zh_CN: "头像显示为圆形，并在话题作者头像上加品牌故事环。"
+
+brand_gradient_logo:
+  default: true
+  description:
+    en: "Use the Instagram brand gradient on the site title / logo text."
+    zh_CN: "站点标题/Logo 文字使用 Instagram 品牌渐变色。"
+
+brand_gradient_buttons:
+  default: false
+  description:
+    en: "Use the brand gradient on primary buttons (off = classic Instagram blue)."
+    zh_CN: "主要按钮使用品牌渐变（关闭 = 经典 Instagram 蓝）。"
+
+mobile_bottom_nav:
+  default: true
+  description:
+    en: "Show an Instagram-style bottom navigation bar on mobile."
+    zh_CN: "移动端显示 Instagram 风格的底部导航栏。"
+
+accent_color:
+  type: string
+  default: "#0095f6"
+  description:
+    en: "Accent / link color (Instagram blue by default)."
+    zh_CN: "强调色/链接色（默认 Instagram 蓝）。"

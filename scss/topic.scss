@@ -1,0 +1,48 @@
+// Topic view — frame the posts like Instagram post / comment cards.
+.ig-card-feed {
+  #topic-title {
+    max-width: var(--topic-body-width, 740px);
+    margin-inline: auto;
+  }
+
+  .post-stream {
+    max-width: var(--topic-body-width, 740px);
+    margin-inline: auto;
+  }
+
+  .post-stream .topic-post {
+    margin-bottom: 16px;
+  }
+
+  .post-stream .topic-post .topic-body {
+    @include ig-card;
+    padding: 14px 16px;
+  }
+
+  .post-stream .topic-post .topic-avatar {
+    border: 0;
+    padding: 14px 4px 0 0;
+  }
+}
+
+// Post action row — airy icons, heart turns red when liked
+.topic-post .post-controls .actions .btn {
+  background: transparent;
+  color: var(--ig-ink);
+  padding: 6px 8px;
+
+  &:hover {
+    background: transparent;
+    color: var(--ig-accent);
+  }
+}
+
+.topic-post .post-controls .double-button .like.has-like .d-icon,
+.topic-post .post-controls .like-count.highlight-action {
+  color: var(--ig-love);
+}
+
+// Cooked media rounded like Instagram
+.cooked img:not(.emoji, .avatar) {
+  border-radius: var(--ig-radius);
+}

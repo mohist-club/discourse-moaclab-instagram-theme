@@ -1,0 +1,22 @@
+// Odds and ends: category badges, links, composer.
+a:not(.btn, .badge-category):hover {
+  color: var(--ig-accent);
+}
+
+.badge-category__wrapper .badge-category {
+  border-radius: 20px;
+  font-weight: 600;
+  padding: 2px 10px;
+}
+
+.badge-category__wrapper {
+  border-left: 0;
+}
+
+#reply-control {
+  border-top: 1px solid var(--ig-border);
+
+  .btn-primary {
+    border-radius: var(--ig-radius);
+  }
+}

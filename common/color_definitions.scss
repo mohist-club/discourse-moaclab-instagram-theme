@@ -1,0 +1,44 @@
+// Instagram palette, resolved per color scheme (light/dark aware)
+// Exposed as CSS custom properties consumed by the scss/ partials.
+
+$ig-accent: #0095f6; // Instagram blue
+$ig-love: #ed4956; // like / heart red
+
+:root {
+  // surfaces
+  --ig-page: #{dark-light-choose(#fafafa, #000)};
+  --ig-card: #{dark-light-choose(#fff, #000)};
+  --ig-elevated: #{dark-light-choose(#fff, #121212)};
+
+  // text
+  --ig-ink: #{dark-light-choose(#262626, #fafafa)};
+  --ig-muted: #{dark-light-choose(#8e8e8e, #a8a8a8)};
+
+  // lines
+  --ig-border: #{dark-light-choose(#dbdbdb, #262626)};
+  --ig-border-strong: #{dark-light-choose(#c7c7c7, #363636)};
+
+  // interactive
+  --ig-accent: #{$ig-accent};
+  --ig-love: #{$ig-love};
+  --ig-pill: #{dark-light-choose(#efefef, #1a1a1a)};
+  --ig-pill-hover: #{dark-light-choose(#e4e4e4, #262626)};
+
+  // brand gradient (logo / story ring / optional buttons)
+  --ig-gradient: linear-gradient(
+    45deg,
+    #feda75 0%,
+    #fa7e1e 25%,
+    #d62976 50%,
+    #962fbf 75%,
+    #4f5bd5 100%
+  );
+
+  // layout
+  --ig-feed-width: 470px; // instagram.com feed column
+  --ig-radius: 8px;
+  --ig-radius-lg: 12px;
+  --ig-font:
+    -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial,
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+}

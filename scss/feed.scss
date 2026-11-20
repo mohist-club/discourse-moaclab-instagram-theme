@@ -1,0 +1,256 @@
+// =========================================================
+// Instagram feed — restyles the custom topic-list item
+// connector (.moaclab-feed-item.custom-topic-layout) into a
+// classic Instagram post card: header, media, actions, caption.
+// =========================================================
+
+// Narrow, centered feed column on discovery pages
+body.navigation-topics,
+body.navigation-categories,
+body[class*="navigation-"]:not([class*="archetype-"]),
+body.tags-page {
+  #main-outlet {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: var(--ig-feed-width);
+    margin: 0 auto;
+    padding-inline: 0;
+  }
+
+  .topic-list,
+  .topic-list tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .topic-list-header {
+    display: none;
+  }
+
+  .topic-list tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .topic-list-item {
+    display: block;
+    padding: 0;
+    border: 0;
+
+    &::before {
+      content: none;
+    }
+  }
+}
+
+// ---- the post card itself ----
+.topic-list .moaclab-feed-item.custom-topic-layout {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: var(--ig-feed-width);
+  margin: 0 auto 12px;
+  padding: 0;
+  background: var(--ig-card);
+  border: 1px solid var(--ig-border);
+  border-radius: var(--ig-radius-lg);
+  overflow: hidden;
+  letter-spacing: 0;
+
+  // Instagram layout order, independent of DOM order
+  .custom-topic-layout_meta {
+    order: 0;
+  }
+
+  .custom-topic-layout_image {
+    order: 1;
+  }
+
+  .custom-topic-layout_bottom-bar {
+    order: 2;
+  }
+
+  h2.link-top-line {
+    order: 3;
+  }
+
+  .custom-topic-layout_excerpt {
+    order: 4;
+  }
+
+  .link-bottom-line {
+    order: 5;
+  }
+
+  &:hover {
+    background: var(--ig-card);
+  }
+
+  // ---- header: avatar + username + time ----
+  .custom-topic-layout_meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--ig-muted);
+
+    &-posted {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+  }
+
+  .moaclab-feed-author {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ig-ink);
+
+    span {
+      overflow-wrap: anywhere;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      border-radius: 50%;
+    }
+  }
+
+  .bullet-separator {
+    color: var(--ig-muted);
+  }
+
+  .badge-category__wrapper {
+    margin: 0;
+    font-size: 12px;
+  }
+
+  // ---- media: edge-to-edge, square-cropped ----
+  .custom-topic-layout_image {
+    width: 100%;
+    margin: 0;
+    aspect-ratio: 1 / 1;
+    max-height: 585px;
+    background: var(--ig-elevated);
+    border-block: 1px solid var(--ig-border);
+    overflow: hidden;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  // ---- action bar: borderless icons ----
+  .custom-topic-layout_bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 14px 2px;
+
+    > .like-toggle,
+    > .reply-count,
+    > .share-toggle {
+      @include ig-icon-button;
+      height: auto;
+      min-width: 0;
+      font-size: 14px;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    // push share to the right edge like Instagram
+    > .share-toggle {
+      margin-inline-start: auto;
+      font-size: 0; // icon only
+
+      .moaclab-share-icon {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: currentcolor;
+        mask: url($ig-share) center / contain no-repeat;
+      }
+    }
+
+    > .like-toggle.has-liked {
+      color: var(--ig-love);
+
+      &:hover {
+        color: var(--ig-love);
+      }
+    }
+
+    > .like-toggle:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+  }
+
+  // ---- caption: title ----
+  h2.link-top-line {
+    display: block;
+    margin: 0 !important;
+    padding: 0 14px 2px;
+    font-size: 14px;
+    line-height: 18px;
+    font-weight: 400;
+    min-height: 0;
+
+    a.title,
+    a.title:visited {
+      padding: 0;
+      font: inherit;
+      font-weight: 600;
+      color: var(--ig-ink);
+    }
+  }
+
+  // ---- excerpt + tags ----
+  .custom-topic-layout_excerpt {
+    padding: 0 14px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 19px;
+    color: var(--ig-ink);
+
+    .topic-excerpt {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin: 0;
+    }
+  }
+
+  .link-bottom-line {
+    padding: 6px 14px 12px;
+    font-size: 12px;
+
+    .discourse-tag {
+      color: var(--ig-accent);
+    }
+  }
+
+  // give the last visual element breathing room
+  .custom-topic-layout_excerpt:last-child {
+    padding-bottom: 14px;
+  }
+
+  h2.link-top-line:last-child {
+    padding-bottom: 14px;
+  }
+}

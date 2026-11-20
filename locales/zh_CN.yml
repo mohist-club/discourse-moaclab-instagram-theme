@@ -1,0 +1,11 @@
+zh_CN:
+  theme_metadata:
+    description: "为 Moaclab（Discourse）打造的简洁黑白 Instagram 风格主题。"
+    settings:
+      card_feed: "将话题列表渲染为 Instagram 风格的帖子卡片。"
+      show_like_count: "在每张信息流卡片上显示点赞按钮及数量。"
+      rounded_avatars: "圆形头像，作者头像带品牌故事环。"
+      brand_gradient_logo: "站点标题/Logo 使用品牌渐变。"
+      brand_gradient_buttons: "主要按钮使用品牌渐变。"
+      mobile_bottom_nav: "移动端显示底部导航栏。"
+      accent_color: "强调色/链接色。"

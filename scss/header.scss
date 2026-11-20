@@ -1,0 +1,53 @@
+// Instagram-style top bar: thin bottom border, clean wordmark.
+.d-header {
+  background: var(--header_background);
+  border-bottom: 1px solid var(--ig-border);
+  box-shadow: none;
+}
+
+.d-header .contents {
+  align-items: center;
+}
+
+#site-text-logo,
+.d-header .title .site-title {
+  font-family: var(--ig-font);
+  font-weight: 700;
+  font-size: 1.4em;
+  letter-spacing: -0.5px;
+}
+
+// Brand gradient wordmark
+.ig-gradient-logo {
+  #site-text-logo,
+  .d-header .title .site-title {
+    background: var(--ig-gradient);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
+
+.d-header-icons .icon {
+  border-radius: 50%;
+
+  &:hover {
+    color: var(--ig-accent);
+  }
+}
+
+// Header auth buttons
+.d-header .login-button {
+  background: transparent;
+  border: 0;
+  color: var(--ig-accent);
+  font-weight: 700;
+}
+
+.d-header .sign-up-button {
+  background: var(--ig-accent);
+  border: 0;
+  border-radius: var(--ig-radius);
+  color: #fff;
+  font-weight: 600;
+}

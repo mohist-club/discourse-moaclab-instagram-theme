@@ -1,0 +1,33 @@
+// Shared mixins for the Instagram theme.
+
+@mixin ig-card {
+  box-sizing: border-box;
+  background: var(--ig-card);
+  border: 1px solid var(--ig-border);
+  border-radius: var(--ig-radius-lg);
+}
+
+@mixin ig-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--ig-ink);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  .d-icon {
+    width: 24px;
+    height: 24px;
+    color: currentcolor;
+  }
+
+  &:hover {
+    color: var(--ig-muted);
+    background: transparent;
+  }
+}

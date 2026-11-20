@@ -1,0 +1,29 @@
+// =========================================================
+// Moaclab Instagram — classic black & white Discourse theme
+// Conditional behaviour is driven by <body> classes + the
+// --ig-accent custom prop, both set in
+// javascripts/discourse/api-initializers/ig-theme.js
+// =========================================================
+:root {
+  --d-button-border-radius: 8px;
+  --d-nav-pill-border-radius: 20px;
+  --d-input-border-radius: 8px;
+}
+
+@import "variables";
+@import "header";
+@import "feed";
+@import "topic";
+@import "buttons";
+@import "avatars";
+@import "misc";
+
+html {
+  background: var(--ig-page);
+}
+
+body {
+  font-family: var(--ig-font);
+  letter-spacing: -0.1px;
+  color: var(--ig-ink);
+}
