@@ -64,3 +64,9 @@ instagram_hide_header:
   description:
     en: "Desktop: hide the top Discourse header for a pure Instagram layout (the user/avatar menu floats top-right; hamburger, logo, search and language are hidden)."
     zh_CN: "桌面端：隐藏顶部 Discourse 头部，做纯 Instagram 布局（用户/头像菜单浮在右上角；汉堡、Logo、搜索、语言切换隐藏）。"
+
+instagram_right_sidebar:
+  default: true
+  description:
+    en: "Desktop (>=1264px): show an Instagram-style right column with the current user, suggested users and footer links."
+    zh_CN: "桌面端（≥1264px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、页脚链接）。"

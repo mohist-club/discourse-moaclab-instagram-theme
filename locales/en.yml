@@ -13,3 +13,4 @@ en:
       instagram_stories: "Show a stories tray built from categories at the top of the feed."
       instagram_clean_feed: "Hide welcome banner, search and filter tabs on the feed (desktop)."
       instagram_hide_header: "Hide the top Discourse header on desktop (avatar menu floats top-right)."
+      instagram_right_sidebar: "Show the Instagram-style right column on wide desktop."

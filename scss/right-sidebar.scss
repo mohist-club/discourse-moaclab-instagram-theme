@@ -1,0 +1,155 @@
+// =========================================================
+// Instagram right column (.ig-right): current user, suggested
+// users, footer links. Injected into #main-outlet, shown only
+// on wide desktop (>=1264px). Layout is reserved in shell.scss.
+// =========================================================
+.ig-right {
+  display: none; // shown at >=1264px via shell.scss
+}
+
+@media (width >= 1264px) {
+  body.ig-desktop-shell:not(.admin-interface) .ig-right {
+    display: block;
+    position: fixed;
+    top: 76px;
+    right: max(16px, calc((100vw - 245px - 470px - 28px - 319px) / 2));
+    width: 319px;
+    box-sizing: border-box;
+    color: var(--ig-ink);
+  }
+}
+
+.ig-right__me {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  &-av img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &-user {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ig-ink);
+    text-decoration: none;
+  }
+
+  &-name {
+    font-size: 14px;
+    color: var(--ig-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.ig-right__switch {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ig-accent);
+  text-decoration: none;
+}
+
+.ig-right__sugg {
+  margin-bottom: 16px;
+
+  &-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    span {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ig-muted);
+    }
+
+    a {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ig-ink);
+      text-decoration: none;
+    }
+  }
+}
+
+.ig-right__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+
+  &-av img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+
+    span {
+      font-size: 12px;
+      color: var(--ig-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &-user {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ig-ink);
+    text-decoration: none;
+  }
+
+  &-act {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ig-accent);
+    text-decoration: none;
+  }
+}
+
+.ig-right__footer {
+  margin-top: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ig-border-strong);
+
+  a {
+    color: var(--ig-muted);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .ig-right__copy {
+    display: block;
+    margin-top: 8px;
+    text-transform: uppercase;
+    color: var(--ig-muted);
+  }
+}

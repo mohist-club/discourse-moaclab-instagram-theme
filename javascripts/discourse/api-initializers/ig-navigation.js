@@ -1,4 +1,5 @@
 import { apiInitializer } from "discourse/lib/api";
+import { ajax } from "discourse/lib/ajax";
 
 // Instagram desktop shell:
 //  - brand wordmark + a fixed Instagram action group (search / create /
@@ -28,6 +29,10 @@ export default apiInitializer((api) => {
       }
       if (settings.instagram_stories) {
         ensureStories(api, site);
+      }
+      if (settings.instagram_right_sidebar && desktop) {
+        document.body.classList.add("ig-rightcol");
+        ensureRightSidebar(api, siteSettings);
       }
       syncActive();
     } catch {
@@ -236,4 +241,121 @@ function railLabel(key) {
     your_story: "你的故事",
   };
   return map[key] || key;
+}
+
+// ---- Instagram right column: current user + suggestions + footer ----
+let suggestionCache = null;
+
+function ensureRightSidebar(api, siteSettings) {
+  const main = document.querySelector("#main-outlet");
+  if (!main || !isDiscovery()) {
+    document.querySelector(".ig-right")?.remove();
+    return;
+  }
+  if (main.querySelector(".ig-right")) {
+    return;
+  }
+
+  const user = api.getCurrentUser();
+  const aside = document.createElement("aside");
+  aside.className = "ig-right";
+
+  if (user) {
+    const me = document.createElement("div");
+    me.className = "ig-right__me";
+    me.innerHTML = `
+      <a class="ig-right__me-av" href="/u/${user.username}/summary">
+        <img src="${user.avatar_template.replace("{size}", "132")}" alt="">
+      </a>
+      <div class="ig-right__me-text">
+        <a class="ig-right__me-user" href="/u/${user.username}/summary">${user.username}</a>
+        <span class="ig-right__me-name">${escapeHtml(user.name || "")}</span>
+      </div>
+      <a class="ig-right__switch" href="/u/${user.username}/preferences/account">切换</a>`;
+    aside.append(me);
+  }
+
+  const sugg = document.createElement("div");
+  sugg.className = "ig-right__sugg";
+  sugg.innerHTML = `
+    <div class="ig-right__sugg-head">
+      <span>为你推荐</span>
+      <a href="/u">查看全部</a>
+    </div>
+    <div class="ig-right__sugg-list"></div>`;
+  aside.append(sugg);
+
+  const footer = document.createElement("nav");
+  footer.className = "ig-right__footer";
+  footer.innerHTML = `
+    <span><a href="/about">关于</a> · <a href="/faq">帮助</a> · <a href="/badges">徽章</a> ·
+    <a href="/u">用户</a> · <a href="/tos">条款</a> · <a href="/privacy">隐私</a> ·
+    <a href="/categories">分类</a></span>
+    <span class="ig-right__copy">© ${new Date().getFullYear()} ${escapeHtml(
+      siteSettings?.title || "Moaclab"
+    )}</span>`;
+  aside.append(footer);
+
+  main.append(aside);
+
+  fillSuggestions(sugg.querySelector(".ig-right__sugg-list"));
+}
+
+function fillSuggestions(listEl) {
+  if (!listEl) {
+    return;
+  }
+
+  const render = (users) => {
+    if (!users?.length) {
+      listEl.closest(".ig-right__sugg")?.remove();
+      return;
+    }
+    listEl.innerHTML = users
+      .slice(0, 5)
+      .map(
+        (u) => `
+      <div class="ig-right__row">
+        <a class="ig-right__row-av" href="/u/${u.username}">
+          <img src="${u.avatar_template.replace("{size}", "68")}" alt="">
+        </a>
+        <div class="ig-right__row-text">
+          <a class="ig-right__row-user" href="/u/${u.username}">${u.username}</a>
+          <span>${escapeHtml(u.name || "推荐关注")}</span>
+        </div>
+        <a class="ig-right__row-act" href="/u/${u.username}">查看</a>
+      </div>`
+      )
+      .join("");
+  };
+
+  if (suggestionCache) {
+    render(suggestionCache);
+    return;
+  }
+
+  ajax("/directory_items.json", {
+    data: { period: "weekly", order: "likes_received", page: 0 },
+  })
+    .then((r) => {
+      suggestionCache = (r?.directory_items || [])
+        .map((d) => d.user)
+        .filter(Boolean);
+      render(suggestionCache);
+    })
+    .catch(() => render([]));
+}
+
+function escapeHtml(str) {
+  return String(str).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c]
+  );
 }
