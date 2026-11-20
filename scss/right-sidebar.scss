@@ -47,6 +47,7 @@
       position: static;
       grid-area: rightcol;
       width: auto;
+
       // Instagram starts the column 15px below the top of the feed
       padding: calc(var(--ig-feed-top, 8px) + 15px) 16px 0;
     }
