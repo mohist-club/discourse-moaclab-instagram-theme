@@ -58,3 +58,9 @@ instagram_clean_feed:
   description:
     en: "Desktop: hide the welcome banner, search box and filter/sort tabs so the feed shows only stories and posts (search/create move to the rail)."
     zh_CN: "桌面端：隐藏欢迎横幅、搜索框和筛选/排序标签，让信息流只剩 Stories 和帖子（搜索/创建移到左栏）。"
+
+instagram_hide_header:
+  default: true
+  description:
+    en: "Desktop: hide the top Discourse header for a pure Instagram layout (the user/avatar menu floats top-right; hamburger, logo, search and language are hidden)."
+    zh_CN: "桌面端：隐藏顶部 Discourse 头部，做纯 Instagram 布局（用户/头像菜单浮在右上角；汉堡、Logo、搜索、语言切换隐藏）。"

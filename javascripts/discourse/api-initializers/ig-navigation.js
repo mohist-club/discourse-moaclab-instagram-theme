@@ -17,6 +17,10 @@ export default apiInitializer((api) => {
 
       if (settings.instagram_desktop_shell && desktop) {
         document.body.classList.add("ig-desktop-shell");
+        document.body.classList.toggle(
+          "ig-hide-header",
+          !!settings.instagram_hide_header
+        );
         ensureRail(api, siteSettings);
       }
       if (settings.instagram_clean_feed && desktop) {
@@ -60,6 +64,12 @@ function ensureRail(api, siteSettings) {
   nav.setAttribute("aria-label", "Instagram");
 
   const items = [
+    {
+      key: "home",
+      href: "/",
+      icon: "home",
+      label: railLabel("home"),
+    },
     {
       key: "search",
       href: "/search",

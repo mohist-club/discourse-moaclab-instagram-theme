@@ -255,6 +255,10 @@ body.ig-desktop-shell:not(.admin-interface) {
       mask-size: 24px 24px;
     }
 
+    &--home::before {
+      mask-image: url($ig-home);
+    }
+
     &--search::before {
       mask-image: url($ig-search);
     }
@@ -301,4 +305,12 @@ body.ig-desktop-shell:not(.admin-interface) {
       margin-right: 0;
     }
   }
+}
+
+// Hide the native sidebar "Home" link — Instagram Home now lives in #ig-rail
+body.ig-desktop-shell:not(.admin-interface)
+  .sidebar-wrapper
+  .sidebar-section-content
+  .sidebar-section-link:has(.sidebar-section-link-prefix .d-icon-house) {
+  display: none;
 }

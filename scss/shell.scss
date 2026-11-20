@@ -58,3 +58,89 @@
     }
   }
 }
+
+// =========================================================
+// Hide the top Discourse header on desktop (Instagram has no
+// top bar). Keep the user-avatar menu reachable by floating
+// the header's right cluster top-right; hide hamburger, logo,
+// search and language. Gated by body.ig-hide-header (desktop).
+// =========================================================
+@media (width >= 768px) {
+  body.ig-hide-header.ig-desktop-shell:not(.admin-interface) {
+    // collapse the header spacer so content starts at the very top
+    .d-header-wrap {
+      position: static;
+      height: 0;
+      min-height: 0;
+    }
+
+    // float the header to the top-right, transparent, content-sized
+    .d-header {
+      position: fixed;
+      inset: 6px 12px auto auto;
+      width: auto;
+      height: auto;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      z-index: 1001;
+    }
+
+    .d-header .wrap,
+    .d-header .contents,
+    .d-header .panel {
+      width: auto;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    // hide everything except the user-avatar menu (logout/prefs/notifications)
+    .d-header .header-sidebar-toggle,
+    .d-header .home-logo-wrapper-outlet,
+    .d-header .title,
+    .d-header .home-logo,
+    .d-header .before-header-panel-outlet,
+    .d-header .floating-search-input-wrapper,
+    .d-header .search-dropdown,
+    .d-header #search-button,
+    .d-header .btn-search,
+    .d-header .language-switcher-trigger {
+      display: none;
+    }
+
+    // tidy the surviving avatar button
+    .d-header .d-header-icons {
+      margin: 0;
+      gap: 4px;
+    }
+
+    #main-outlet {
+      padding-top: 20px;
+    }
+
+    // rail spans from the very top
+    &.has-sidebar-page .sidebar-wrapper {
+      top: 0;
+      height: 100dvh;
+    }
+  }
+}
+
+// =========================================================
+// Hide the "last visit" separator in the feed (not an IG thing)
+// =========================================================
+body.ig-clean-feed:not(.admin-interface) {
+  .topic-list .last-visit,
+  .topic-list tr.last-visit,
+  .topic-list .topic-list-item.last-visit,
+  .topic-list .topic-list-item--last-visited,
+  .topic-list .topic-list-item.visited-line,
+  .topic-list-bottom .last-visit,
+  .topic-list .topic-list-item-separator {
+    display: none;
+  }
+}
