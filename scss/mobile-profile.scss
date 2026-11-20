@@ -1,0 +1,303 @@
+// =========================================================
+// Profile pages on phones (< 768px) as Instagram's profile
+// (instagram_mobile_layout). Discourse's own user page restyled:
+//   top bar: ‹ back + username (ig-topic-bar.gjs)
+//   header: 86px avatar | topics · replies · likes (ig-profile-stats)
+//     name, title, bio, location / website under them
+//   buttons: Discourse's own (message, admin, expand) as Instagram's
+//     32px grey / blue buttons in one row
+//   tabs: Discourse's user nav as Instagram's tab row
+//   summary: the user's topics as a 3:4 grid, 3 across, 2px apart
+//     (ig-profile-grid), in place of the summary sections
+// =========================================================
+
+// phones only
+@media (width >= 768px) {
+  .ig-profile-stats,
+  .ig-profile-grid {
+    display: none;
+  }
+}
+
+@media (width < 768px) {
+  body.ig-mobile-shell:not(.admin-interface) {
+    .user-main {
+      // no cover image: Instagram has none
+      .user-profile-image {
+        display: none;
+      }
+
+      .details {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+      }
+
+      // avatar | counters, everything else full width under them
+      .details .primary {
+        display: grid;
+        grid-template-columns: 86px minmax(0, 1fr);
+        align-items: center;
+        column-gap: 24px;
+        margin: 0;
+        padding: 16px 16px 0;
+      }
+
+      .user-profile-avatar {
+        grid-row: 1;
+        grid-column: 1;
+        width: 86px;
+        margin: 0;
+
+        img.avatar {
+          width: 86px;
+          height: 86px;
+          border-radius: 50%;
+        }
+      }
+
+      .primary-textual,
+      .primary-textual > span:has(.ig-profile-stats) {
+        display: contents;
+      }
+
+      .primary-textual > * {
+        grid-column: 1 / -1;
+        min-width: 0;
+      }
+
+      .user-profile-names {
+        margin-top: 12px;
+        font-size: 14px;
+        line-height: 18px;
+
+        .full-name,
+        .username {
+          margin: 0;
+          font-size: 14px;
+        }
+
+        > :first-child {
+          color: var(--ig-ink);
+          font-weight: 600;
+        }
+
+        > :not(:first-child) {
+          color: var(--ig-muted);
+        }
+      }
+
+      .user-profile-names__title {
+        color: var(--ig-muted);
+        font-size: 14px;
+      }
+
+      .bio {
+        margin: 4px 0 0;
+        color: var(--ig-ink);
+        font-size: 14px;
+        line-height: 18px;
+
+        p {
+          margin: 0 0 4px;
+        }
+      }
+
+      .location-and-website {
+        margin-top: 4px;
+        color: var(--ig-muted);
+        font-size: 14px;
+
+        a {
+          color: var(--ig-hashtag);
+          font-weight: 600;
+        }
+      }
+
+      // ---- buttons: one row, 32px, grey (the main one blue) ----
+      .controls {
+        margin: 0;
+        padding: 12px 16px 0;
+
+        ul {
+          display: flex;
+          gap: 8px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        li {
+          flex: 1 1 0;
+          min-width: 0;
+          margin: 0;
+        }
+
+        .btn {
+          box-sizing: border-box;
+          justify-content: center;
+          width: 100%;
+          min-height: 32px;
+          margin: 0;
+          padding: 0 12px;
+          border: 0;
+          border-radius: 8px;
+          background: var(--ig-btn-secondary);
+          color: var(--ig-ink);
+          font-size: 14px;
+          font-weight: 600;
+
+          .d-icon {
+            color: var(--ig-ink);
+          }
+        }
+
+        .btn-primary {
+          background: var(--ig-btn-primary);
+          color: #fff;
+
+          .d-icon {
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    // ---- counters beside the avatar ----
+    .ig-profile-stats {
+      display: flex;
+      grid-row: 1;
+      grid-column: 2;
+      justify-content: space-around;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: var(--ig-ink);
+        font-size: 14px;
+        line-height: 18px;
+      }
+
+      b {
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+    }
+
+    // ---- tabs: Discourse's user nav as Instagram's tab row ----
+    .user-navigation-primary {
+      margin-top: 16px;
+      border-top: 1px solid var(--ig-border);
+
+      .main-nav {
+        display: flex;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+
+      li {
+        flex: 1 0 auto;
+        margin: 0;
+      }
+
+      li a {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 14px;
+        border-bottom: 1px solid transparent;
+        border-radius: 0;
+        background: none;
+        color: var(--ig-muted);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+
+        .d-icon {
+          color: inherit;
+        }
+
+        &.active {
+          border-bottom-color: var(--ig-ink);
+          background: none;
+          color: var(--ig-ink);
+        }
+      }
+    }
+
+    // ---- summary: the posts grid in place of the summary sections ----
+    .user-content:has(.ig-profile-grid) {
+      padding: 0;
+
+      > .top-section {
+        display: none;
+      }
+    }
+
+    .ig-profile-grid__tiles {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ig-profile-grid__tile {
+      box-sizing: border-box;
+      display: flex;
+      align-items: flex-end;
+      aspect-ratio: 3 / 4;
+      padding: 8px;
+      overflow: hidden;
+      background-color: var(--ig-pill);
+      background-position: center;
+      background-size: cover;
+      color: var(--ig-ink);
+
+      span {
+        display: -webkit-box;
+        overflow: hidden;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+      }
+    }
+
+    .ig-profile-grid__all {
+      display: block;
+      margin: 12px 16px;
+      padding: 8px 0;
+      border-radius: 8px;
+      background: var(--ig-btn-secondary);
+      color: var(--ig-ink);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .ig-profile-grid__empty {
+      margin: 48px 16px;
+      color: var(--ig-muted);
+      font-size: 14px;
+      text-align: center;
+    }
+  }
+}

@@ -28,6 +28,12 @@ en:
       new_topic_composer_height: "New-topic editor height, % of the screen (0: Discourse default)."
       instagram_mobile_layout: "Below 768px: Instagram mobile top bar and edge-to-edge posts."
   ig:
+    profile:
+      topics: "posts"
+      replies: "replies"
+      likes: "likes"
+      all_topics: "See all posts"
+      no_topics: "No posts yet"
     topic:
       title: "Post"
       back: "Back"

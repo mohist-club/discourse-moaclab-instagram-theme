@@ -31,6 +31,7 @@ body:not(.admin-interface) {
 @import "categories";
 @import "mobile-shell";
 @import "mobile-topic";
+@import "mobile-profile";
 
 html:not(:has(> body.admin-interface)) {
   background: var(--ig-page);

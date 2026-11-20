@@ -18,8 +18,8 @@
 }
 
 @media (width < 768px) {
-  body.ig-mobile-shell[class*="archetype-"]:not(.admin-interface) {
-    // ---- top bar: back + 帖子 ----
+  // ---- top bar: back + 帖子 / username (topic and profile pages) ----
+  body.ig-mobile-shell:not(.admin-interface):has(.ig-topic-bar) {
     .ig-topic-bar {
       display: flex;
       flex: 1;
@@ -66,7 +66,11 @@
     .d-header .extra-info-wrapper {
       display: none;
     }
+  }
+}
 
+@media (width < 768px) {
+  body.ig-mobile-shell[class*="archetype-"]:not(.admin-interface) {
     // ---- page ----
     #main-outlet {
       padding-inline: 0;

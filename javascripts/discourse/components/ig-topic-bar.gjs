@@ -6,20 +6,31 @@ import DiscourseURL from "discourse/lib/url";
 import { i18n } from "discourse-i18n";
 import { canGoBackInApp } from "../lib/ig-last-page";
 
-// Instagram's post page top bar on phones: a back arrow and "帖子".
-// Rendered in the header (header-contents__before); shown below 768px on
-// topic pages only (scss/mobile-topic.scss), where it replaces the logo.
+// Instagram's top bar on phones for a post or a profile: a back arrow and
+// "帖子" (topic pages) or the username (profile pages). Rendered in the
+// header (header-contents__before); shown below 768px on those pages only
+// (scss/mobile-topic.scss, scss/mobile-profile.scss), replacing the logo.
 export default class IgTopicBar extends Component {
   @service router;
+
+  get route() {
+    return this.router.currentRouteName || "";
+  }
 
   get show() {
     return (
       !!settings.instagram_mobile_layout &&
-      (this.router.currentRouteName || "").startsWith("topic.")
+      (this.route.startsWith("topic.") || this.route.startsWith("user."))
     );
   }
 
   get title() {
+    if (this.route.startsWith("user.")) {
+      // the profile's username, from the URL (/u/<username>/…)
+      const url = this.router.currentURL || window.location.pathname;
+      const match = url.match(/^\/u\/([^/?#]+)/);
+      return match ? decodeURIComponent(match[1]) : "";
+    }
     return i18n(themePrefix("ig.topic.title"));
   }
 
