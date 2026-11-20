@@ -1,7 +1,7 @@
 import { apiInitializer } from "discourse/lib/api";
 import { i18n } from "discourse-i18n";
 import DiscourseURL from "discourse/lib/url";
-import { rememberPage } from "../lib/ig-last-page";
+import { countPage, rememberPage } from "../lib/ig-last-page";
 
 // `settings` is injected as a global in Discourse theme JS.
 export default apiInitializer((api) => {
@@ -43,7 +43,10 @@ export default apiInitializer((api) => {
   api.onPageChange(applyFlags);
 
   // the page before log-in / sign-up, for their close button and Esc
-  api.onPageChange((url) => rememberPage(url));
+  api.onPageChange((url) => {
+    rememberPage(url);
+    countPage();
+  });
 
   // 3. Instagram's bottom tab bar below 768px (phones and narrow desktop
   //    windows; scss/mobile-shell.scss shows it). Hidden on admin pages.

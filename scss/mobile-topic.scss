@@ -1,0 +1,423 @@
+// =========================================================
+// Topic pages on phones (< 768px) as Instagram's post page
+// (instagram_mobile_layout). Discourse's own topic view — posts,
+// post menus, reply flow — restyled, nothing replaced:
+//   top bar: ‹ back + "帖子" (ig-topic-bar.gjs) instead of the logo
+//   opening post: Instagram post — 32px avatar + username • time,
+//     content and images full width, actions heart · comment · share
+//     ··· bookmark at 24px
+//   replies: Instagram comments — 32px avatar, bold username inline,
+//     14px text, a small grey row of time and actions
+//   bottom: "添加评论…" bar above the tab bar (ig-comment-bar.gjs)
+// =========================================================
+
+// hidden everywhere else; shown in the media query below
+.ig-topic-bar,
+.ig-comment-bar {
+  display: none;
+}
+
+@media (width < 768px) {
+  body.ig-mobile-shell[class*="archetype-"]:not(.admin-interface) {
+    // ---- top bar: back + 帖子 ----
+    .ig-topic-bar {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .ig-topic-bar__back {
+      position: relative;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      margin: 0 0 0 -8px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ig-ink);
+      cursor: pointer;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: currentcolor;
+        mask: url($ig-chevron) center / 26px 26px no-repeat;
+        transform: scaleX(-1);
+      }
+    }
+
+    .ig-topic-bar__title {
+      position: absolute;
+      left: 50%;
+      color: var(--ig-ink);
+      font-size: 16px;
+      font-weight: 600;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    // the logo and Discourse's scrolled-title give way to the bar
+    .d-header .home-logo-wrapper-outlet,
+    .d-header .extra-info-wrapper {
+      display: none;
+    }
+
+    // ---- page ----
+    #main-outlet {
+      padding-inline: 0;
+    }
+
+    #topic-title {
+      margin: 0;
+      padding: 12px 12px 4px;
+
+      .fancy-title,
+      h1 {
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 22px;
+      }
+
+      .topic-category {
+        margin-top: 4px;
+        font-size: 13px;
+      }
+    }
+
+    .topic-post {
+      margin: 0;
+      padding: 0;
+
+      article.boxed {
+        border: 0;
+      }
+    }
+
+    // avatar | name line, everything else full width under them
+    .topic-post .post__row,
+    .topic-post article > .row {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      column-gap: 10px;
+      padding: 8px 12px;
+    }
+
+    .topic-post .topic-avatar {
+      grid-row: 1;
+      grid-column: 1;
+      width: 32px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+
+      img.avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+      }
+
+      .post-avatar-user-info {
+        display: none;
+      }
+    }
+
+    .topic-post .topic-body {
+      display: contents;
+    }
+
+    .topic-post .topic-body > * {
+      grid-column: 1 / -1;
+      min-width: 0;
+    }
+
+    .topic-post .topic-meta-data {
+      display: flex;
+      grid-row: 1;
+      grid-column: 2;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+
+      .names {
+        display: flex;
+        gap: 4px;
+        min-width: 0;
+        overflow: hidden;
+        font-size: 14px;
+        white-space: nowrap;
+
+        .first a {
+          color: var(--ig-ink);
+          font-weight: 600;
+        }
+
+        .second,
+        .user-title {
+          display: none;
+        }
+      }
+
+      .post-infos {
+        margin-left: auto;
+        color: var(--ig-muted);
+        font-size: 12px;
+      }
+    }
+
+    .topic-post .cooked {
+      padding: 0;
+      font-size: 14px;
+      line-height: 20px;
+
+      > :first-child {
+        margin-top: 0;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+
+      p {
+        margin: 0 0 8px;
+      }
+    }
+
+    // ---- opening post: an Instagram post ----
+    article#post_1 {
+      .post__row,
+      > .row {
+        padding: 12px 12px 0;
+      }
+
+      .topic-avatar img.avatar {
+        padding: 2px;
+        background: var(--ig-story-ring);
+        box-sizing: border-box;
+      }
+
+      .cooked {
+        margin-top: 10px;
+        font-size: 15px;
+        line-height: 22px;
+
+        // images run edge to edge, like the post's media
+        .lightbox-wrapper,
+        > p > img:not(.emoji, .avatar, .site-icon),
+        > img:not(.emoji, .avatar, .site-icon) {
+          display: block;
+          width: calc(100% + 24px);
+          max-width: none;
+          margin: 0 -12px 10px;
+          border-radius: 0;
+
+          img {
+            width: 100%;
+            height: auto;
+            border-radius: 0;
+          }
+        }
+      }
+
+      .post-controls {
+        margin: 4px -8px 0;
+
+        .actions {
+          justify-content: flex-start;
+        }
+
+        .btn,
+        .double-button .btn {
+          min-height: 44px;
+          padding: 8px;
+          color: var(--ig-ink);
+          font-size: 14px;
+        }
+
+        .d-icon {
+          width: 24px;
+          height: 24px;
+          font-size: 24px;
+        }
+      }
+    }
+
+    // Instagram's order: heart · comment · share ··· bookmark (rest after)
+    .post-controls .actions {
+      display: flex;
+      align-items: center;
+      gap: 0;
+
+      // the like count follows the heart, as Instagram writes it
+      .double-button {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        align-items: center;
+      }
+
+      .double-button,
+      .post-action-menu__like {
+        order: 1;
+      }
+
+      .post-action-menu__reply,
+      .reply {
+        order: 2;
+      }
+
+      .post-action-menu__share {
+        order: 3;
+      }
+
+      .post-action-menu__copy-link {
+        order: 4;
+      }
+
+      .post-action-menu__show-more,
+      .post-action-menu__show-replies {
+        order: 5;
+      }
+
+      .post-action-menu__bookmark {
+        order: 9;
+        margin-left: auto;
+      }
+    }
+
+    // ---- replies: Instagram comments ----
+    .topic-post article:not(#post_1) {
+      .post__row,
+      > .row {
+        padding: 10px 12px 2px;
+      }
+
+      .topic-meta-data .post-infos {
+        margin-left: 0;
+      }
+
+      .cooked {
+        margin-top: 2px;
+        padding-left: 42px;
+      }
+
+      .post-menu-area {
+        margin-top: 2px;
+        padding-left: 34px;
+      }
+
+      // a comment's actions stay together in one small row
+      .post-controls .actions .post-action-menu__bookmark {
+        margin-left: 0;
+      }
+
+      .post-controls {
+        .actions {
+          justify-content: flex-start;
+        }
+
+        .btn,
+        .double-button .btn {
+          min-height: 32px;
+          padding: 4px 8px;
+          color: var(--ig-muted);
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .d-icon {
+          width: 16px;
+          height: 16px;
+          font-size: 16px;
+        }
+      }
+    }
+
+    // no rules between posts, and small actions stay quiet
+    .topic-post + .topic-post .topic-body,
+    .small-action,
+    .time-gap {
+      border-top: 0;
+    }
+
+    .small-action {
+      padding: 4px 12px 4px 54px;
+      color: var(--ig-muted);
+      font-size: 12px;
+    }
+
+    .topic-map {
+      margin: 8px 12px;
+    }
+
+    // ---- bottom: comment bar above the tab bar ----
+    .ig-comment-bar {
+      position: fixed;
+      inset: auto 0 calc(50px + env(safe-area-inset-bottom));
+      z-index: 999;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      height: 56px;
+      margin: 0;
+      padding: 0 16px;
+      border: 0;
+      border-top: 1px solid var(--ig-border);
+      background: var(--ig-page);
+      color: var(--ig-muted);
+      font-family: inherit;
+      font-size: 14px;
+      text-align: left;
+      cursor: text;
+    }
+
+    .ig-comment-bar__avatar {
+      flex: 0 0 32px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .ig-comment-bar__field {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ig-comment-bar__post {
+      color: var(--ig-btn-primary);
+      font-weight: 600;
+      opacity: 0.5;
+    }
+
+    #main-outlet-wrapper,
+    #main-outlet {
+      padding-bottom: calc(116px + env(safe-area-inset-bottom));
+    }
+
+    // Discourse's reading-position pill sits above the comment bar
+    #topic-progress-wrapper,
+    #topic-progress-wrapper.docked {
+      bottom: calc(118px + env(safe-area-inset-bottom));
+    }
+
+    // while the composer is open it owns the bottom of the screen
+    &:has(#reply-control.open) {
+      .ig-comment-bar,
+      .ig-bottom-nav {
+        display: none;
+      }
+    }
+  }
+}

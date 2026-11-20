@@ -17,3 +17,15 @@ export function rememberPage(url) {
 export function pageBeforeAuth() {
   return lastPage || "/";
 }
+
+// How many pages this tab has shown inside the app, so a back button can
+// tell whether history.back() stays on the site.
+let pagesShown = 0;
+
+export function countPage() {
+  pagesShown++;
+}
+
+export function canGoBackInApp() {
+  return pagesShown > 1;
+}

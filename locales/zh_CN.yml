@@ -28,6 +28,11 @@ zh_CN:
       new_topic_composer_height: "创建话题编辑器的高度，占屏幕高度的百分比（0 为 Discourse 默认）。"
       instagram_mobile_layout: "宽度小于 768px：Instagram 移动端顶栏与通栏帖子。"
   ig:
+    topic:
+      title: "帖子"
+      back: "返回"
+      add_comment: "添加评论…"
+      post: "发布"
     categories:
       studios: "工作室 · %{count}"
       studios_short: " 个工作室"
