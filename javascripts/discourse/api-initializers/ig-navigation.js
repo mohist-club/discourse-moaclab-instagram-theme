@@ -581,7 +581,6 @@ function loadLatest() {
 const STORY_MAX = 20;
 const SEEN_KEY = "ig-stories-seen";
 const DIRECTORY_PERIODS = ["weekly", "monthly", "yearly", "all"];
-let storyCache = null;
 
 function ensureStories(api) {
   const existing = document.querySelector(".ig-stories");
@@ -620,33 +619,103 @@ function ensureStories(api) {
 
   list.parentElement.insertBefore(tray, list);
 
-  loadStoryItems(api).then((items) => {
+  const me = api.getCurrentUser()?.username || null;
+  let shown = "";
+
+  // replace the tray's contents (unseen first, newest first — Instagram's
+  // order); skipped when nothing changed, so a refresh never flickers
+  const render = (items) => {
     if (!tray.isConnected) {
       return;
     }
-    if (!items.length) {
-      tray.remove();
-      return;
-    }
     const seen = readSeen();
-    // unseen first (newest first), then seen — as Instagram orders it
     const ordered = [
       ...items.filter((i) => !seen.has(i.postId)),
       ...items.filter((i) => seen.has(i.postId)),
     ];
-    for (const item of ordered) {
-      track.append(storyNode({ ...item, seen: seen.has(item.postId) }));
+    const key = ordered.map((i) => i.postId).join("|");
+    if (key === shown) {
+      return;
     }
+    shown = key;
+    track.replaceChildren(
+      ...ordered.map((item, index) =>
+        storyNode({ ...item, seen: seen.has(item.postId) }, index)
+      )
+    );
     syncNav();
+  };
+
+  // 1. at once: this tab's last tray, else grey placeholders
+  const cached = readStoryCache(me);
+  if (cached?.items.length) {
+    render(cached.items);
+  } else {
+    track.replaceChildren(...storySkeleton());
+  }
+  if (cached?.complete && Date.now() - cached.at < FEED_TTL) {
+    return;
+  }
+
+  // 2. then fresh data, drawn as soon as each part arrives
+  loadStoryItems(api, me, render)
+    .then((items) => {
+      if (!items.length && tray.isConnected) {
+        tray.remove();
+      }
+    })
+    .catch(() => {
+      if (!shown) {
+        tray.remove();
+      }
+    });
+}
+
+// This tab's last tray (sessionStorage), shown instantly on the next page
+// load while fresh data is fetched; per user, 30 minutes at most.
+const STORY_CACHE_KEY = "ig-stories-cache";
+const STORY_CACHE_MAX_AGE = 30 * 60 * 1000;
+
+function readStoryCache(me) {
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(STORY_CACHE_KEY));
+    if (
+      cached?.user === me &&
+      Array.isArray(cached.items) &&
+      Date.now() - cached.at < STORY_CACHE_MAX_AGE
+    ) {
+      return cached;
+    }
+  } catch {
+    // no storage, or a broken entry
+  }
+  return null;
+}
+
+function writeStoryCache(me, items, complete) {
+  try {
+    sessionStorage.setItem(
+      STORY_CACHE_KEY,
+      JSON.stringify({ at: Date.now(), user: me, items, complete })
+    );
+  } catch {
+    // storage full or blocked: the tray just loads normally next time
+  }
+}
+
+function storySkeleton() {
+  return Array.from({ length: 8 }, () => {
+    const node = document.createElement("span");
+    node.className = "ig-story is-skeleton";
+    node.setAttribute("aria-hidden", "true");
+    node.innerHTML =
+      '<span class="ig-story__ring"><span class="ig-story__avatar"></span></span><span class="ig-story__label"></span>';
+    return node;
   });
 }
 
-async function loadStoryItems(api) {
-  if (storyCache && Date.now() - storyCache.at < FEED_TTL) {
-    return storyCache.items;
-  }
-
-  const me = api.getCurrentUser()?.username;
+// Collects people, newest activity first, one entry per person.
+function storyCollector(me) {
   const people = new Map();
   // `when` is the activity time; directory people have none (0) and keep
   // the directory's order after everyone with a known time
@@ -663,20 +732,21 @@ async function loadStoryItems(api) {
       when,
       href,
       postId,
-      imageUrl: avatarTemplate.replace("{size}", "160"),
+      imageUrl: avatarTemplate.replace("{size}", "144"),
     });
   };
+  // stable sort: people with the same time keep their directory order
+  const items = () =>
+    [...people.values()].sort((x, y) => y.when - x.when).slice(0, STORY_MAX);
+  return { people, consider, items };
+}
 
-  const [posts, latest] = await Promise.all([
-    ajax("/posts.json").catch(() => null),
-    loadLatest(),
-  ]);
-
+function addPosts(collector, posts) {
   for (const post of posts?.latest_posts || []) {
     if (post.post_type && post.post_type !== 1) {
       continue;
     }
-    consider(
+    collector.consider(
       post.username,
       post.user_id,
       Date.parse(post.created_at) || 1,
@@ -685,13 +755,16 @@ async function loadStoryItems(api) {
       `p${post.id}`
     );
   }
+}
 
-  const users = new Map((latest?.users || []).map((u) => [u.id, u]));
-  for (const topic of latest?.topic_list?.topics || []) {
+// topics from /latest.json (posters carry user_id) or from the list already
+// on the page (posters carry the user itself)
+function addTopics(collector, topics, usersById) {
+  for (const topic of topics || []) {
     const bumped = Date.parse(topic.bumped_at || topic.last_posted_at) || 1;
     const created = Date.parse(topic.created_at) || 1;
     (topic.posters || []).forEach((poster, index) => {
-      const user = users.get(poster.user_id);
+      const user = poster.user || usersById?.get(poster.user_id);
       if (!user) {
         return;
       }
@@ -699,7 +772,7 @@ async function loadStoryItems(api) {
         /latest/.test(poster.extras || "") ||
         user.username === topic.last_poster_username;
       if (isLast) {
-        consider(
+        collector.consider(
           user.username,
           user.id,
           bumped,
@@ -710,7 +783,7 @@ async function loadStoryItems(api) {
       } else {
         // the original poster (first) or a frequent / recent replier: the
         // exact time is unknown, but they were active since it was created
-        consider(
+        collector.consider(
           user.username,
           user.id,
           created,
@@ -721,9 +794,38 @@ async function loadStoryItems(api) {
       }
     });
   }
+}
 
+async function loadStoryItems(api, me, onUpdate) {
+  const collector = storyCollector(me);
+
+  // the home page's own topic list, already in memory: no second request
+  const pageList = api.container.lookup("service:session")?.topicList;
+  const pageTopics = pageList?.topics?.length ? pageList.topics : null;
+  if (pageTopics) {
+    addTopics(collector, pageTopics);
+  }
+
+  const [posts, latest] = await Promise.all([
+    ajax("/posts.json").catch(() => null),
+    pageTopics ? null : loadLatest(),
+  ]);
+  addPosts(collector, posts);
+  if (latest) {
+    addTopics(
+      collector,
+      latest.topic_list?.topics,
+      new Map((latest.users || []).map((u) => [u.id, u]))
+    );
+  }
+
+  let items = collector.items();
+  onUpdate(items);
+  writeStoryCache(me, items, items.length >= STORY_MAX);
+
+  // top up from the user directory in the background, appended at the end
   for (const period of DIRECTORY_PERIODS) {
-    if (people.size >= STORY_MAX) {
+    if (collector.people.size >= STORY_MAX) {
       break;
     }
     let result = null;
@@ -736,8 +838,8 @@ async function loadStoryItems(api) {
     }
     for (const item of result?.directory_items || []) {
       const user = item.user;
-      if (user && !people.has(user.username)) {
-        consider(
+      if (user && !collector.people.has(user.username)) {
+        collector.consider(
           user.username,
           user.id,
           0,
@@ -747,13 +849,11 @@ async function loadStoryItems(api) {
         );
       }
     }
+    items = collector.items();
+    onUpdate(items);
   }
 
-  // stable sort: people with the same time keep their directory order
-  const items = [...people.values()]
-    .sort((x, y) => y.when - x.when)
-    .slice(0, STORY_MAX);
-  storyCache = { at: Date.now(), items };
+  writeStoryCache(me, items, true);
   return items;
 }
 
@@ -786,7 +886,7 @@ function storyNav(direction, sign, track) {
   return btn;
 }
 
-function storyNode({ href, label, imageUrl, postId, seen }) {
+function storyNode({ href, label, imageUrl, postId, seen }, index = 0) {
   const a = document.createElement("a");
   a.className = `ig-story${seen ? " is-seen" : ""}`;
   a.href = href;
@@ -802,6 +902,13 @@ function storyNode({ href, label, imageUrl, postId, seen }) {
   av.className = "ig-story__avatar";
   if (imageUrl) {
     const img = document.createElement("img");
+    // the rings on screen first; the rest when scrolled to
+    img.loading = index < 8 ? "eager" : "lazy";
+    img.decoding = "async";
+    if (index < 6) {
+      img.fetchPriority = "high";
+    }
+    img.width = img.height = 144;
     img.src = imageUrl;
     img.alt = "";
     av.append(img);

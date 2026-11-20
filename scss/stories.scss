@@ -177,3 +177,42 @@
     border-width: 4px;
   }
 }
+
+// ---- placeholders while the tray loads (first visit in a tab) ----
+.ig-story.is-skeleton {
+  pointer-events: none;
+
+  .ig-story__ring {
+    background: var(--ig-pill);
+  }
+
+  .ig-story__avatar {
+    background: var(--ig-hover);
+    animation: ig-story-pulse 1.2s ease-in-out infinite alternate;
+  }
+
+  .ig-story__label {
+    display: block;
+    width: 56px;
+    height: 10px;
+    margin: 3px auto 0;
+    border-radius: 5px;
+    background: var(--ig-pill);
+  }
+}
+
+@keyframes ig-story-pulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-story.is-skeleton .ig-story__avatar {
+    animation: none;
+  }
+}
