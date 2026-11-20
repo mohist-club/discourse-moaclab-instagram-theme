@@ -57,6 +57,7 @@ en:
       follow: "Follow"
       following: "Following"
     search:
+      cancel: "Cancel"
       placeholder: "Search"
       recent: "Recent"
       clear_all: "Clear all"

@@ -57,6 +57,7 @@ zh_CN:
       follow: "关注"
       following: "已关注"
     search:
+      cancel: "取消"
       placeholder: "搜索"
       recent: "最近"
       clear_all: "全部清除"

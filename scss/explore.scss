@@ -227,7 +227,7 @@ body.ig-topic-style:not(.admin-interface) .more-topics__container {
   }
 }
 
-// phones: Instagram's mobile Explore, edge to edge with 3px gaps
+// phones: Instagram's mobile Explore, edge to edge with 2px gaps
 @media (width < 768px) {
   body.ig-explore:not(.admin-interface) {
     #main-outlet {
@@ -235,12 +235,18 @@ body.ig-topic-style:not(.admin-interface) .more-topics__container {
     }
 
     .topic-list tbody {
-      gap: 3px;
+      gap: 2px;
     }
 
-    .ig-post__overlay-stats {
+    // touch screens: no hover layer (a tap opens the post)
+    .ig-post__overlay {
       display: none;
     }
+  }
+
+  // the phone feed spaces posts apart; grid tiles stay flush
+  body.ig-explore.ig-mobile-shell:not(.admin-interface) .topic-list .ig-post {
+    margin: 0;
 
     .ig-post__text {
       padding: 10px;

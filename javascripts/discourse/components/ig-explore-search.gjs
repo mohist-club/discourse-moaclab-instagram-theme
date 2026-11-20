@@ -258,6 +258,17 @@ export default class IgExploreSearch extends Component {
     this.loading = false;
   }
 
+  // phones: Instagram's "Cancel" next to the field closes the search
+  @action
+  cancel(event) {
+    this.clear();
+    this.open = false;
+    event.currentTarget
+      .closest(".ig-search")
+      ?.querySelector(".ig-search__input")
+      ?.blur();
+  }
+
   @action
   async clearRecent() {
     try {
@@ -296,6 +307,13 @@ export default class IgExploreSearch extends Component {
             ></button>
           {{/if}}
         </div>
+        {{#if this.open}}
+          <button
+            type="button"
+            class="ig-search__cancel"
+            {{on "click" this.cancel}}
+          >{{this.text "cancel"}}</button>
+        {{/if}}
 
         {{#if this.open}}
           <div class="ig-search__panel" role="listbox">

@@ -264,27 +264,82 @@
   text-align: center;
 }
 
+// "Cancel" is a phone control
+.ig-search .ig-search__cancel {
+  display: none;
+}
+
+// ---- phones: Instagram's mobile Explore ----
+//   the field is the top bar (sticky, Discourse's header steps aside on
+//   this page), "取消" beside it while searching, and the results fill the
+//   screen between the field and the tab bar
 @media (width < 768px) {
   .ig-search {
-    margin: 8px 12px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin: 0;
+    padding: 8px 16px;
+    background: var(--ig-page);
   }
 
   .ig-search__field {
+    flex: 1;
+    min-width: 0;
     height: 36px;
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .ig-search__icon {
     top: 8px;
   }
 
+  .ig-search .ig-search__cancel {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ig-ink);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
   .ig-search__panel {
     position: fixed;
-    top: auto;
+    top: 52px;
     right: 0;
-    bottom: 0;
+    bottom: calc(50px + env(safe-area-inset-bottom));
     left: 0;
-    max-height: 70dvh;
-    border-radius: 16px 16px 0 0;
+    max-height: none;
+    border-top: 1px solid var(--ig-border);
+    border-radius: 0;
+    background: var(--ig-page);
+    box-shadow: none;
+  }
+
+  .ig-search .ig-search__row,
+  .ig-search .ig-search__all {
+    padding-inline: 16px;
+  }
+
+  .ig-search__head {
+    padding-inline: 16px;
+  }
+
+  body.ig-mobile-shell:not(.admin-interface):has(.ig-search) {
+    .d-header-wrap {
+      display: none;
+    }
+
+    #main-outlet {
+      padding-top: 0;
+    }
   }
 }
