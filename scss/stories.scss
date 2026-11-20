@@ -1,0 +1,115 @@
+// =========================================================
+// Instagram "stories" tray — a horizontal strip injected at
+// the top of the discovery feed (.ig-stories), built from
+// categories by javascripts/.../ig-navigation.js.
+// =========================================================
+.ig-stories {
+  box-sizing: border-box;
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  max-width: var(--ig-feed-width);
+  margin: 0 auto 16px;
+  padding: 12px 8px;
+  background: var(--ig-card);
+  border: 1px solid var(--ig-border);
+  border-radius: var(--ig-radius-lg);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.ig-story {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 72px;
+  text-decoration: none;
+  color: var(--ig-ink);
+
+  &__ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    padding: 2px;
+    background: var(--ig-gradient);
+  }
+
+  &__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--ig-card);
+    background: var(--ig-elevated);
+    overflow: hidden;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__label {
+    max-width: 68px;
+    font-size: 12px;
+    line-height: 14px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ig-ink);
+  }
+
+  // "Your story" entry gets a plain grey ring + plus badge
+  &--mine .ig-story__ring {
+    background: var(--ig-border);
+  }
+
+  &--mine .ig-story__avatar {
+    position: relative;
+  }
+
+  &--mine .ig-story__avatar::after {
+    content: "+";
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--ig-card);
+    background: var(--ig-accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+// On phones, the tray is edge-to-edge like the app
+@media (width <= 767px) {
+  .ig-stories {
+    max-width: 100%;
+    border-inline: 0;
+    border-radius: 0;
+  }
+}

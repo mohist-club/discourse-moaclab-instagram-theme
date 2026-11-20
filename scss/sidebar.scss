@@ -1,0 +1,198 @@
+// =========================================================
+// Instagram left rail — restyle of the native Discourse
+// sidebar: flat icon+label rows, hover pills, brand wordmark,
+// Instagram line icons. Active only with body.ig-desktop-shell.
+// =========================================================
+
+// Map Discourse d-icon names -> Instagram line-icon assets
+$ig-sidebar-icons: (
+  ("house", "home", "house-chimney"): $ig-home,
+  ("magnifying-glass", "search"): $ig-search,
+  ("compass", "discourse-compass", "globe"): $ig-explore,
+  ("circle-plus", "plus", "square-plus"): $ig-create,
+  ("bell", "far-bell", "heart", "far-heart"): $ig-heart,
+  ("envelope", "far-envelope", "comment", "comments", "far-comment"):
+    $ig-messages,
+  ("bookmark", "far-bookmark"): $ig-bookmark,
+  ("user", "users", "user-group", "circle-user"): $ig-user,
+  ("gear", "wrench", "sliders"): $ig-settings,
+  ("bars", "list", "ellipsis"): $ig-menu,
+);
+
+body.ig-desktop-shell:not(.admin-interface) {
+  // Brand wordmark injected at the top of the rail by JS
+  .ig-wordmark {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 24px 12px 16px;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    background: var(--ig-gradient);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  :is(.sidebar-wrapper, .sidebar-hamburger-dropdown) {
+    --d-sidebar-row-height: 48px;
+
+    .sidebar-container {
+      border: 0;
+      background: var(--ig-card);
+    }
+
+    .sidebar-sections {
+      padding: 4px 12px 12px;
+    }
+
+    // Flat list — hide section headers/carets for the IG look
+    .sidebar-section-header-wrapper {
+      display: none;
+    }
+
+    .sidebar-section-wrapper,
+    .sidebar-section-content,
+    .sidebar-section-link-wrapper {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      gap: 0;
+    }
+
+    // Instagram nav rows: icon + label, pill hover
+    .sidebar-section-link {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      min-height: 48px;
+      padding: 12px !important;
+      margin: 2px 0;
+      border: 0;
+      border-radius: 10px;
+      color: var(--ig-ink);
+      background: transparent;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 20px;
+      text-decoration: none;
+
+      &:hover {
+        background: var(--ig-pill);
+      }
+
+      &.active,
+      &.exact-url-match,
+      &[aria-current="page"] {
+        font-weight: 700;
+        background: transparent;
+      }
+    }
+
+    .sidebar-section-link-content-text {
+      min-width: 0;
+      color: inherit;
+    }
+
+    .sidebar-section-link-prefix {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      margin-right: 16px;
+
+      .d-icon,
+      img {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        object-fit: contain;
+      }
+    }
+
+    // Swap neutral nav icons for Instagram line icons
+    @each $names, $asset in $ig-sidebar-icons {
+      @each $name in $names {
+        .sidebar-section-link-prefix:has(.d-icon-#{$name}) {
+          &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: var(--ig-ink);
+            mask: url($asset) center / 24px 24px no-repeat;
+            pointer-events: none;
+          }
+
+          .d-icon {
+            visibility: hidden;
+          }
+        }
+      }
+    }
+
+    // active row -> bold icon (Instagram fills the glyph; we bold it)
+    .sidebar-section-link.active .sidebar-section-link-prefix::before,
+    .sidebar-section-link[aria-current="page"]
+      .sidebar-section-link-prefix::before {
+      mask-size: 24px 24px;
+      filter: none;
+    }
+  }
+
+  // Sticky full-height rail with right divider
+  @media (width >= 768px) {
+    &.has-sidebar-page .sidebar-wrapper {
+      box-sizing: border-box;
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      border-right: 1px solid var(--ig-border);
+      background: var(--ig-card);
+      overscroll-behavior-y: contain;
+
+      .sidebar-container {
+        height: 100%;
+      }
+    }
+  }
+
+  // Tablet: icon-only rail (hide labels + wordmark text)
+  @media (width <= 1263px) and (width >= 768px) {
+    .ig-wordmark {
+      font-size: 0;
+
+      &::before {
+        content: "";
+        width: 24px;
+        height: 24px;
+        background: var(--ig-gradient);
+        mask: url($ig-create) center / contain no-repeat;
+      }
+    }
+
+    :is(.sidebar-wrapper) {
+      .sidebar-section-link-content-text {
+        display: none;
+      }
+
+      .sidebar-section-link {
+        justify-content: center;
+        padding: 12px 0 !important;
+      }
+
+      .sidebar-section-link-prefix {
+        margin-right: 0;
+      }
+    }
+  }
+}

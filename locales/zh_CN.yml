@@ -9,3 +9,5 @@ zh_CN:
       brand_gradient_buttons: "主要按钮使用品牌渐变。"
       mobile_bottom_nav: "移动端显示底部导航栏。"
       accent_color: "强调色/链接色。"
+      instagram_desktop_shell: "桌面端把左侧边栏变成 Instagram 导航竖栏。"
+      instagram_stories: "信息流顶部显示由分类生成的 Stories 横条。"

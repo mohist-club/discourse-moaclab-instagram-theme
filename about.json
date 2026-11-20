@@ -7,13 +7,32 @@
     "nav-search": "assets/nav-search.svg",
     "nav-create": "assets/nav-create.svg",
     "nav-activity": "assets/nav-activity.svg",
-    "nav-profile": "assets/nav-profile.svg"
+    "nav-profile": "assets/nav-profile.svg",
+    "ig-home": "assets/ig-home.svg",
+    "ig-search": "assets/ig-search.svg",
+    "ig-explore": "assets/ig-explore.svg",
+    "ig-create": "assets/ig-create.svg",
+    "ig-heart": "assets/ig-heart.svg",
+    "ig-messages": "assets/ig-messages.svg",
+    "ig-bookmark": "assets/ig-bookmark.svg",
+    "ig-user": "assets/ig-user.svg",
+    "ig-settings": "assets/ig-settings.svg",
+    "ig-menu": "assets/ig-menu.svg"
   },
   "name": "Moaclab Instagram",
   "theme_version": "1.0.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
-    "topic_thumbnail_sizes": [[600, 600], [1080, 1080]]
+    "topic_thumbnail_sizes": [
+      [
+        600,
+        600
+      ],
+      [
+        1080,
+        1080
+      ]
+    ]
   },
   "color_schemes": {
     "Instagram Light": {

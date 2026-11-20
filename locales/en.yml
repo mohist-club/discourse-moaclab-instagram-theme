@@ -9,3 +9,5 @@ en:
       brand_gradient_buttons: "Use the brand gradient on primary buttons."
       mobile_bottom_nav: "Show a bottom navigation bar on mobile."
       accent_color: "Accent / link color."
+      instagram_desktop_shell: "Turn the left sidebar into an Instagram nav rail (desktop)."
+      instagram_stories: "Show a stories tray built from categories at the top of the feed."

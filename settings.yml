@@ -40,3 +40,15 @@ accent_color:
   description:
     en: "Accent / link color (Instagram blue by default)."
     zh_CN: "强调色/链接色（默认 Instagram 蓝）。"
+
+instagram_desktop_shell:
+  default: true
+  description:
+    en: "Desktop: turn the left sidebar into an Instagram-style nav rail with a brand wordmark."
+    zh_CN: "桌面端：把左侧边栏变成 Instagram 风格的导航竖栏，顶部带品牌字标。"
+
+instagram_stories:
+  default: true
+  description:
+    en: "Show an Instagram-style stories tray (built from categories) at the top of the feed."
+    zh_CN: "在信息流顶部显示 Instagram 风格的 Stories 横条（由分类生成）。"

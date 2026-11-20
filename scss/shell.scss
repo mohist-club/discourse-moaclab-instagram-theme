@@ -1,0 +1,37 @@
+// =========================================================
+// Instagram desktop shell: left rail width, minimal header,
+// centered feed. Gated by body.ig-desktop-shell (set by JS
+// from the instagram_desktop_shell setting), desktop only.
+// =========================================================
+
+@media (width >= 768px) {
+  body.ig-desktop-shell:not(.admin-interface) {
+    --d-sidebar-width: 245px;
+
+    // Minimal, Instagram-flat header
+    .d-header {
+      background: var(--header_background);
+      border-bottom: 1px solid var(--ig-border);
+      box-shadow: none;
+    }
+
+    // Feed stays centered in the main column
+    #main-outlet {
+      padding-top: 8px;
+    }
+  }
+
+  // Tablet: collapse rail to an icon-only bar (Instagram 72px)
+  body.ig-desktop-shell:not(.admin-interface) {
+    @media (width <= 1263px) {
+      --d-sidebar-width: 73px;
+    }
+  }
+}
+
+// On phones the rail is hidden; the top bar + bottom nav take over.
+@media (width <= 767px) {
+  body.ig-desktop-shell {
+    --d-sidebar-width: 0;
+  }
+}
