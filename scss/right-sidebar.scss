@@ -269,9 +269,11 @@
   }
 }
 
-// the corner buttons go away only while this module is on screen
-@media (width >= 1264px) {
-  body.ig-rightcol:has(.ig-right__auth) .d-header {
+// The top-right 注册 / 登录 buttons are not part of the Instagram shell:
+// signing in lives in the rail's 更多 menu and, on the feed, in the
+// right-column module above. Hidden on every shell page (feed, topic, …).
+@media (width >= 768px) {
+  body.ig-desktop-shell.has-sidebar-page:not(.admin-interface) .d-header {
     .auth-buttons,
     .sign-up-button,
     .login-button {

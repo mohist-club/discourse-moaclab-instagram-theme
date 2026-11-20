@@ -9,6 +9,12 @@ $ig-love: #ed4956; // like / heart red
   --ig-page: #{dark-light-choose(#fff, #000)};
   --ig-card: #{dark-light-choose(#fff, #000)};
   --ig-elevated: #{dark-light-choose(#fff, #121212)};
+  --ig-modal: #{dark-light-choose(#fff, #262626)};
+  --ig-field: #{dark-light-choose(#fafafa, #121212)};
+  --ig-modal-border: #{dark-light-choose(#dbdbdb, #363636)};
+
+  // page behind a pop-up: rgb(0 0 0 / 65%) flattened onto the page colour
+  --ig-backdrop: #{dark-light-choose(#595959, #000)};
 
   // text
   --ig-ink: #{dark-light-choose(#0c1014, #f5f5f5)};

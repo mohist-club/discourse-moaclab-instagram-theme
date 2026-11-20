@@ -79,10 +79,10 @@ instagram_messages_dock:
 
 instagram_suggested_categories:
   type: list
-  default: ""
+  default: "13"
   description:
-    en: "IDs of the categories whose subcategories (studios) fill \"Suggested for you\" (the number at the end of a category URL, e.g. /c/keyboards/10). Empty: the top-level categories named 键盘 and 键帽库. With none, active users are shown."
-    zh_CN: "右栏「为你推荐」使用这些类别下的二级类别（工作室），填类别 ID（类别网址最后的数字，如 /c/keyboards/10 填 10）。留空则使用名为「键盘」「键帽库」的一级类别；都没有时显示活跃用户。"
+    en: "IDs of the categories whose subcategories (studios) fill \"Suggested for you\" — the number at the end of a category URL (/c/keyboards/13 → 13). Add more IDs (e.g. the keycap category) to mix their studios in. Empty: top-level categories with the slug keyboards / keycaps or the name 键盘 / 键帽库; with none, active users are shown."
+    zh_CN: "右栏「为你推荐」列出这些类别下的二级类别（工作室），填类别 ID，即类别网址最后的数字（/c/keyboards/13 填 13）。可再加键帽类别等的 ID 一起列出。留空时按别名 keyboards / keycaps 或名称「键盘」「键帽库」查找一级类别；都没有则显示活跃用户。"
 
 instagram_tools_section:
   type: string
@@ -96,3 +96,9 @@ instagram_topic_style:
   description:
     en: "Topic pages keep Discourse's own layout and behaviour but use the theme's look: Instagram icons in the post menu (red heart), hashtag tags, flat quotes / topic map / timeline, and suggested topics as a 3-column grid."
     zh_CN: "帖子详情页保留 Discourse 原生布局与逻辑，样式统一到主题：帖子菜单换成 Instagram 图标（红心）、标签显示为 #话题、引用/统计/时间轴扁平化、推荐话题为三列网格。"
+
+instagram_auth_modal:
+  default: true
+  description:
+    en: "Log-in and sign-up pages look like an Instagram pop-up: a centred card on a dimmed backdrop with the site logo and a close button. Discourse's own form, validation and log-in methods are unchanged."
+    zh_CN: "登录和注册页显示为 Instagram 弹窗样式：变暗背景上的居中卡片，带站点 Logo 和关闭按钮。表单、校验和各种登录方式仍是 Discourse 原生的。"

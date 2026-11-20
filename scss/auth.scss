@@ -1,0 +1,389 @@
+// =========================================================
+// Log-in / sign-up as an Instagram pop-up (instagram_auth_modal).
+//
+// Discourse's own full-page /login and /signup (form, validation,
+// social log-in, 2FA) inside a 400px card on a dimmed backdrop:
+// site logo on top (ig-auth-head.gjs in core's
+// login-before-modal-body / create-account-before-modal-body
+// outlets), grey Instagram fields with labels that shrink inside
+// the field, a blue full-width button, a hairline, then
+// "没有账户？注册" on one line; social log-in buttons below the form.
+// The close button sits at the top-right of the screen, as on
+// instagram.com. Phones get the same card without the backdrop.
+// =========================================================
+body.ig-auth-modal:is(.login-page, .signup-page) {
+  background: var(--ig-page);
+
+  // the card carries the logo, so the header is not needed
+  .d-header-wrap {
+    display: none;
+  }
+
+  .login-fullpage,
+  .signup-fullpage {
+    box-sizing: border-box;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 32px 16px;
+  }
+
+  .login-fullpage > .alert,
+  .signup-fullpage > .alert {
+    max-width: 400px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+  }
+
+  // ---- the card ----
+  .login-body,
+  .signup-body {
+    position: relative;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    max-width: 400px;
+    padding: 36px 40px 28px;
+    border-radius: var(--ig-radius-lg);
+    background: var(--ig-modal);
+    color: var(--ig-ink);
+  }
+
+  .login-left-side,
+  .login-right-side {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    overflow: visible;
+  }
+
+  // ---- logo + close ----
+  .ig-auth-head {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .ig-auth-head__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    color: var(--ig-ink);
+    font-size: 28px;
+    font-weight: 700;
+    text-decoration: none;
+
+    img {
+      display: block;
+      width: auto;
+      max-width: 220px;
+      height: 44px;
+      object-fit: contain;
+    }
+  }
+
+  .ig-auth-head__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    color: var(--ig-ink);
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: currentcolor;
+      mask: url($ig-close) center / 18px 18px no-repeat;
+    }
+  }
+
+  // ---- heading ----
+  .login-welcome-header {
+    padding: 0;
+    text-align: center;
+  }
+
+  .login-title {
+    margin: 0 0 16px;
+    color: var(--ig-muted);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .signup-progress-bar {
+    margin-bottom: 16px;
+  }
+
+  // ---- fields ----
+  #login-form {
+    margin: 0;
+    padding: 0;
+  }
+
+  #login-form .input-group {
+    margin-bottom: 8px;
+
+    input:is(
+      [type="text"],
+      [type="email"],
+      [type="password"],
+      [type="tel"],
+      [type="number"],
+      :not([type])
+    ) {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      height: 38px;
+      margin: 0;
+      padding: 9px 8px 7px;
+      border: 1px solid var(--ig-modal-border);
+      border-radius: 3px;
+      background: var(--ig-field);
+      color: var(--ig-ink);
+      font-size: 14px;
+      line-height: 20px;
+
+      &:focus {
+        border-color: var(--ig-muted);
+        outline: none;
+        box-shadow: none;
+      }
+    }
+
+    // the label lives inside the field and shrinks to its top edge
+    label.alt-placeholder {
+      top: 10px;
+      left: 9px;
+      max-width: calc(100% - 18px);
+      padding: 0;
+      background: transparent;
+      color: var(--ig-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    input:focus + label.alt-placeholder,
+    input.value-entered + label.alt-placeholder {
+      top: 3px;
+      left: 9px;
+      padding: 0;
+      background: transparent;
+      font-size: 10px;
+      line-height: 12px;
+    }
+
+    input:is(:focus, .value-entered):has(+ label.alt-placeholder) {
+      padding: 14px 8px 2px;
+    }
+
+    .user-field label.control-label {
+      background: var(--ig-modal);
+    }
+
+    textarea,
+    .select-kit-header {
+      border-color: var(--ig-modal-border);
+      border-radius: 3px;
+      background: var(--ig-field);
+    }
+
+    .tip,
+    .more-info,
+    .instructions,
+    .caps-lock-warning {
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .more-info,
+    .instructions {
+      color: var(--ig-muted);
+    }
+  }
+
+  #email-login-link,
+  #one-time-code-link,
+  .login__password-links {
+    margin-top: 4px;
+    color: var(--ig-link);
+    font-size: 12px;
+
+    a,
+    .btn-link {
+      color: var(--ig-link);
+    }
+  }
+
+  // ---- call to action ----
+  .login-page-cta,
+  .signup-page-cta {
+    padding: 0;
+  }
+
+  .login-page-cta__buttons,
+  .signup-page-cta__buttons {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0 4px;
+    width: 100%;
+
+    // hairline between the main button and "没有账户？注册"
+    &::before {
+      content: "";
+      order: 1;
+      flex: 1 0 100%;
+      height: 1px;
+      margin: 20px 0 16px;
+      background: var(--ig-modal-border);
+    }
+  }
+
+  .login-page-cta .login-page-cta__login,
+  .signup-page-cta .signup-page-cta__signup {
+    order: 0;
+    flex: 1 0 100%;
+    width: 100%;
+    min-height: 36px;
+    margin: 8px 0 0;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--ig-radius);
+    background: var(--ig-accent);
+    color: #fff;
+    font-size: 14px !important;
+    font-weight: 600;
+
+    .d-icon {
+      color: #fff;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--ig-accent);
+      color: #fff;
+      filter: brightness(0.92);
+    }
+
+    &:disabled,
+    &.disabled {
+      opacity: 0.7;
+    }
+  }
+
+  .login-page-cta__no-account-yet,
+  .signup-page-cta__existing-account {
+    order: 2;
+    width: auto;
+    margin: 0;
+    color: var(--ig-ink);
+    font-size: 14px;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  .login-page-cta .login-page-cta__signup,
+  .signup-page-cta .signup-page-cta__login {
+    order: 3;
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ig-accent);
+    font-size: 14px !important;
+    font-weight: 600;
+
+    &:hover,
+    &:focus-visible {
+      background: none;
+      color: var(--ig-accent);
+      text-decoration: underline;
+    }
+  }
+
+  .signup-page-cta__disclaimer {
+    margin: 12px 0 0;
+    color: var(--ig-muted);
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+
+    a {
+      color: var(--ig-hashtag);
+    }
+  }
+
+  // ---- other ways to log in, below the form ----
+  .login-right-side {
+    padding-top: 0;
+
+    &::before {
+      position: static;
+      display: block;
+      width: 100%;
+      height: 1px;
+      margin: 20px 0 16px;
+      transform: none;
+      background: var(--ig-modal-border);
+    }
+  }
+
+  #login-buttons {
+    height: auto;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+
+    .btn-social {
+      justify-content: center;
+      width: 100%;
+      min-height: 36px;
+      margin: 0;
+      padding: 0 16px;
+      border: 1px solid var(--ig-modal-border);
+      border-radius: var(--ig-radius);
+      background: transparent;
+      color: var(--ig-ink);
+      font-size: 14px;
+      font-weight: 600;
+
+      &:hover {
+        background: var(--ig-hover);
+      }
+    }
+  }
+}
+
+// desktop: the pop-up — dimmed page, floating card, close at the screen corner
+@media (width >= 768px) {
+  body.ig-auth-modal:is(.login-page, .signup-page) {
+    background: var(--ig-backdrop);
+
+    .login-body,
+    .signup-body {
+      box-shadow: 0 8px 40px rgb(0 0 0 / 25%);
+    }
+
+    .ig-auth-head__close {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      color: #fff;
+
+      &::before {
+        mask-size: 22px 22px;
+      }
+    }
+  }
+}

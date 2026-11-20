@@ -403,13 +403,17 @@ function loadLatest() {
 }
 
 // ---- Stories: the people active most recently (Instagram's tray) ----
-// Merges Discourse's latest public posts with the posters of the latest
-// topics, newest activity first, one ring per person (not you, not system
-// accounts). A ring opens that person's newest post or topic; opened rings
-// turn grey like Instagram's "seen" (remembered only in this browser) and
-// light up again when that person has something newer.
+// Newest activity first, one ring per person (not you, not system accounts):
+//  1. authors of Discourse's latest public posts;
+//  2. everyone taking part in the latest topics;
+//  3. topped up from the user directory (most days visited this week, then
+//     this month, this year, all time) until the tray holds STORY_MAX.
+// A ring opens that person's newest post or topic (directory people: their
+// profile); opened rings turn grey like Instagram's "seen" (remembered only
+// in this browser) and light up again when that person has something newer.
 const STORY_MAX = 20;
 const SEEN_KEY = "ig-stories-seen";
+const DIRECTORY_PERIODS = ["weekly", "monthly", "yearly", "all"];
 let storyCache = null;
 
 function ensureStories(api) {
@@ -477,8 +481,10 @@ async function loadStoryItems(api) {
 
   const me = api.getCurrentUser()?.username;
   const people = new Map();
+  // `when` is the activity time; directory people have none (0) and keep
+  // the directory's order after everyone with a known time
   const consider = (username, userId, when, href, avatarTemplate, postId) => {
-    if (!username || username === me || userId <= 0 || !when) {
+    if (!username || username === me || !(userId > 0) || !avatarTemplate) {
       return;
     }
     const prev = people.get(username);
@@ -490,7 +496,7 @@ async function loadStoryItems(api) {
       when,
       href,
       postId,
-      imageUrl: avatarTemplate?.replace("{size}", "160"),
+      imageUrl: avatarTemplate.replace("{size}", "160"),
     });
   };
 
@@ -506,7 +512,7 @@ async function loadStoryItems(api) {
     consider(
       post.username,
       post.user_id,
-      Date.parse(post.created_at),
+      Date.parse(post.created_at) || 1,
       `/t/${post.topic_slug}/${post.topic_id}/${post.post_number}`,
       post.avatar_template,
       `p${post.id}`
@@ -515,6 +521,8 @@ async function loadStoryItems(api) {
 
   const users = new Map((latest?.users || []).map((u) => [u.id, u]));
   for (const topic of latest?.topic_list?.topics || []) {
+    const bumped = Date.parse(topic.bumped_at || topic.last_posted_at) || 1;
+    const created = Date.parse(topic.created_at) || 1;
     (topic.posters || []).forEach((poster, index) => {
       const user = users.get(poster.user_id);
       if (!user) {
@@ -523,30 +531,58 @@ async function loadStoryItems(api) {
       const isLast =
         /latest/.test(poster.extras || "") ||
         user.username === topic.last_poster_username;
-      // Discourse lists the original poster first; middle posters have no
-      // reliable time, so only the newest and the original poster count
       if (isLast) {
         consider(
           user.username,
           user.id,
-          Date.parse(topic.bumped_at || topic.last_posted_at),
+          bumped,
           `/t/${topic.slug}/${topic.id}/last`,
           user.avatar_template,
           `t${topic.id}-${topic.highest_post_number}`
         );
-      } else if (index === 0) {
+      } else {
+        // the original poster (first) or a frequent / recent replier: the
+        // exact time is unknown, but they were active since it was created
         consider(
           user.username,
           user.id,
-          Date.parse(topic.created_at),
+          created,
           `/t/${topic.slug}/${topic.id}`,
           user.avatar_template,
-          `t${topic.id}-op`
+          index === 0 ? `t${topic.id}-op` : `t${topic.id}-u${user.id}`
         );
       }
     });
   }
 
+  for (const period of DIRECTORY_PERIODS) {
+    if (people.size >= STORY_MAX) {
+      break;
+    }
+    let result = null;
+    try {
+      result = await ajax("/directory_items.json", {
+        data: { period, order: "days_visited" },
+      });
+    } catch {
+      break; // directory disabled or hidden from this visitor
+    }
+    for (const item of result?.directory_items || []) {
+      const user = item.user;
+      if (user && !people.has(user.username)) {
+        consider(
+          user.username,
+          user.id,
+          0,
+          `/u/${user.username}/activity`,
+          user.avatar_template,
+          `u-${user.username}`
+        );
+      }
+    }
+  }
+
+  // stable sort: people with the same time keep their directory order
   const items = [...people.values()]
     .sort((x, y) => y.when - x.when)
     .slice(0, STORY_MAX);
@@ -648,7 +684,6 @@ function ensureRightSidebar(api, siteSettings) {
   aside.append(user ? meBlock(user) : authBlock(title));
 
   // 2. suggested studios
-  const parents = suggestedParents(site);
   const sugg = document.createElement("section");
   sugg.className = "ig-right__sugg";
   sugg.innerHTML = `
@@ -657,7 +692,7 @@ function ensureRightSidebar(api, siteSettings) {
       <button type="button" class="ig-right__refresh" hidden title="${escapeHtml(
         t("right.refresh")
       )}" aria-label="${escapeHtml(t("right.refresh"))}"></button>
-      <a href="${parents.length === 1 ? categoryUrl(parents[0]) : "/categories"}">${escapeHtml(
+      <a class="ig-right__see-all" href="/categories">${escapeHtml(
         t("right.see_all")
       )}</a>
     </div>
@@ -697,7 +732,17 @@ function ensureRightSidebar(api, siteSettings) {
   wrap.append(aside);
 
   const listEl = sugg.querySelector(".ig-right__list");
-  if (parents.length) {
+  suggestedParents(site).then((parents) => {
+    if (!listEl.isConnected) {
+      return;
+    }
+    if (!parents.length) {
+      fillSuggestions(listEl);
+      return;
+    }
+    if (parents.length === 1) {
+      sugg.querySelector(".ig-right__see-all").href = categoryUrl(parents[0]);
+    }
     fillStudios(
       listEl,
       parents,
@@ -705,9 +750,7 @@ function ensureRightSidebar(api, siteSettings) {
       user,
       sugg.querySelector(".ig-right__refresh")
     );
-  } else {
-    fillSuggestions(listEl);
-  }
+  });
 }
 
 function meBlock(user) {
@@ -819,30 +862,59 @@ function toolsBlock() {
 }
 
 // "Suggested for you" = the studios: subcategories of the keyboard / keycap
-// categories. Parents come from instagram_suggested_categories (IDs), else
-// the top-level categories named below; with none, active users instead.
-const DEFAULT_PARENTS = ["键盘", "键帽库", "键帽"];
+// categories. Parents are the category IDs in instagram_suggested_categories
+// (default 13 = /c/keyboards/13). With the setting empty, top-level
+// categories are matched by slug or name instead; with none, active users.
+// A configured ID is resolved even when the browser has not loaded that
+// category yet (sites with lazily loaded categories).
+const DEFAULT_PARENT_KEYS = ["keyboards", "keycaps", "键盘", "键帽库", "键帽"];
 const STUDIO_MAX = 5;
+let parentsPromise = null;
 
 function suggestedParents(site) {
+  parentsPromise ||= resolveParents(site).catch(() => []);
+  return parentsPromise;
+}
+
+async function resolveParents(site) {
   const categories = site?.categories || [];
   const ids = String(settings.instagram_suggested_categories || "")
     .split("|")
     .map((v) => parseInt(v, 10))
-    .filter(Boolean);
-  const byId = ids
-    .map((id) => categories.find((c) => c.id === id))
-    .filter(Boolean);
-  if (byId.length) {
-    return byId;
+    .filter((id) => id > 0);
+
+  if (!ids.length) {
+    return categories.filter(
+      (c) =>
+        !c.parent_category_id &&
+        (DEFAULT_PARENT_KEYS.includes(c.slug?.toLowerCase()) ||
+          DEFAULT_PARENT_KEYS.includes(c.name?.trim()))
+    );
   }
-  return categories.filter(
-    (c) => !c.parent_category_id && DEFAULT_PARENTS.includes(c.name?.trim())
+
+  const parents = await Promise.all(
+    ids.map(async (id) => {
+      const known =
+        categories.find((c) => c.id === id) || Category.findById?.(id);
+      if (known) {
+        return known;
+      }
+      try {
+        const result = await ajax(`/c/${id}/show.json`);
+        return result?.category || null;
+      } catch {
+        return null;
+      }
+    })
   );
+  return parents.filter(Boolean);
 }
 
 function categoryUrl(category, parent) {
-  return parent
+  if (!category.slug) {
+    return `/c/${category.id}`;
+  }
+  return parent?.slug
     ? `/c/${parent.slug}/${category.slug}/${category.id}`
     : `/c/${category.slug}/${category.id}`;
 }
@@ -859,19 +931,23 @@ function shuffled(list) {
 async function fillStudios(listEl, parents, site, user, refreshBtn) {
   const studios = [];
   for (const parent of parents) {
-    let subs = (site?.categories || []).filter(
-      (c) => c.parent_category_id === parent.id
-    );
+    // ask Discourse for the full list of subcategories (the browser may hold
+    // only some of them); fall back to what is loaded if that fails
+    let subs = [];
+    try {
+      const result = await ajax("/categories.json", {
+        data: { parent_category_id: parent.id },
+      });
+      subs = (result?.category_list?.categories || []).filter(
+        (c) => c.id !== parent.id
+      );
+    } catch {
+      subs = [];
+    }
     if (!subs.length) {
-      // lazily loaded categories: ask Discourse for the subcategories
-      try {
-        const result = await ajax("/categories.json", {
-          data: { parent_category_id: parent.id },
-        });
-        subs = result?.category_list?.categories || [];
-      } catch {
-        subs = [];
-      }
+      subs = (site?.categories || []).filter(
+        (c) => c.parent_category_id === parent.id
+      );
     }
     for (const c of subs) {
       studios.push({ category: c, parent });
