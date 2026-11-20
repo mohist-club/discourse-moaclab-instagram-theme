@@ -25,10 +25,14 @@
     "ig-search-filled": "assets/ig-search-filled.svg",
     "ig-create-filled": "assets/ig-create-filled.svg",
     "ig-apps": "assets/ig-apps.svg",
-    "ig-activity": "assets/ig-activity.svg"
+    "ig-activity": "assets/ig-activity.svg",
+    "ig-comment": "assets/ig-comment.svg",
+    "ig-bookmark-filled": "assets/ig-bookmark-filled.svg",
+    "ig-dots": "assets/ig-dots.svg",
+    "ig-chevron": "assets/ig-chevron.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.5.0",
+  "theme_version": "1.6.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
     "topic_thumbnail_sizes": [

@@ -1,5 +1,6 @@
 import { apiInitializer } from "discourse/lib/api";
 import { ajax } from "discourse/lib/ajax";
+import { i18n } from "discourse-i18n";
 
 // Instagram desktop shell:
 //  - a fixed Instagram left rail (#ig-rail): logo glyph, Home / Explore /
@@ -220,20 +221,24 @@ function accountGroups(user) {
   if (!user) {
     return [
       [
-        { href: "/login", icon: "profile", label: "登录" },
-        { href: "/signup", icon: "create", label: "注册" },
+        { href: "/login", icon: "profile", label: t("menu.log_in") },
+        { href: "/signup", icon: "create", label: t("menu.sign_up") },
       ],
     ];
   }
   return [
     [
-      { href: "/my/preferences", icon: "settings", label: "设置" },
-      { href: "/my/activity", icon: "history", label: "你的动态" },
-      { href: "/my/activity/bookmarks", icon: "bookmark", label: "已收藏" },
+      { href: "/my/preferences", icon: "settings", label: t("menu.settings") },
+      { href: "/my/activity", icon: "history", label: t("menu.your_activity") },
+      {
+        href: "/my/activity/bookmarks",
+        icon: "bookmark",
+        label: t("menu.saved"),
+      },
     ],
     [
       {
-        label: "退出",
+        label: t("menu.log_out"),
         // Discourse's own sign-out (same call as the user menu)
         onClick: () => user.destroySession(),
       },
@@ -398,42 +403,62 @@ function ensureStories(api, site) {
   }
   existing?.remove();
 
-  const tray = document.createElement("div");
-  tray.className = "ig-stories";
-  tray.setAttribute("aria-label", "Stories");
-
-  const user = api.getCurrentUser();
-  tray.append(
-    storyNode({
-      href: "/new-topic",
-      label: user ? user.username : railLabel("your_story"),
-      mine: true,
-      avatarUrl: user?.avatar_template?.replace("{size}", "120"),
-      fallback: user?.username,
-    })
+  // Instagram's tray shows the accounts you follow; ours shows top-level
+  // categories (their logo when set, else a letter on the category colour).
+  const categories = (site?.categories || []).filter(
+    (c) => !c.parent_category_id
   );
+  if (!categories.length) {
+    return;
+  }
 
-  const categories = (site?.categories || [])
-    .filter((c) => !c.parent_category_id)
-    .slice(0, 16);
+  const tray = document.createElement("section");
+  tray.className = "ig-stories";
+  tray.setAttribute("aria-label", t("stories.label"));
 
+  const track = document.createElement("div");
+  track.className = "ig-stories__track";
   for (const c of categories) {
-    tray.append(
+    track.append(
       storyNode({
         href: `/c/${c.slug}/${c.id}`,
         label: c.name,
         color: c.color,
-        fallback: c.name,
+        imageUrl: c.uploaded_logo?.url,
       })
     );
   }
+  tray.append(track);
+
+  const prev = storyNav("prev", -1, track);
+  const next = storyNav("next", 1, track);
+  tray.append(prev, next);
+
+  const syncNav = () => {
+    const max = track.scrollWidth - track.clientWidth;
+    prev.hidden = track.scrollLeft <= 1;
+    next.hidden = track.scrollLeft >= max - 1;
+  };
+  track.addEventListener("scroll", syncNav, { passive: true });
 
   list.parentElement.insertBefore(tray, list);
+  syncNav();
 }
 
-function storyNode({ href, label, mine, color, avatarUrl, fallback }) {
+function storyNav(direction, sign, track) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = `ig-stories__nav ig-stories__nav--${direction}`;
+  btn.setAttribute("aria-label", t(`stories.${direction}`));
+  btn.addEventListener("click", () => {
+    track.scrollBy({ left: sign * track.clientWidth * 0.8 });
+  });
+  return btn;
+}
+
+function storyNode({ href, label, color, imageUrl }) {
   const a = document.createElement("a");
-  a.className = "ig-story" + (mine ? " ig-story--mine" : "");
+  a.className = "ig-story";
   a.href = href;
 
   const ring = document.createElement("span");
@@ -441,16 +466,16 @@ function storyNode({ href, label, mine, color, avatarUrl, fallback }) {
 
   const av = document.createElement("span");
   av.className = "ig-story__avatar";
-  if (color) {
-    av.style.background = `#${color}`;
-  }
-  if (avatarUrl) {
+  if (imageUrl) {
     const img = document.createElement("img");
-    img.src = avatarUrl;
+    img.src = imageUrl;
     img.alt = "";
     av.append(img);
   } else {
-    av.textContent = (fallback || "·").trim().charAt(0);
+    if (color) {
+      av.style.background = `#${color}`;
+    }
+    av.textContent = (label || "·").trim().charAt(0);
   }
 
   const text = document.createElement("span");
@@ -462,24 +487,16 @@ function storyNode({ href, label, mine, color, avatarUrl, fallback }) {
   return a;
 }
 
+// UI text lives in locales/ (AGENTS.md)
+function t(key, options) {
+  return i18n(themePrefix(`ig.${key}`), options);
+}
+
 function railLabel(key) {
-  const map = {
-    home: "首页",
-    explore: "探索",
-    messages: "消息",
-    search: "搜索",
-    activity: "通知",
-    create: "创建",
-    profile: "主页",
-    more: "更多",
-    apps: "社区与工具",
-    your_story: "你的故事",
-  };
-  return map[key] || key;
+  return t(`rail.${key}`);
 }
 
 // ---- Instagram right column: current user + suggestions + footer ----
-let suggestionCache = null;
 
 function ensureRightSidebar(api, siteSettings) {
   // Inject as a sibling of #main-outlet inside #main-outlet-wrapper so it
@@ -501,42 +518,60 @@ function ensureRightSidebar(api, siteSettings) {
     const me = document.createElement("div");
     me.className = "ig-right__me";
     me.innerHTML = `
-      <a class="ig-right__me-av" href="/u/${user.username}/summary">
-        <img src="${user.avatar_template.replace("{size}", "132")}" alt="">
+      <a class="ig-right__avatar" href="/u/${user.username}/summary">
+        <img src="${user.avatar_template.replace("{size}", "96")}" alt="">
       </a>
-      <div class="ig-right__me-text">
-        <a class="ig-right__me-user" href="/u/${user.username}/summary">${user.username}</a>
-        <span class="ig-right__me-name">${escapeHtml(user.name || "")}</span>
+      <div class="ig-right__text">
+        <a class="ig-right__user" href="/u/${user.username}/summary">${escapeHtml(
+          user.username
+        )}</a>
+        <span class="ig-right__sub">${escapeHtml(user.name || "")}</span>
       </div>
-      <a class="ig-right__switch" href="/u/${user.username}/preferences/account">切换</a>`;
+      <a class="ig-right__action" href="/u/${user.username}/preferences/account">${escapeHtml(
+        t("right.switch")
+      )}</a>`;
     aside.append(me);
   }
 
-  const sugg = document.createElement("div");
+  const sugg = document.createElement("section");
   sugg.className = "ig-right__sugg";
   sugg.innerHTML = `
-    <div class="ig-right__sugg-head">
-      <span>为你推荐</span>
-      <a href="/u">查看全部</a>
+    <div class="ig-right__head">
+      <h2>${escapeHtml(t("right.suggested"))}</h2>
+      <a href="/u">${escapeHtml(t("right.see_all"))}</a>
     </div>
-    <div class="ig-right__sugg-list"></div>`;
+    <div class="ig-right__list"></div>`;
   aside.append(sugg);
 
-  const footer = document.createElement("nav");
+  const links = [
+    ["/about", "about"],
+    ["/faq", "faq"],
+    ["/badges", "badges"],
+    ["/u", "users"],
+    ["/tos", "tos"],
+    ["/privacy", "privacy"],
+    ["/categories", "categories"],
+  ]
+    .map(
+      ([href, key]) => `<a href="${href}">${escapeHtml(t(`right.${key}`))}</a>`
+    )
+    .join('<span aria-hidden="true"> · </span>');
+
+  const footer = document.createElement("footer");
   footer.className = "ig-right__footer";
   footer.innerHTML = `
-    <span><a href="/about">关于</a> · <a href="/faq">帮助</a> · <a href="/badges">徽章</a> ·
-    <a href="/u">用户</a> · <a href="/tos">条款</a> · <a href="/privacy">隐私</a> ·
-    <a href="/categories">分类</a></span>
-    <span class="ig-right__copy">© ${new Date().getFullYear()} ${escapeHtml(
+    <nav class="ig-right__links">${links}</nav>
+    <p class="ig-right__copy">© ${new Date().getFullYear()} ${escapeHtml(
       siteSettings?.title || "Moaclab"
-    )}</span>`;
+    )}</p>`;
   aside.append(footer);
 
   wrap.append(aside);
 
-  fillSuggestions(sugg.querySelector(".ig-right__sugg-list"));
+  fillSuggestions(sugg.querySelector(".ig-right__list"));
 }
+
+let suggestionCache = null;
 
 function fillSuggestions(listEl) {
   if (!listEl) {
@@ -553,14 +588,20 @@ function fillSuggestions(listEl) {
       .map(
         (u) => `
       <div class="ig-right__row">
-        <a class="ig-right__row-av" href="/u/${u.username}">
-          <img src="${u.avatar_template.replace("{size}", "68")}" alt="">
+        <a class="ig-right__avatar" href="/u/${u.username}">
+          <img src="${u.avatar_template.replace("{size}", "96")}" alt="">
         </a>
-        <div class="ig-right__row-text">
-          <a class="ig-right__row-user" href="/u/${u.username}">${u.username}</a>
-          <span>${escapeHtml(u.name || "推荐关注")}</span>
+        <div class="ig-right__text">
+          <a class="ig-right__user" href="/u/${u.username}">${escapeHtml(
+            u.username
+          )}</a>
+          <span class="ig-right__sub">${escapeHtml(
+            u.name || t("right.fallback_subtitle")
+          )}</span>
         </div>
-        <a class="ig-right__row-act" href="/u/${u.username}">查看</a>
+        <a class="ig-right__action" href="/u/${u.username}">${escapeHtml(
+          t("right.view")
+        )}</a>
       </div>`
       )
       .join("");

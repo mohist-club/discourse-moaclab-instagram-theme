@@ -1,25 +1,38 @@
 // =========================================================
-// Instagram right column (.ig-right): current user, suggested
-// users, footer links. Injected into #main-outlet, shown only
-// on wide desktop (>=1264px). Layout is reserved in shell.scss.
+// Instagram right column (instagram.com, 2026) — measured:
+//   319px column, 64px after the 630px feed column
+//   me: 44px avatar, 12px gap, 14/600 username + 14 grey name,
+//       12/600 blue action on the right
+//   "Suggested for you" 14/600 + "See all" 12/600
+//   rows: 44px avatar, 8px 4px padding (60px pitch)
+//   footer: 12px grey links " · ", then © in caps
+// Injected by ig-navigation.js as a sibling of #main-outlet.
 // =========================================================
 .ig-right {
   display: none; // becomes a grid column at >=1264px on discovery
   box-sizing: border-box;
   color: var(--ig-ink);
+  font-size: 14px;
+  line-height: 18px;
+
+  a {
+    color: var(--ig-ink);
+    text-decoration: none;
+  }
 }
 
-// Turn #main-outlet-wrapper into Instagram's 5-column grid only when the
-// right column is present (discovery + desktop shell + wide). Mirrors the
-// proven redditish layout: sidebar | lspace | feed | rightcol | rspace.
+// rail | space | feed 630 | 64 | right 319 | space — only while the right
+// column exists (discovery + desktop shell + wide)
 @media (width >= 1264px) {
   body.ig-rightcol.ig-desktop-shell:not(.admin-interface)
     #main-outlet-wrapper:has(.ig-right) {
+    // Instagram's right column keeps 64px on both sides; with that the
+    // group lands where instagram.com draws it
     grid-template-columns:
-      var(--d-sidebar-width) minmax(0, 1fr) minmax(0, var(--ig-feed-width))
-      319px minmax(0, 1fr);
-    grid-template-areas: "sidebar lspace content rightcol rspace";
-    column-gap: 28px;
+      var(--d-sidebar-width) minmax(0, 1fr) minmax(0, 630px)
+      64px 319px 64px minmax(0, 1fr);
+    grid-template-areas: "sidebar lspace content gap rightcol gap2 rspace";
+    column-gap: 0;
 
     > .sidebar-wrapper {
       grid-area: sidebar;
@@ -27,7 +40,6 @@
 
     > #main-outlet {
       grid-area: content;
-      padding-top: 8px;
     }
 
     > .ig-right {
@@ -35,142 +47,117 @@
       position: static;
       grid-area: rightcol;
       width: auto;
-      padding-top: 8px;
+      // Instagram starts the column 15px below the top of the feed
+      padding: calc(var(--ig-feed-top, 8px) + 15px) 16px 0;
     }
   }
 }
 
-.ig-right__me {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-
-  &-av img {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  &-text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    flex: 1;
-  }
-
-  &-user {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--ig-ink);
-    text-decoration: none;
-  }
-
-  &-name {
-    font-size: 14px;
-    color: var(--ig-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-.ig-right__switch {
-  flex: 0 0 auto;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ig-accent);
-  text-decoration: none;
-}
-
-.ig-right__sugg {
-  margin-bottom: 16px;
-
-  &-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-
-    span {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ig-muted);
-    }
-
-    a {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ig-ink);
-      text-decoration: none;
-    }
-  }
-}
-
+.ig-right__me,
 .ig-right__row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 4px 0;
+}
 
-  &-av img {
+.ig-right__row {
+  padding: 8px 4px;
+}
+
+.ig-right__avatar {
+  display: block;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+
+  img {
+    display: block;
     width: 44px;
     height: 44px;
     border-radius: 50%;
     object-fit: cover;
   }
+}
 
-  &-text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    flex: 1;
+.ig-right__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
 
-    span {
-      font-size: 12px;
-      color: var(--ig-muted);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
+.ig-right a.ig-right__user {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
-  &-user {
-    font-weight: 600;
-    font-size: 14px;
+.ig-right__sub {
+  overflow: hidden;
+  color: var(--ig-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ig-right__row .ig-right__sub {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ig-right a.ig-right__action {
+  flex: 0 0 auto;
+  color: var(--ig-link);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+
+  &:hover {
     color: var(--ig-ink);
-    text-decoration: none;
+  }
+}
+
+.ig-right__sugg {
+  margin-top: 24px;
+}
+
+.ig-right__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+    color: var(--ig-ink);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
   }
 
-  &-act {
-    flex: 0 0 auto;
+  a {
     font-size: 12px;
     font-weight: 600;
-    color: var(--ig-accent);
-    text-decoration: none;
+    line-height: 16px;
   }
 }
 
 .ig-right__footer {
-  margin-top: 16px;
+  margin-top: 32px;
+  color: var(--ig-muted);
   font-size: 12px;
-  line-height: 1.6;
-  color: var(--ig-border-strong);
+  line-height: 20px;
 
-  a {
+  .ig-right__links a {
     color: var(--ig-muted);
-    text-decoration: none;
 
     &:hover {
       text-decoration: underline;
     }
   }
+}
 
-  .ig-right__copy {
-    display: block;
-    margin-top: 8px;
-    text-transform: uppercase;
-    color: var(--ig-muted);
-  }
+.ig-right__copy {
+  margin: 18px 0 0;
+  text-transform: uppercase;
 }

@@ -1,20 +1,24 @@
 // =========================================================
-// Instagram "stories" tray — a horizontal strip injected at
-// the top of the discovery feed (.ig-stories), built from
-// categories by javascripts/.../ig-navigation.js.
+// Instagram stories tray (instagram.com, 2026) — measured:
+//   no box around it; 88px rings at a 104px pitch
+//   ring: 3px gradient + 2.5px white gap + 77px avatar
+//   12px label under the ring, truncated to the ring width
+//   white circular ‹ › buttons page the tray
+// Built from categories by javascripts/.../ig-navigation.js.
 // =========================================================
 .ig-stories {
+  position: relative;
   box-sizing: border-box;
-  display: flex;
-  gap: 4px;
   width: 100%;
-  max-width: var(--ig-feed-width);
-  margin: 0 auto 16px;
-  padding: 12px 8px;
-  background: var(--ig-card);
-  border: 1px solid var(--ig-border);
-  border-radius: var(--ig-radius-lg);
+  margin: 0 0 30px;
+}
+
+.ig-stories__track {
+  display: flex;
+  gap: 16px;
+  padding: 0 10px;
   overflow-x: auto;
+  scroll-behavior: smooth;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -23,93 +27,141 @@
 }
 
 .ig-story {
-  flex: 0 0 auto;
   display: flex;
+  flex: 0 0 88px;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 72px;
-  text-decoration: none;
+  gap: 4px;
+  width: 88px;
   color: var(--ig-ink);
+  text-decoration: none;
 
-  &__ring {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 62px;
-    height: 62px;
-    border-radius: 50%;
-    padding: 2px;
-    background: var(--ig-gradient);
-  }
-
-  &__avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 2px solid var(--ig-card);
-    background: var(--ig-elevated);
-    overflow: hidden;
-    font-size: 22px;
-    font-weight: 700;
-    color: #fff;
-    text-transform: uppercase;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  &__label {
-    max-width: 68px;
-    font-size: 12px;
-    line-height: 14px;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  &:hover,
+  &:focus {
     color: var(--ig-ink);
-  }
-
-  // "Your story" entry gets a plain grey ring + plus badge
-  &--mine .ig-story__ring {
-    background: var(--ig-border);
-  }
-
-  &--mine .ig-story__avatar {
-    position: relative;
-  }
-
-  &--mine .ig-story__avatar::after {
-    content: "+";
-    position: absolute;
-    right: -2px;
-    bottom: -2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--ig-card);
-    background: var(--ig-accent);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1;
+    text-decoration: none;
   }
 }
 
-// On phones, the tray is edge-to-edge like the app
+.ig-story__ring {
+  box-sizing: border-box;
+  display: block;
+  width: 88px;
+  height: 88px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--ig-story-ring);
+}
+
+.ig-story__avatar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 2.5px solid var(--ig-card);
+  border-radius: 50%;
+  background: var(--ig-elevated);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ig-story__label {
+  // Instagram truncates to roughly the avatar's width ("goldenst…")
+  max-width: 74px;
+  overflow: hidden;
+  color: var(--ig-ink);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// paging buttons, vertically centred on the rings
+.ig-stories__nav {
+  position: absolute;
+  top: 32px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 95%);
+  box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+  color: #737373;
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    width: 16px;
+    height: 16px;
+    background: currentcolor;
+    mask: url($ig-chevron) center / 16px 16px no-repeat;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+
+  &--prev {
+    left: 8px;
+
+    &::before {
+      transform: scaleX(-1);
+    }
+  }
+
+  &--next {
+    right: 8px;
+  }
+}
+
+// Phones: edge to edge, smaller rings like the app
 @media (width <= 767px) {
   .ig-stories {
-    max-width: 100%;
-    border-inline: 0;
-    border-radius: 0;
+    margin-bottom: 12px;
+  }
+
+  .ig-stories__track {
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .ig-story,
+  .ig-story__label {
+    flex-basis: 66px;
+    width: 66px;
+    max-width: 66px;
+  }
+
+  .ig-story__ring {
+    width: 66px;
+    height: 66px;
+    padding: 2px;
+  }
+
+  .ig-story__avatar {
+    border-width: 2px;
+    font-size: 22px;
+  }
+
+  .ig-stories__nav {
+    display: none;
   }
 }

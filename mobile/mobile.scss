@@ -4,9 +4,13 @@
 }
 
 // full-bleed cards on phones, like the Instagram app
-body[class*="navigation-"] .topic-list .moaclab-feed-item.custom-topic-layout {
-  max-width: 100%;
-  margin-inline: 0;
+// Instagram's app: media runs edge to edge, no side borders or radius
+.topic-list .ig-post {
+  max-width: none;
+}
+
+.ig-post__media,
+.ig-post__text {
   border-inline: 0;
   border-radius: 0;
 }

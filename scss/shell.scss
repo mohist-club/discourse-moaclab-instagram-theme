@@ -17,9 +17,11 @@
       box-shadow: none;
     }
 
-    // Feed stays centered in the main column
+    // Where the feed (stories) starts; the right column aligns to it
+    --ig-feed-top: 8px;
+
     #main-outlet {
-      padding-top: 8px;
+      padding-top: var(--ig-feed-top);
     }
   }
 }
@@ -141,8 +143,10 @@
       gap: 4px;
     }
 
+    --ig-feed-top: 20px;
+
     #main-outlet {
-      padding-top: 20px;
+      padding-top: var(--ig-feed-top);
     }
   }
 }

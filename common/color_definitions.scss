@@ -12,7 +12,7 @@ $ig-love: #ed4956; // like / heart red
 
   // text
   --ig-ink: #{dark-light-choose(#0c1014, #f5f5f5)};
-  --ig-muted: #{dark-light-choose(#8e8e8e, #a8a8a8)};
+  --ig-muted: #{dark-light-choose(#6e7175, #a8a8a8)};
 
   // lines
   --ig-border: #{dark-light-choose(#dbdbdb, #262626)};
@@ -20,6 +20,22 @@ $ig-love: #ed4956; // like / heart red
 
   // interactive
   --ig-accent: #{$ig-accent};
+
+  // measured from instagram.com (2026): action links, hashtags, like red
+  --ig-link: #{dark-light-choose(#4150f7, #8c9bff)};
+  --ig-hashtag: #{dark-light-choose(#00376b, #e0f1ff)};
+  --ig-like: #ff3040;
+
+  // story ring, sampled around a live ring: yellow (bottom-left) to
+  // magenta (top-right)
+  --ig-story-ring: linear-gradient(
+    45deg,
+    #f7c50d 5%,
+    #ffa40f 25%,
+    #ea3748 50%,
+    #d1099f 75%,
+    #ca05be 95%
+  );
   --ig-love: #{$ig-love};
   --ig-pill: #{dark-light-choose(#efefef, #1a1a1a)};
   --ig-hover: #{dark-light-choose(#f3f3f3, rgb(255 255 255 / 10%))};
