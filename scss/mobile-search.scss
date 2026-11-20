@@ -1,0 +1,303 @@
+// =========================================================
+// The full search page on phones (< 768px) as Instagram's search
+// (instagram_mobile_layout). Discourse's own /search — the query,
+// types, filters, sorting, advanced options — restyled:
+//   top bar: the search field (sticky; Discourse's header steps
+//     aside), the search button as a blue text button beside it
+//   types (话题 / 类别 / 标签 / 用户): Instagram's tab row, underlined
+//   people: 44px avatar · bold username · grey name
+//   posts: author's 44px avatar · bold title · category · date, then
+//     two lines of the matched text
+// =========================================================
+
+@media (width < 768px) {
+  body.ig-mobile-shell.search-page:not(.admin-interface) {
+    .d-header-wrap {
+      display: none;
+    }
+
+    #main-outlet {
+      padding: 0;
+    }
+
+    .search-container {
+      margin: 0;
+      padding: 0;
+    }
+
+    // ---- the header: field on top, tabs under it ----
+    .search-header {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 8px 0 0;
+      border: 0;
+      background: var(--ig-page);
+    }
+
+    .search-bar {
+      display: flex;
+      order: 1;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      padding: 0 16px 8px;
+    }
+
+    .search-bar__field {
+      position: relative;
+      display: flex;
+      flex: 1;
+      align-items: center;
+      min-width: 0;
+      height: 36px;
+      padding: 0 8px 0 40px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--ig-btn-secondary);
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 9px;
+        left: 12px;
+        width: 18px;
+        height: 18px;
+        background: var(--ig-muted);
+        mask: url($ig-search) center / 18px 18px no-repeat;
+      }
+
+      input.full-page-search {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        color: var(--ig-ink);
+        font-size: 16px;
+        outline: none;
+
+        &::-webkit-search-cancel-button {
+          display: none;
+        }
+      }
+    }
+
+    // Discourse's search button as a text button
+    .search-cta {
+      flex: 0 0 auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--ig-btn-primary);
+      font-size: 16px;
+      font-weight: 600;
+
+      .d-icon {
+        display: none;
+      }
+
+      &:hover,
+      &:focus-visible {
+        background: none;
+        color: var(--ig-btn-primary);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+      }
+    }
+
+    // ---- types as Instagram's tab row ----
+    .search-types {
+      order: 2;
+      margin: 0;
+      border-bottom: 1px solid var(--ig-border);
+
+      ul,
+      .nav-pills {
+        display: flex;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+      }
+
+      li {
+        flex: 1 0 auto;
+        margin: 0;
+      }
+    }
+
+    .search-types__type {
+      width: 100%;
+      height: 44px;
+      margin: 0;
+      padding: 0 12px;
+      border: 0;
+      border-bottom: 1px solid transparent;
+      border-radius: 0;
+      background: none;
+      color: var(--ig-muted);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+
+      &.active {
+        border-bottom-color: var(--ig-ink);
+        background: none;
+        color: var(--ig-ink);
+      }
+    }
+
+    // filters, sorting, advanced: compact and quiet
+    .search-advanced {
+      margin: 0;
+      padding: 0;
+    }
+
+    .search-filters,
+    .search-notice,
+    .result-count {
+      margin: 0;
+      padding: 8px 16px 0;
+      color: var(--ig-muted);
+      font-size: 13px;
+    }
+
+    // ---- posts ----
+    .fps-result-entries {
+      margin: 0;
+      padding: 4px 0 16px;
+    }
+
+    .fps-result {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin: 0;
+      padding: 8px 16px;
+      border: 0;
+
+      .author {
+        flex: 0 0 44px;
+        margin: 0;
+
+        img.avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+        }
+      }
+
+      .fps-topic {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .topic {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 8px;
+      }
+
+      .search-link {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        color: var(--ig-ink);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 18px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .search-category {
+        font-size: 12px;
+
+        .badge-category__wrapper {
+          font-size: 12px;
+        }
+      }
+
+      .blurb {
+        display: -webkit-box;
+        margin-top: 2px;
+        padding: 0;
+        overflow: hidden;
+        color: var(--ig-muted);
+        font-size: 13px;
+        line-height: 18px;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+
+        .search-highlight {
+          color: var(--ig-ink);
+          font-weight: 600;
+        }
+      }
+
+      .like-count {
+        color: var(--ig-muted);
+      }
+    }
+
+    // ---- people, categories, tags: Instagram account rows ----
+    .user-items,
+    .category-items,
+    .tag-items {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 4px 0;
+    }
+
+    .fps-user-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 0;
+      padding: 8px 16px;
+      color: var(--ig-ink);
+
+      img.avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+      }
+
+      .user-titles {
+        display: flex;
+        flex-direction: column-reverse;
+        min-width: 0;
+      }
+
+      .username {
+        color: var(--ig-ink);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .name {
+        color: var(--ig-muted);
+        font-size: 14px;
+      }
+    }
+
+    .category-items > *,
+    .fps-tag-item {
+      margin: 0;
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+  }
+}
