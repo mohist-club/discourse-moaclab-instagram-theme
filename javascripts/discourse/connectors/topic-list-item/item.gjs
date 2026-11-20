@@ -89,6 +89,53 @@ export default class Item extends Component {
     return this.topic.posters?.[0]?.user;
   }
 
+  // ---- private messages: an Instagram inbox row instead of a post ----
+  get isMessage() {
+    return (
+      this.topic.archetype === "private_message" ||
+      !!this.topic.isPrivateMessage
+    );
+  }
+
+  // the people in the conversation other than you, newest poster first
+  get dmPeople() {
+    const me = this.currentUser?.id;
+    const seen = new Set();
+    const people = [];
+    const add = (user) => {
+      if (user?.username && user.id !== me && !seen.has(user.id)) {
+        seen.add(user.id);
+        people.push(user);
+      }
+    };
+    [...(this.topic.posters || [])].reverse().forEach((p) => add(p.user));
+    (this.topic.participants || []).forEach((p) => add(p.user));
+    return people;
+  }
+
+  get dmAvatarUrl() {
+    const user = this.dmPeople[0] || this.poster;
+    return user?.avatar_template?.replace("{size}", "112");
+  }
+
+  get dmName() {
+    const names = this.dmPeople.map((u) => u.username);
+    if (!names.length) {
+      return this.poster?.username || this.topic.title;
+    }
+    return names.length > 3
+      ? `${names.slice(0, 3).join("、")} +${names.length - 3}`
+      : names.join("、");
+  }
+
+  get dmUnread() {
+    return !!(
+      this.topic.unread_posts ||
+      this.topic.unseen ||
+      this.topic.new_posts
+    );
+  }
+
   get thumbnail() {
     return this.topic.thumbnails?.[0];
   }
@@ -533,110 +580,280 @@ export default class Item extends Component {
 
   <template>
     {{! template-lint-disable no-invalid-interactive }}
-    <article
-      {{on "click" this.openTopic}}
-      class="ig-post {{if this.thumbnail 'ig-post--media' 'ig-post--text'}}"
-    >
-      <header class="ig-post__header">
-        {{#if this.poster}}
-          <a
-            class="ig-post__avatar"
-            data-user-card={{this.poster.username}}
-            href="/u/{{this.poster.username}}"
+    {{#if this.isMessage}}
+      {{#if @outletArgs.bulkSelectEnabled}}
+        {{! bulk select (archive / move): Discourse's own row }}
+        {{yield}}
+      {{else}}
+        <a
+          class="ig-dm {{if this.dmUnread 'is-unread'}}"
+          href={{this.topic.lastUnreadUrl}}
+        >
+          <span class="ig-dm__avatar">
+            {{#if this.dmAvatarUrl}}
+              <img src={{this.dmAvatarUrl}} alt="" loading="lazy" />
+            {{/if}}
+          </span>
+          <span class="ig-dm__text">
+            <span class="ig-dm__name">{{this.dmName}}</span>
+            <span class="ig-dm__preview">
+              <span class="ig-dm__title">{{this.topic.title}}</span>
+              <span class="ig-dm__time">·
+                {{formatDate
+                  this.topic.bumpedAt
+                  format="tiny"
+                  noTitle="true"
+                }}</span>
+            </span>
+          </span>
+          {{#if this.dmUnread}}
+            <span class="ig-dm__dot" aria-hidden="true"></span>
+          {{/if}}
+        </a>
+      {{/if}}
+    {{else}}
+      <article
+        {{on "click" this.openTopic}}
+        class="ig-post {{if this.thumbnail 'ig-post--media' 'ig-post--text'}}"
+      >
+        <header class="ig-post__header">
+          {{#if this.poster}}
+            <a
+              class="ig-post__avatar"
+              data-user-card={{this.poster.username}}
+              href="/u/{{this.poster.username}}"
+            >
+              {{avatar this.poster imageSize="medium"}}
+            </a>
+          {{/if}}
+
+          <div class="ig-post__who">
+            <div class="ig-post__byline">
+              {{#if this.poster}}
+                <a
+                  class="ig-post__user"
+                  data-user-card={{this.poster.username}}
+                  href="/u/{{this.poster.username}}"
+                >{{this.poster.username}}</a>
+                <span class="ig-post__dot" aria-hidden="true">•</span>
+              {{/if}}
+              <span class="ig-post__time">
+                {{formatDate this.topic.createdAt format="tiny" noTitle="true"}}
+              </span>
+            </div>
+
+            {{#if this.category}}
+              <PluginOutlet
+                @name="topic-list-before-category"
+                @outletArgs={{lazyHash topic=this.topic}}
+              />
+              <a
+                class="ig-post__place"
+                href={{this.category.url}}
+              >{{this.category.name}}</a>
+            {{/if}}
+          </div>
+
+          <button
+            type="button"
+            class="ig-post__options"
+            title={{this.optionsLabel}}
+            aria-label={{this.optionsLabel}}
+            {{on "click" this.openOptions}}
           >
-            {{avatar this.poster imageSize="medium"}}
-          </a>
+            <span class="ig-glyph ig-glyph--dots" aria-hidden="true"></span>
+          </button>
+        </header>
+
+        {{#if this.thumbnail}}
+          <div
+            class="ig-post__media
+              {{if this.hasGallery 'ig-post__media--gallery'}}"
+            style={{this.mediaStyle}}
+            {{this.watchGallery}}
+            {{on "dblclick" this.likeFromMedia}}
+          >
+            <div class="ig-post__slides" {{on "scroll" this.onSlidesScroll}}>
+              {{#each this.slides as |slide|}}
+                <div class="ig-post__slide">
+                  <img
+                    alt={{this.topic.title}}
+                    loading={{slide.loading}}
+                    decoding="async"
+                    width={{slide.width}}
+                    height={{slide.height}}
+                    src={{slide.src}}
+                    srcset={{slide.srcset}}
+                  />
+                </div>
+              {{/each}}
+            </div>
+            {{#if this.hasGallery}}
+              {{#unless this.atFirstSlide}}
+                <button
+                  type="button"
+                  class="ig-post__nav ig-post__nav--prev"
+                  title={{this.previousLabel}}
+                  aria-label={{this.previousLabel}}
+                  {{on "click" this.previousSlide}}
+                ></button>
+              {{/unless}}
+              {{#unless this.atLastSlide}}
+                <button
+                  type="button"
+                  class="ig-post__nav ig-post__nav--next"
+                  title={{this.nextLabel}}
+                  aria-label={{this.nextLabel}}
+                  {{on "click" this.nextSlide}}
+                ></button>
+              {{/unless}}
+              <span class="ig-post__gallery-badge" aria-hidden="true"></span>
+            {{/if}}
+            {{#if this.heartPop}}
+              <span class="ig-post__heart-pop" aria-hidden="true"></span>
+            {{/if}}
+          </div>
+        {{else}}
+          <div class="ig-post__text">
+            <h2 class="ig-post__title link-top-line">
+              <TopicStatus @topic={{this.topic}} />
+              <TopicLink
+                {{on "focus" this.onTitleFocus}}
+                {{on "blur" this.onTitleBlur}}
+                @topic={{this.topic}}
+                class="raw-link raw-topic-link"
+              />
+              {{#if this.topic.featured_link}}
+                {{topicFeaturedLink this.topic}}
+              {{/if}}
+              <PluginOutlet
+                @name="topic-list-after-title"
+                @outletArgs={{lazyHash topic=this.topic}}
+              />
+              <UnreadIndicator @topic={{this.topic}} />
+              {{#if @outletArgs.showTopicPostBadges}}
+                <TopicPostBadges
+                  @unreadPosts={{this.topic.unread_posts}}
+                  @unseen={{this.topic.unseen}}
+                  @newDotText={{this.newDotText}}
+                  @url={{this.topic.lastUnreadUrl}}
+                />
+              {{/if}}
+            </h2>
+            {{#if this.hasExcerpt}}
+              <div class="ig-post__excerpt">
+                <TopicExcerpt @topic={{this.topic}} />
+              </div>
+            {{/if}}
+            {{#if this.tagNames.length}}
+              <div class="ig-post__tags">
+                {{#each this.tagNames as |tag|}}
+                  <a class="ig-post__tag" href="/tag/{{tag}}">#{{tag}}</a>
+                {{/each}}
+              </div>
+            {{/if}}
+          </div>
         {{/if}}
 
-        <div class="ig-post__who">
-          <div class="ig-post__byline">
+        {{! grid views (Explore, suggested topics): title and counts on hover }}
+        <div class="ig-post__overlay" aria-hidden="true">
+          <span class="ig-post__overlay-title">{{this.topic.title}}</span>
+          <span class="ig-post__overlay-stats">
+            <span class="ig-post__overlay-stat">
+              <span class="ig-glyph ig-glyph--heart-filled"></span>
+              {{this.topicLikeCount}}
+            </span>
+            <span class="ig-post__overlay-stat">
+              <span class="ig-glyph ig-glyph--comment-filled"></span>
+              {{this.replyCount}}
+            </span>
+          </span>
+        </div>
+
+        {{#if this.hasGallery}}
+          <div class="ig-post__dots" aria-hidden="true">
+            {{#each this.dots as |dot|}}
+              <span
+                class="ig-post__dot-indicator
+                  {{if dot.active 'is-active'}}
+                  {{if dot.small 'is-small'}}"
+              ></span>
+            {{/each}}
+          </div>
+        {{/if}}
+
+        <div class="ig-post__actions">
+          {{#if settings.show_like_count}}
+            <button
+              type="button"
+              class="ig-post__action ig-post__like
+                {{if this.liked 'is-liked'}}
+                {{if this.likeUnavailable 'is-unavailable'}}"
+              title={{this.likeLabel}}
+              aria-pressed={{if this.liked "true" "false"}}
+              disabled={{this.likeDisabled}}
+              {{on "click" this.toggleLike}}
+            >
+              <span
+                class="ig-glyph
+                  {{if this.liked 'ig-glyph--heart-filled' 'ig-glyph--heart'}}"
+                aria-hidden="true"
+              ></span>
+              {{#if this.topicLikeCount}}
+                <span class="ig-post__count">{{this.topicLikeCount}}</span>
+              {{/if}}
+              <span class="sr-only">{{this.likeLabel}}</span>
+            </button>
+          {{/if}}
+
+          <a
+            class="ig-post__action ig-post__comment"
+            href={{this.topic.lastUnreadUrl}}
+            title={{this.commentLabel}}
+          >
+            <span class="ig-glyph ig-glyph--comment" aria-hidden="true"></span>
+            {{#if this.replyCount}}
+              <span class="ig-post__count">{{this.replyCount}}</span>
+            {{/if}}
+            <span class="sr-only">{{this.commentLabel}}</span>
+          </a>
+
+          <button
+            type="button"
+            class="ig-post__action ig-post__share"
+            title={{this.shareLabel}}
+            {{on "click" this.share}}
+          >
+            <span class="ig-glyph ig-glyph--share" aria-hidden="true"></span>
+            <span class="sr-only">{{this.shareLabel}}</span>
+          </button>
+
+          <button
+            type="button"
+            class="ig-post__action ig-post__save {{if this.saved 'is-saved'}}"
+            title={{this.saveLabel}}
+            aria-pressed={{if this.saved "true" "false"}}
+            disabled={{this.isTogglingSave}}
+            {{on "click" this.toggleSave}}
+          >
+            <span
+              class="ig-glyph
+                {{if this.saved 'ig-glyph--save-filled' 'ig-glyph--save'}}"
+              aria-hidden="true"
+            ></span>
+            <span class="sr-only">{{this.saveLabel}}</span>
+          </button>
+        </div>
+
+        {{#if this.thumbnail}}
+          <div class="ig-post__caption link-top-line">
             {{#if this.poster}}
               <a
                 class="ig-post__user"
                 data-user-card={{this.poster.username}}
                 href="/u/{{this.poster.username}}"
               >{{this.poster.username}}</a>
-              <span class="ig-post__dot" aria-hidden="true">•</span>
             {{/if}}
-            <span class="ig-post__time">
-              {{formatDate this.topic.createdAt format="tiny" noTitle="true"}}
-            </span>
-          </div>
-
-          {{#if this.category}}
-            <PluginOutlet
-              @name="topic-list-before-category"
-              @outletArgs={{lazyHash topic=this.topic}}
-            />
-            <a
-              class="ig-post__place"
-              href={{this.category.url}}
-            >{{this.category.name}}</a>
-          {{/if}}
-        </div>
-
-        <button
-          type="button"
-          class="ig-post__options"
-          title={{this.optionsLabel}}
-          aria-label={{this.optionsLabel}}
-          {{on "click" this.openOptions}}
-        >
-          <span class="ig-glyph ig-glyph--dots" aria-hidden="true"></span>
-        </button>
-      </header>
-
-      {{#if this.thumbnail}}
-        <div
-          class="ig-post__media
-            {{if this.hasGallery 'ig-post__media--gallery'}}"
-          style={{this.mediaStyle}}
-          {{this.watchGallery}}
-          {{on "dblclick" this.likeFromMedia}}
-        >
-          <div class="ig-post__slides" {{on "scroll" this.onSlidesScroll}}>
-            {{#each this.slides as |slide|}}
-              <div class="ig-post__slide">
-                <img
-                  alt={{this.topic.title}}
-                  loading={{slide.loading}}
-                  decoding="async"
-                  width={{slide.width}}
-                  height={{slide.height}}
-                  src={{slide.src}}
-                  srcset={{slide.srcset}}
-                />
-              </div>
-            {{/each}}
-          </div>
-          {{#if this.hasGallery}}
-            {{#unless this.atFirstSlide}}
-              <button
-                type="button"
-                class="ig-post__nav ig-post__nav--prev"
-                title={{this.previousLabel}}
-                aria-label={{this.previousLabel}}
-                {{on "click" this.previousSlide}}
-              ></button>
-            {{/unless}}
-            {{#unless this.atLastSlide}}
-              <button
-                type="button"
-                class="ig-post__nav ig-post__nav--next"
-                title={{this.nextLabel}}
-                aria-label={{this.nextLabel}}
-                {{on "click" this.nextSlide}}
-              ></button>
-            {{/unless}}
-            <span class="ig-post__gallery-badge" aria-hidden="true"></span>
-          {{/if}}
-          {{#if this.heartPop}}
-            <span class="ig-post__heart-pop" aria-hidden="true"></span>
-          {{/if}}
-        </div>
-      {{else}}
-        <div class="ig-post__text">
-          <h2 class="ig-post__title link-top-line">
             <TopicStatus @topic={{this.topic}} />
             <TopicLink
               {{on "focus" this.onTitleFocus}}
@@ -651,6 +868,9 @@ export default class Item extends Component {
               @name="topic-list-after-title"
               @outletArgs={{lazyHash topic=this.topic}}
             />
+            {{#each this.tagNames as |tag|}}
+              <a class="ig-post__tag" href="/tag/{{tag}}">#{{tag}}</a>
+            {{/each}}
             <UnreadIndicator @topic={{this.topic}} />
             {{#if @outletArgs.showTopicPostBadges}}
               <TopicPostBadges
@@ -660,170 +880,30 @@ export default class Item extends Component {
                 @url={{this.topic.lastUnreadUrl}}
               />
             {{/if}}
-          </h2>
-          {{#if this.hasExcerpt}}
+            {{#if this.hasExcerpt}}
+              {{#unless this.expanded}}
+                <button
+                  type="button"
+                  class="ig-post__more"
+                  {{on "click" this.toggleExpanded}}
+                >{{this.moreLabel}}</button>
+              {{/unless}}
+            {{/if}}
+          </div>
+          {{#if this.expanded}}
             <div class="ig-post__excerpt">
               <TopicExcerpt @topic={{this.topic}} />
             </div>
           {{/if}}
-          {{#if this.tagNames.length}}
-            <div class="ig-post__tags">
-              {{#each this.tagNames as |tag|}}
-                <a class="ig-post__tag" href="/tag/{{tag}}">#{{tag}}</a>
-              {{/each}}
-            </div>
-          {{/if}}
-        </div>
-      {{/if}}
-
-      {{! grid views (Explore, suggested topics): title and counts on hover }}
-      <div class="ig-post__overlay" aria-hidden="true">
-        <span class="ig-post__overlay-title">{{this.topic.title}}</span>
-        <span class="ig-post__overlay-stats">
-          <span class="ig-post__overlay-stat">
-            <span class="ig-glyph ig-glyph--heart-filled"></span>
-            {{this.topicLikeCount}}
-          </span>
-          <span class="ig-post__overlay-stat">
-            <span class="ig-glyph ig-glyph--comment-filled"></span>
-            {{this.replyCount}}
-          </span>
-        </span>
-      </div>
-
-      {{#if this.hasGallery}}
-        <div class="ig-post__dots" aria-hidden="true">
-          {{#each this.dots as |dot|}}
-            <span
-              class="ig-post__dot-indicator
-                {{if dot.active 'is-active'}}
-                {{if dot.small 'is-small'}}"
-            ></span>
-          {{/each}}
-        </div>
-      {{/if}}
-
-      <div class="ig-post__actions">
-        {{#if settings.show_like_count}}
-          <button
-            type="button"
-            class="ig-post__action ig-post__like
-              {{if this.liked 'is-liked'}}
-              {{if this.likeUnavailable 'is-unavailable'}}"
-            title={{this.likeLabel}}
-            aria-pressed={{if this.liked "true" "false"}}
-            disabled={{this.likeDisabled}}
-            {{on "click" this.toggleLike}}
-          >
-            <span
-              class="ig-glyph
-                {{if this.liked 'ig-glyph--heart-filled' 'ig-glyph--heart'}}"
-              aria-hidden="true"
-            ></span>
-            {{#if this.topicLikeCount}}
-              <span class="ig-post__count">{{this.topicLikeCount}}</span>
-            {{/if}}
-            <span class="sr-only">{{this.likeLabel}}</span>
-          </button>
         {{/if}}
 
-        <a
-          class="ig-post__action ig-post__comment"
-          href={{this.topic.lastUnreadUrl}}
-          title={{this.commentLabel}}
-        >
-          <span class="ig-glyph ig-glyph--comment" aria-hidden="true"></span>
-          {{#if this.replyCount}}
-            <span class="ig-post__count">{{this.replyCount}}</span>
-          {{/if}}
-          <span class="sr-only">{{this.commentLabel}}</span>
-        </a>
-
-        <button
-          type="button"
-          class="ig-post__action ig-post__share"
-          title={{this.shareLabel}}
-          {{on "click" this.share}}
-        >
-          <span class="ig-glyph ig-glyph--share" aria-hidden="true"></span>
-          <span class="sr-only">{{this.shareLabel}}</span>
-        </button>
-
-        <button
-          type="button"
-          class="ig-post__action ig-post__save {{if this.saved 'is-saved'}}"
-          title={{this.saveLabel}}
-          aria-pressed={{if this.saved "true" "false"}}
-          disabled={{this.isTogglingSave}}
-          {{on "click" this.toggleSave}}
-        >
-          <span
-            class="ig-glyph
-              {{if this.saved 'ig-glyph--save-filled' 'ig-glyph--save'}}"
-            aria-hidden="true"
-          ></span>
-          <span class="sr-only">{{this.saveLabel}}</span>
-        </button>
-      </div>
-
-      {{#if this.thumbnail}}
-        <div class="ig-post__caption link-top-line">
-          {{#if this.poster}}
-            <a
-              class="ig-post__user"
-              data-user-card={{this.poster.username}}
-              href="/u/{{this.poster.username}}"
-            >{{this.poster.username}}</a>
-          {{/if}}
-          <TopicStatus @topic={{this.topic}} />
-          <TopicLink
-            {{on "focus" this.onTitleFocus}}
-            {{on "blur" this.onTitleBlur}}
-            @topic={{this.topic}}
-            class="raw-link raw-topic-link"
-          />
-          {{#if this.topic.featured_link}}
-            {{topicFeaturedLink this.topic}}
-          {{/if}}
-          <PluginOutlet
-            @name="topic-list-after-title"
-            @outletArgs={{lazyHash topic=this.topic}}
-          />
-          {{#each this.tagNames as |tag|}}
-            <a class="ig-post__tag" href="/tag/{{tag}}">#{{tag}}</a>
-          {{/each}}
-          <UnreadIndicator @topic={{this.topic}} />
-          {{#if @outletArgs.showTopicPostBadges}}
-            <TopicPostBadges
-              @unreadPosts={{this.topic.unread_posts}}
-              @unseen={{this.topic.unseen}}
-              @newDotText={{this.newDotText}}
-              @url={{this.topic.lastUnreadUrl}}
-            />
-          {{/if}}
-          {{#if this.hasExcerpt}}
-            {{#unless this.expanded}}
-              <button
-                type="button"
-                class="ig-post__more"
-                {{on "click" this.toggleExpanded}}
-              >{{this.moreLabel}}</button>
-            {{/unless}}
-          {{/if}}
-        </div>
-        {{#if this.expanded}}
-          <div class="ig-post__excerpt">
-            <TopicExcerpt @topic={{this.topic}} />
-          </div>
+        {{#if this.replyCount}}
+          <a
+            class="ig-post__comments"
+            href={{this.topic.lastUnreadUrl}}
+          >{{this.viewCommentsLabel}}</a>
         {{/if}}
-      {{/if}}
-
-      {{#if this.replyCount}}
-        <a
-          class="ig-post__comments"
-          href={{this.topic.lastUnreadUrl}}
-        >{{this.viewCommentsLabel}}</a>
-      {{/if}}
-    </article>
+      </article>
+    {{/if}}
   </template>
 }

@@ -1,0 +1,199 @@
+// =========================================================
+// Private messages as Instagram's inbox.
+//   every width: each conversation is an Instagram inbox row
+//     (connectors/topic-list-item/item.gjs, .ig-dm) — 56px avatar of
+//     the other person, name (bold when unread), "title · time",
+//     blue dot when unread. Bulk select brings back Discourse's row.
+//   phones (< 768px, instagram_mobile_layout): the page is the inbox —
+//     top bar ‹ 消息 ✎ (ig-topic-bar.gjs), no profile header, the
+//     inbox switcher as a compact row, rows edge to edge.
+// =========================================================
+
+// the list carries rows, not table columns
+body.user-messages-page:not(.admin-interface) {
+  .topic-list:has(.ig-dm) {
+    display: block;
+    width: 100%;
+    border: 0;
+
+    .topic-list-header {
+      display: none;
+    }
+
+    tbody {
+      display: block;
+      border: 0;
+    }
+
+    .topic-list-item:has(.ig-dm) {
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+  }
+}
+
+.ig-dm {
+  box-sizing: border-box;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 16px;
+  color: var(--ig-ink);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--ig-hover);
+    color: var(--ig-ink);
+    text-decoration: none;
+  }
+}
+
+.ig-dm__avatar {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--ig-pill);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ig-dm__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ig-dm__name {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-dm__preview {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  color: var(--ig-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ig-dm__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-dm__time {
+  flex: 0 0 auto;
+}
+
+.ig-dm.is-unread {
+  .ig-dm__name {
+    font-weight: 600;
+  }
+
+  .ig-dm__preview {
+    color: var(--ig-ink);
+    font-weight: 600;
+  }
+}
+
+.ig-dm__dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ig-btn-primary);
+}
+
+// ---- top bar compose icon (messages page) ----
+.ig-topic-bar__compose {
+  display: none;
+}
+
+@media (width < 768px) {
+  body.ig-mobile-shell.user-messages-page:not(.admin-interface) {
+    .ig-topic-bar__compose {
+      position: relative;
+      display: block;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      margin: 0 -4px 0 auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--ig-ink);
+      cursor: pointer;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: currentcolor;
+        mask: url($ig-compose) center / 24px 24px no-repeat;
+      }
+    }
+
+    // the inbox's top bar has only back, title and compose
+    .d-header .panel {
+      display: none;
+    }
+
+    // no profile header or profile tabs: the page is the inbox
+    .user-main .details,
+    .user-main .user-profile-image,
+    .user-navigation-primary {
+      display: none;
+    }
+
+    #main-outlet {
+      padding-inline: 0;
+    }
+
+    // the inbox switcher (收件箱 / 已发送 / 群组 …) as a compact row; the
+    // new-message button lives in the top bar
+    .user-navigation-secondary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      padding: 12px 16px 4px;
+      border: 0;
+
+      .category-breadcrumb {
+        margin: 0;
+      }
+
+      .navigation-controls {
+        margin-left: auto;
+      }
+
+      #new-private-message-btn {
+        display: none;
+      }
+    }
+
+    .user-content {
+      padding: 0;
+    }
+  }
+}

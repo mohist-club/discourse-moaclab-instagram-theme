@@ -12,19 +12,29 @@ import { canGoBackInApp } from "../lib/ig-last-page";
 // (scss/mobile-topic.scss, scss/mobile-profile.scss), replacing the logo.
 export default class IgTopicBar extends Component {
   @service router;
+  @service composer;
 
   get route() {
     return this.router.currentRouteName || "";
   }
 
+  get isMessages() {
+    return this.route.startsWith("userPrivateMessages");
+  }
+
   get show() {
     return (
       !!settings.instagram_mobile_layout &&
-      (this.route.startsWith("topic.") || this.route.startsWith("user."))
+      (this.route.startsWith("topic.") ||
+        this.route.startsWith("user.") ||
+        this.isMessages)
     );
   }
 
   get title() {
+    if (this.isMessages) {
+      return i18n(themePrefix("ig.rail.messages"));
+    }
     if (this.route.startsWith("user.")) {
       // the profile's username, from the URL (/u/<username>/…)
       const url = this.router.currentURL || window.location.pathname;
@@ -36,6 +46,21 @@ export default class IgTopicBar extends Component {
 
   get backLabel() {
     return i18n(themePrefix("ig.topic.back"));
+  }
+
+  get composeLabel() {
+    return i18n(themePrefix("ig.messages.new_message"));
+  }
+
+  // the inbox's compose icon presses Discourse's own "new message" button
+  @action
+  compose() {
+    const button = document.querySelector("#new-private-message-btn");
+    if (button) {
+      button.click();
+    } else {
+      this.composer.openNewMessage({});
+    }
   }
 
   @action
@@ -58,6 +83,15 @@ export default class IgTopicBar extends Component {
           {{on "click" this.back}}
         ></button>
         <span class="ig-topic-bar__title">{{this.title}}</span>
+        {{#if this.isMessages}}
+          <button
+            type="button"
+            class="ig-topic-bar__compose"
+            title={{this.composeLabel}}
+            aria-label={{this.composeLabel}}
+            {{on "click" this.compose}}
+          ></button>
+        {{/if}}
       </div>
     {{/if}}
   </template>
