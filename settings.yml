@@ -122,3 +122,9 @@ instagram_qa_category:
   description:
     en: "ID of the Q&A category linked in the right column's footer (the number at the end of its URL, /c/faq/4 → 4). 0 hides the link."
     zh_CN: "右栏页脚「问答与求助」链接的类别 ID（类别网址最后的数字，/c/faq/4 填 4）。填 0 不显示。"
+
+instagram_studio_profile:
+  default: true
+  description:
+    en: "Studio pages (subcategories of the categories in instagram_suggested_categories and instagram_explore_category) open with an Instagram profile header: logo in a story ring, name, topic / reply / active-member counts, description, about link, recent members, Follow (category notifications), New post (composer in the studio), Share, and Posts / Top tabs."
+    zh_CN: "工作室页面（instagram_suggested_categories 和 instagram_explore_category 中类别下的二级类别）顶部显示 Instagram 主页样式：带彩环的 Logo、名称、帖子 / 回复 / 活跃成员数、简介、关于链接、近期成员，以及「关注」（类别通知）、「发帖」（在该工作室发帖）、分享按钮和「帖子 / 热门」标签页。"

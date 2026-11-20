@@ -22,7 +22,23 @@ zh_CN:
       instagram_explore_category: "「探索」打开的类别 ID，列表显示为 Instagram 探索网格（0 则打开 /categories）。"
       instagram_post_gallery: "信息流卡片把首帖所有图片做成多图轮播。"
       instagram_qa_category: "右栏页脚「问答与求助」链接的类别 ID，默认 4 即 /c/faq/4。"
+      instagram_studio_profile: "工作室页面顶部显示 Instagram 主页样式。"
   ig:
+    studio:
+      label: "工作室"
+      posts: "帖子"
+      replies: "回复"
+      active_members: "活跃成员"
+      about: "关于 %{name}"
+      members: "活跃成员包括 %{names}"
+      members_more: "活跃成员包括 %{names} +%{count}人"
+      follow: "关注"
+      following: "已关注"
+      new_post: "发帖"
+      share: "复制链接"
+      copied: "链接已复制"
+      tab_posts: "帖子"
+      tab_top: "热门"
     auth:
       close: "关闭"
     rail:

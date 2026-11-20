@@ -22,7 +22,23 @@ en:
       instagram_explore_category: "Explore opens this category ID, shown as an Instagram Explore grid (0: /categories)."
       instagram_post_gallery: "Feed cards show all first-post images as a carousel."
       instagram_qa_category: "Q&A category ID linked in the right column footer (default 4 = /c/faq/4)."
+      instagram_studio_profile: "Studio pages open with an Instagram profile header."
   ig:
+    studio:
+      label: "Studio"
+      posts: " posts"
+      replies: " replies"
+      active_members: " active members"
+      about: "About %{name}"
+      members: "Active members include %{names}"
+      members_more: "Active members include %{names} +%{count} more"
+      follow: "Follow"
+      following: "Following"
+      new_post: "New post"
+      share: "Copy link"
+      copied: "Link copied"
+      tab_posts: "Posts"
+      tab_top: "Top"
     auth:
       close: "Close"
     rail:

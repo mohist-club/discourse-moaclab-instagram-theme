@@ -35,12 +35,13 @@
     "ig-grid": "assets/ig-grid.svg",
     "ig-moon": "assets/ig-moon.svg",
     "ig-shield": "assets/ig-shield.svg",
+    "ig-link": "assets/ig-link.svg",
     "ig-chevron": "assets/ig-chevron.svg",
     "ig-compose": "assets/ig-compose.svg",
     "ig-refresh": "assets/ig-refresh.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.15.1",
+  "theme_version": "1.16.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
     "serialize_topic_op_likes_data": true,

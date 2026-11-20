@@ -241,5 +241,20 @@ body.ig-topic-style:not(.admin-interface) .more-topics__container {
     .ig-post__overlay-stats {
       display: none;
     }
+
+    .ig-post__text {
+      padding: 10px;
+    }
+
+    .ig-post__title {
+      font-size: 13px;
+      line-height: 17px;
+    }
+
+    .ig-post__excerpt .topic-excerpt {
+      font-size: 12px;
+      line-height: 16px;
+      -webkit-line-clamp: 3;
+    }
   }
 }

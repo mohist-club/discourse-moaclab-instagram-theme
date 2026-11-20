@@ -13,6 +13,11 @@ $ig-love: #ed4956; // like / heart red
   --ig-field: #{dark-light-choose(#fafafa, #121212)};
   --ig-modal-border: #{dark-light-choose(#dbdbdb, #363636)};
 
+  // profile buttons (instagram.com 2026): blue primary, grey secondary
+  --ig-btn-primary: #4a5cf9;
+  --ig-btn-secondary: #{dark-light-choose(#f0f2f5, #363636)};
+  --ig-btn-secondary-hover: #{dark-light-choose(#e4e6eb, #474747)};
+
   // page behind a pop-up: rgb(0 0 0 / 65%) flattened onto the page colour
   --ig-backdrop: #{dark-light-choose(#595959, #000)};
 

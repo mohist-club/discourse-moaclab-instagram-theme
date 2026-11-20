@@ -1,0 +1,351 @@
+// =========================================================
+// Studio profile header (instagram_studio_profile) — the
+// Instagram profile header of 2026, measured at 1x:
+//   163px gradient ring around a 150px logo, info 22px to the right
+//   name 28/700 · parent 16 · stats 16 (number 600), 16px apart
+//   grey label, description 16/20, link, 32px member avatars
+//   buttons 44px tall, 8px radius, 8px apart: blue · grey · 44 square
+//   tabs on a hairline under the header
+// Markup: components/ig-studio-header.gjs
+// =========================================================
+
+// the native category heading is replaced by the header
+#main-outlet:has(.ig-studio) .category-heading {
+  display: none;
+}
+
+.ig-studio {
+  box-sizing: border-box;
+  margin: 0;
+  padding-top: 28px;
+  color: var(--ig-ink);
+  font-size: 16px;
+  line-height: 20px;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+// header and buttons 640px centred; the tabs span the whole grid
+.ig-studio__top,
+.ig-studio__actions {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.ig-studio__top {
+  display: grid;
+  grid-template-columns: 163px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+// story ring: 3px gradient, 3.5px page-coloured gap, 150px logo
+.ig-studio__ring {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 163px;
+  height: 163px;
+  margin-top: 18px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--ig-story-ring);
+}
+
+.ig-studio__avatar {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 157px;
+  height: 157px;
+  border: 3.5px solid var(--ig-page);
+  border-radius: 50%;
+  background: var(--ig-page);
+  object-fit: cover;
+
+  &--letter {
+    color: #fff;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+  }
+}
+
+.ig-studio__name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ig-ink);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.ig-studio__parent {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--ig-ink);
+
+  &:hover {
+    color: var(--ig-ink);
+  }
+}
+
+.ig-studio__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+
+  b {
+    margin-right: 2px;
+    font-weight: 600;
+  }
+}
+
+.ig-studio__label {
+  margin: 22px 0 0;
+  color: var(--ig-muted);
+}
+
+.ig-studio__bio {
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: var(--ig-hashtag);
+  }
+}
+
+.ig-studio__link {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--ig-ink);
+  font-weight: 600;
+
+  &:hover {
+    color: var(--ig-ink);
+    text-decoration: underline;
+  }
+}
+
+.ig-studio__link-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  background: currentcolor;
+  mask: url($ig-link) center / 16px 16px no-repeat;
+}
+
+.ig-studio__members {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.ig-studio__member-avatars {
+  display: flex;
+  flex: 0 0 auto;
+
+  img {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--ig-page);
+    border-radius: 50%;
+    object-fit: cover;
+
+    & + img {
+      margin-left: -10px;
+    }
+  }
+}
+
+// ---- buttons ----
+.ig-studio__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 26px;
+  margin-bottom: 0;
+}
+
+.ig-studio .ig-studio__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &--primary {
+    background: var(--ig-btn-primary);
+    color: #fff;
+
+    &:hover {
+      filter: brightness(0.92);
+    }
+  }
+
+  &--grey {
+    background: var(--ig-btn-secondary);
+    color: var(--ig-ink);
+
+    &:hover {
+      background: var(--ig-btn-secondary-hover);
+    }
+  }
+
+  &--icon {
+    position: relative;
+    flex: 0 0 44px;
+    padding: 0;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: currentcolor;
+      mask: url($ig-share) center / 18px 18px no-repeat;
+    }
+
+    &.is-copied::before {
+      mask-image: url($ig-link);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.7;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ig-ink);
+    outline-offset: 2px;
+  }
+}
+
+// ---- tabs ----
+.ig-studio__tabs {
+  display: flex;
+  gap: 60px;
+  justify-content: center;
+  margin: 44px 0 0;
+  border-top: 1px solid var(--ig-border);
+}
+
+.ig-studio__tab {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  height: 52px;
+  margin-top: -1px;
+  border-top: 1px solid transparent;
+  color: var(--ig-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+
+  &:hover {
+    color: var(--ig-ink);
+  }
+
+  &.is-active {
+    border-top-color: var(--ig-ink);
+    color: var(--ig-ink);
+  }
+}
+
+.ig-studio__tab-icon {
+  width: 12px;
+  height: 12px;
+  background: currentcolor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: 12px 12px;
+
+  &--grid {
+    mask-image: url($ig-grid);
+  }
+
+  &--top {
+    mask-image: url($ig-heart);
+  }
+}
+
+// the grid sits right under the tabs
+body.ig-explore #main-outlet:has(.ig-studio) .topic-list {
+  margin-top: 0;
+}
+
+// ---- phones: Instagram's mobile profile ----
+@media (width < 768px) {
+  .ig-studio {
+    padding: 16px 16px 0;
+  }
+
+  .ig-studio__top {
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .ig-studio__ring {
+    width: 86px;
+    height: 86px;
+    margin-top: 0;
+    padding: 2px;
+  }
+
+  .ig-studio__avatar {
+    width: 82px;
+    height: 82px;
+    border-width: 2.5px;
+
+    &--letter {
+      font-size: 34px;
+    }
+  }
+
+  .ig-studio__name {
+    font-size: 20px;
+    line-height: 26px;
+  }
+
+  .ig-studio__stats {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .ig-studio__label {
+    margin-top: 12px;
+  }
+
+  .ig-studio__actions {
+    margin-top: 16px;
+  }
+
+  .ig-studio .ig-studio__btn {
+    height: 36px;
+    font-size: 14px;
+
+    &--icon {
+      flex-basis: 36px;
+    }
+  }
+
+  .ig-studio__tabs {
+    margin: 20px -16px 0;
+  }
+}
