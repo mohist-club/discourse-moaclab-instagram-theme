@@ -25,6 +25,7 @@ en:
       instagram_studio_profile: "Studio pages open with an Instagram profile header."
       instagram_explore_search: "Instagram search on the Explore page."
       instagram_categories_page: "/categories as Instagram profile cards."
+      new_topic_composer_height: "New-topic editor height, % of the screen (0: Discourse default)."
   ig:
     categories:
       studios: "Studios · %{count}"

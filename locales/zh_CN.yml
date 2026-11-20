@@ -25,6 +25,7 @@ zh_CN:
       instagram_studio_profile: "工作室页面顶部显示 Instagram 主页样式。"
       instagram_explore_search: "探索页使用 Instagram 搜索交互。"
       instagram_categories_page: "/categories 显示为 Instagram 主页卡片网格。"
+      new_topic_composer_height: "创建话题编辑器的高度，占屏幕高度的百分比（0 为 Discourse 默认）。"
   ig:
     categories:
       studios: "工作室 · %{count}"

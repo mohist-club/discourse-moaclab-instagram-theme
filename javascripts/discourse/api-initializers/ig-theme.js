@@ -9,6 +9,17 @@ export default apiInitializer((api) => {
   const accent = (settings.accent_color || "#0095f6").trim();
   document.documentElement.style.setProperty("--ig-accent", accent);
 
+  // 1b. default height of the new-topic editor, as a share of the screen,
+  //     through Discourse's own --new-topic-composer-height (a height the
+  //     user dragged to is remembered by Discourse and still wins)
+  const composerHeight = parseInt(settings.new_topic_composer_height, 10);
+  if (composerHeight > 0) {
+    document.documentElement.style.setProperty(
+      "--new-topic-composer-height",
+      `${Math.min(composerHeight, 95)}vh`
+    );
+  }
+
   // 2. feature classes from boolean settings — never on admin pages, which
   //    stay Discourse-native (re-checked on every page change)
   const flags = {

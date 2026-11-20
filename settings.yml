@@ -141,3 +141,12 @@ instagram_categories_page:
   description:
     en: "/categories becomes a grid of Instagram profile cards, one per top-level category: cover (its background image, else its colour), logo in a story ring, Follow (category notifications), name, description, topic counts, subcategory chips and the newest topic. Off: Discourse's own categories page."
     zh_CN: "/categories 改为 Instagram 主页卡片网格，每个一级类别一张：封面（类别背景图，没有则用类别颜色）、带彩环的 Logo、关注（类别通知）、名称、简介、帖子数、二级类别标签和最新话题。关闭则为 Discourse 原生类别页。"
+
+new_topic_composer_height:
+  type: integer
+  default: 70
+  min: 0
+  max: 95
+  description:
+    en: "Height of the editor when creating a topic, in percent of the screen height (Discourse's default is 400px). If someone drags the editor to another height, Discourse remembers theirs. 0: Discourse's default."
+    zh_CN: "创建话题时编辑器的默认高度，按屏幕高度的百分比（Discourse 默认 400px）。用户自己拖动过高度时，Discourse 会记住他的高度。填 0 使用 Discourse 默认。"
