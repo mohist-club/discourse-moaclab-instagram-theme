@@ -99,6 +99,12 @@
       }
     }
 
+    // Instagram has no welcome banner: search is in the top bar
+    .welcome-banner,
+    .above-main-container-outlet .welcome-banner {
+      display: none;
+    }
+
     // ---- feed: edge to edge ----
     &[class*="navigation-"]:not([class*="archetype-"]) #main-outlet {
       max-width: none;

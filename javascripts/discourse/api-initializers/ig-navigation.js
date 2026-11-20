@@ -78,6 +78,45 @@ export default apiInitializer((api) => {
   };
 
   api.onPageChange(ensure);
+
+  // Discourse re-renders the sidebar without a page change — e.g. when the
+  // window is widened again after being narrow enough for the hamburger
+  // dropdown. Put the rail back whenever the sidebar appears without it
+  // (checked at most once per frame).
+  let scheduled = false;
+  const restoreRail = () => {
+    if (scheduled) {
+      return;
+    }
+    scheduled = true;
+    window.requestAnimationFrame(() => {
+      scheduled = false;
+      const sections = document.querySelector(
+        ".sidebar-wrapper .sidebar-sections"
+      );
+      if (
+        !sections ||
+        sections.querySelector(`#${RAIL_ID}`) ||
+        !settings.instagram_desktop_shell ||
+        isAdminPage() ||
+        api.container.lookup("service:site")?.mobileView
+      ) {
+        return;
+      }
+      try {
+        document.body.classList.add("ig-desktop-shell");
+        ensureRail(api, siteSettings);
+        syncActive();
+      } catch {
+        // never let decoration break the page
+      }
+    });
+  };
+  new MutationObserver(restoreRail).observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+  window.addEventListener("resize", restoreRail, { passive: true });
 });
 
 const RAIL_ID = "ig-rail";
