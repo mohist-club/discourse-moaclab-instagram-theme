@@ -20,7 +20,7 @@
     "ig-menu": "assets/ig-menu.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.0.0",
+  "theme_version": "1.1.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
     "topic_thumbnail_sizes": [

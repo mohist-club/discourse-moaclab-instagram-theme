@@ -24,9 +24,9 @@ body.ig-desktop-shell:not(.admin-interface) {
   .ig-wordmark {
     display: block;
     max-width: 100%;
-    padding: 20px 12px 14px;
+    padding: 18px 12px 14px;
     margin: 0;
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.3px;
@@ -206,7 +206,7 @@ body.ig-desktop-shell:not(.admin-interface) {
 // =========================================================
 body.ig-desktop-shell:not(.admin-interface) {
   #ig-rail {
-    padding: 0 12px 4px;
+    padding: 0 0 4px;
   }
 
   .ig-rail-nav {
@@ -328,10 +328,20 @@ body.ig-desktop-shell:not(.admin-interface)
 // =========================================================
 body.ig-compact-rail.ig-desktop-shell:not(.admin-interface) {
   .sidebar-wrapper {
+    // whole default sections, when the version exposes a section name
     .sidebar-section[data-section-name="categories"],
     .sidebar-section-wrapper[data-section-name="categories"],
     .sidebar-section[data-section-name="tags"],
-    .sidebar-section-wrapper[data-section-name="tags"] {
+    .sidebar-section-wrapper[data-section-name="tags"],
+    // robust fallback: hide the category / tag links by their href
+    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href^="/c/"]),
+    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href^="/tag/"]),
+    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href="/categories"]),
+    .sidebar-section-link-wrapper:has(a.sidebar-section-link[href="/tags"]),
+    a.sidebar-section-link[href^="/c/"],
+    a.sidebar-section-link[href^="/tag/"],
+    a.sidebar-section-link[href="/categories"],
+    a.sidebar-section-link[href="/tags"] {
       display: none;
     }
   }
