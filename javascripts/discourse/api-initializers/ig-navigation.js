@@ -6,21 +6,21 @@ import { apiInitializer } from "discourse/lib/api";
 //  - a "stories" tray at the top of the discovery feed
 //  - a `ig-clean-feed` body flag so the feed shows only stories + posts
 export default apiInitializer((api) => {
-  const site = api.container.lookup("service:site");
   const siteSettings = api.container.lookup("service:site-settings");
-  const desktop = !site?.mobileView;
 
-  if (settings.instagram_desktop_shell && desktop) {
-    document.body.classList.add("ig-desktop-shell");
-  }
-  if (settings.instagram_clean_feed && desktop) {
-    document.body.classList.add("ig-clean-feed");
-  }
-
+  // Read mobileView at render time (inside onPageChange), never during static
+  // initialization, to avoid discourse.static-viewport-initialization.
   const ensure = () => {
     try {
+      const site = api.container.lookup("service:site");
+      const desktop = !site?.mobileView;
+
       if (settings.instagram_desktop_shell && desktop) {
+        document.body.classList.add("ig-desktop-shell");
         ensureRail(api, siteSettings);
+      }
+      if (settings.instagram_clean_feed && desktop) {
+        document.body.classList.add("ig-clean-feed");
       }
       if (settings.instagram_stories) {
         ensureStories(api, site);
@@ -31,7 +31,6 @@ export default apiInitializer((api) => {
     }
   };
 
-  ensure();
   api.onPageChange(ensure);
 });
 

@@ -4,11 +4,11 @@ import { apiInitializer } from "discourse/lib/api";
 export default apiInitializer((api) => {
   const body = document.body;
 
-  // 1. accent color -> CSS custom property
+  // 1. accent color -> CSS custom property (viewport-independent)
   const accent = (settings.accent_color || "#0095f6").trim();
   document.documentElement.style.setProperty("--ig-accent", accent);
 
-  // 2. toggle feature classes from boolean settings
+  // 2. toggle feature classes from boolean settings (viewport-independent)
   const flags = {
     "ig-gradient-logo": settings.brand_gradient_logo,
     "ig-gradient-buttons": settings.brand_gradient_buttons,
@@ -19,12 +19,20 @@ export default apiInitializer((api) => {
     body.classList.toggle(cls, !!on);
   }
 
-  // 3. mobile bottom navigation
-  const site = api.container.lookup("service:site");
-  if (settings.mobile_bottom_nav && site?.mobileView) {
-    buildBottomNav(api);
-    body.classList.add("ig-has-bottom-nav");
-  }
+  // 3. mobile bottom navigation — read mobileView at render time (not during
+  //    static initialization) to avoid the viewport-initialization deprecation.
+  let built = false;
+  api.onPageChange(() => {
+    if (built || !settings.mobile_bottom_nav) {
+      return;
+    }
+    const site = api.container.lookup("service:site");
+    if (site?.mobileView) {
+      buildBottomNav(api);
+      body.classList.add("ig-has-bottom-nav");
+      built = true;
+    }
+  });
 });
 
 function svg(paths) {

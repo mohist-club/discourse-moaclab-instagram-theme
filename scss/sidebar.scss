@@ -22,14 +22,14 @@ $ig-sidebar-icons: (
 body.ig-desktop-shell:not(.admin-interface) {
   // Brand wordmark injected at the top of the rail by JS
   .ig-wordmark {
-    display: flex;
-    align-items: center;
-    height: 56px;
-    padding: 24px 12px 16px;
+    display: block;
+    max-width: 100%;
+    padding: 20px 12px 14px;
     margin: 0;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    line-height: 1.1;
+    letter-spacing: -0.3px;
     text-decoration: none;
     background: var(--ig-gradient);
     background-clip: text;
@@ -37,6 +37,7 @@ body.ig-desktop-shell:not(.admin-interface) {
     color: transparent;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   :is(.sidebar-wrapper, .sidebar-hamburger-dropdown) {
@@ -173,8 +174,10 @@ body.ig-desktop-shell:not(.admin-interface) {
 
       &::before {
         content: "";
+        display: block;
         width: 24px;
         height: 24px;
+        margin: 0 auto;
         background: var(--ig-gradient);
         mask: url($ig-create) center / contain no-repeat;
       }
