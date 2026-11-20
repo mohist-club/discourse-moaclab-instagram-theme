@@ -25,7 +25,15 @@ en:
       instagram_studio_profile: "Studio pages open with an Instagram profile header."
       instagram_admin_style: "Admin pages in the theme's colours and shapes; native layout and controls."
       instagram_explore_search: "Instagram search on the Explore page."
+      instagram_categories_page: "/categories as Instagram profile cards."
   ig:
+    categories:
+      title: "All categories"
+      summary: "%{categories} categories · %{topics} topics"
+      topics: " topics"
+      this_week: " new this week"
+      follow: "Follow"
+      following: "Following"
     search:
       placeholder: "Search"
       recent: "Recent"

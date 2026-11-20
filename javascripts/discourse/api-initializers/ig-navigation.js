@@ -54,7 +54,11 @@ export default apiInitializer((api) => {
       } else {
         document.querySelector(".ig-stories")?.remove();
       }
-      if (explore) {
+      // Explore and the card-grid /categories page use the full width
+      const categoriesGrid =
+        settings.instagram_categories_page &&
+        window.location.pathname.replace(/\/$/, "") === "/categories";
+      if (explore || categoriesGrid) {
         document.querySelector(".ig-right")?.remove();
       } else if (settings.instagram_right_sidebar && desktop) {
         document.body.classList.add("ig-rightcol");

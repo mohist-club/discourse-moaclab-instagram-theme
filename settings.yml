@@ -140,3 +140,9 @@ instagram_explore_search:
   description:
     en: "On the Explore category's page (instagram_explore_category) the category heading and list controls give way to Instagram's search: a round field showing your recent searches when focused and live results while typing (studios, people, tags, posts — Discourse's quick search); Enter opens Discourse's full search."
     zh_CN: "在探索类别页（instagram_explore_category）隐藏类别信息和列表控件，改为 Instagram 搜索：圆形搜索框，聚焦时显示最近搜索，输入时实时显示结果（工作室、用户、标签、帖子，使用 Discourse 快速搜索）；回车打开 Discourse 完整搜索页。"
+
+instagram_categories_page:
+  default: true
+  description:
+    en: "/categories becomes a grid of Instagram profile cards, one per top-level category: cover (its background image, else its colour), logo in a story ring, Follow (category notifications), name, description, topic counts, subcategory chips and the newest topic. Off: Discourse's own categories page."
+    zh_CN: "/categories 改为 Instagram 主页卡片网格，每个一级类别一张：封面（类别背景图，没有则用类别颜色）、带彩环的 Logo、关注（类别通知）、名称、简介、帖子数、二级类别标签和最新话题。关闭则为 Discourse 原生类别页。"
