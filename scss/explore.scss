@@ -103,6 +103,29 @@ body.ig-explore:not(.admin-interface) {
     white-space: nowrap;
   }
 
+  // carousels: first image only, with Instagram's stack icon
+  .ig-post__slides {
+    overflow: hidden;
+  }
+
+  .ig-post__nav,
+  .ig-post__dots {
+    display: none;
+  }
+
+  .ig-post__gallery-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    display: block;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    filter: drop-shadow(0 0 2px rgb(0 0 0 / 40%));
+    mask: url($ig-carousel) center / contain no-repeat;
+  }
+
   .ig-post__media {
     position: absolute;
     inset: 0;

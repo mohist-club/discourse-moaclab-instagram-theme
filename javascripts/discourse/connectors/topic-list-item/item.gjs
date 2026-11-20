@@ -15,12 +15,19 @@ import avatar from "discourse/helpers/avatar";
 import formatDate from "discourse/helpers/format-date";
 import lazyHash from "discourse/helpers/lazy-hash";
 import topicFeaturedLink from "discourse/helpers/topic-featured-link";
+import { modifier } from "ember-modifier";
+import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import { deferAnonymousAction } from "discourse/lib/anonymous-action";
 import { wantsNewWindow } from "discourse/lib/intercept-click";
 import DiscourseURL from "discourse/lib/url";
 import { i18n } from "discourse-i18n";
 import IgPostOptions from "../../components/ig-post-options";
+import {
+  imagesFromCooked,
+  loadFirstPost,
+  whenNearViewport,
+} from "../../lib/ig-first-post";
 
 // Instagram feed post (instagram.com, 2026) mapped onto a Discourse topic:
 //   header   avatar · username • time / category (IG's location line) · ⋯
@@ -30,19 +37,45 @@ import IgPostOptions from "../../components/ig-post-options";
 //   footer   "View all N comments"
 // Topics without an image show title + excerpt where the media would be.
 // Like, save and share all call Discourse's own APIs.
+//
+// Like = Discourse's like on the first post: state from the topic list
+// (serialize_topic_op_likes_data), the same /post_actions calls as the post
+// menu, log-in-then-like for visitors; double-clicking the media likes it.
+// Several images in the first post = Instagram's carousel (arrows, swipe,
+// dots); the post is loaded once the card is near the viewport and the
+// next image is preloaded.
 
 const MIN_RATIO = 3 / 4;
 const MAX_RATIO = 1.91;
+const LIKE = 2; // PostActionType like
+const CLICK_DELAY = 250; // ms to tell a click on the media from a double click
+
+// Explore and the suggested-topics grid show tiles, not feed posts
+function inGrid(element) {
+  return (
+    !!element.closest(".more-topics__container") ||
+    document.body.classList.contains("ig-explore")
+  );
+}
 
 export default class Item extends Component {
   @service currentUser;
   @service modal;
   @service bookmarkApi;
 
-  @tracked liked = false;
-  @tracked likeCount;
-  @tracked likePost;
+  @tracked liked = !!this.args.outletArgs.topic.op_liked;
+  @tracked likeCount =
+    this.args.outletArgs.topic.op_like_count ??
+    this.args.outletArgs.topic.like_count ??
+    0;
+  // undefined when the topic list does not carry it: then ask the post
+  @tracked canLike = this.args.outletArgs.topic.op_can_like;
+  @tracked postId = this.args.outletArgs.topic.first_post_id || null;
+  @tracked bookmarkId = null;
   @tracked isTogglingLike = false;
+  @tracked heartPop = false;
+  @tracked gallery = null;
+  @tracked slideIndex = 0;
   @tracked saved = !!this.args.outletArgs.topic.bookmarked;
   @tracked savedBookmarkId = null;
   @tracked isTogglingSave = false;
@@ -79,7 +112,7 @@ export default class Item extends Component {
   }
 
   get topicLikeCount() {
-    return this.likeCount ?? this.topic.like_count ?? 0;
+    return this.likeCount;
   }
 
   get replyCount() {
@@ -132,7 +165,7 @@ export default class Item extends Component {
     if (!this.currentUser) {
       return !this.topic.archived;
     }
-    return this.likePost ? this.likePost.canToggleLike : true;
+    return this.canLike ?? true;
   }
 
   get likeDisabled() {
@@ -155,11 +188,177 @@ export default class Item extends Component {
       return;
     }
 
-    const { navigateToTopic } = this.args.outletArgs;
-    if (wantsNewWindow(event)) {
-      window.open(this.topic.lastUnreadUrl, "_blank");
-    } else {
-      navigateToTopic(this.topic, this.topic.lastUnreadUrl);
+    const newWindow = wantsNewWindow(event);
+    const go = () => {
+      if (newWindow) {
+        window.open(this.topic.lastUnreadUrl, "_blank");
+      } else {
+        this.args.outletArgs.navigateToTopic(
+          this.topic,
+          this.topic.lastUnreadUrl
+        );
+      }
+    };
+
+    // on the feed's media a second click within CLICK_DELAY is a like, not
+    // a visit (grid tiles open at once)
+    if (
+      event.target.closest(".ig-post__media") &&
+      !newWindow &&
+      !inGrid(event.target)
+    ) {
+      clearTimeout(this.clickTimer);
+      if (event.detail > 1) {
+        return;
+      }
+      this.clickTimer = setTimeout(go, CLICK_DELAY);
+      return;
+    }
+    go();
+  }
+
+  willDestroy() {
+    super.willDestroy(...arguments);
+    clearTimeout(this.clickTimer);
+    clearTimeout(this.heartTimer);
+  }
+
+  // ---- first post: id, like / bookmark state, images ----
+  async firstPost() {
+    const post = await loadFirstPost(this.topic.id);
+    this.postId ||= post?.id || null;
+    this.bookmarkId ||= post?.bookmark_id || null;
+    if (this.currentUser && this.canLike === undefined) {
+      this.syncLike(post?.actions_summary);
+    }
+    return post;
+  }
+
+  syncLike(actionsSummary) {
+    const like = (actionsSummary || []).find((a) => a.id === LIKE);
+    if (!like) {
+      return;
+    }
+    this.liked = !!like.acted;
+    if (typeof like.count === "number") {
+      this.likeCount = like.count;
+    }
+    this.canLike = like.acted ? !!like.can_undo : !!like.can_act;
+  }
+
+  async resolvePostId() {
+    if (!this.postId) {
+      await this.firstPost();
+    }
+    return this.postId;
+  }
+
+  // ---- gallery ----
+  watchGallery = modifier((element) => {
+    if (!settings.instagram_post_gallery || !this.thumbnail) {
+      return;
+    }
+    return whenNearViewport(element, () => {
+      this.firstPost()
+        .then((post) => {
+          if (!this.isDestroying && !this.isDestroyed) {
+            const images = imagesFromCooked(post?.cooked);
+            this.gallery = images.length > 1 ? images : null;
+          }
+        })
+        .catch(() => {});
+    });
+  });
+
+  get hasGallery() {
+    return !!this.gallery;
+  }
+
+  // the first slide keeps the list thumbnail (already loaded); the one
+  // after the current slide loads eagerly, the rest lazily
+  get slides() {
+    const thumb = this.thumbnail;
+    if (!this.gallery) {
+      return [
+        {
+          src: thumb.url,
+          srcset: null,
+          width: thumb.width,
+          height: thumb.height,
+          loading: "lazy",
+        },
+      ];
+    }
+    return this.gallery.map((image, index) => ({
+      src: index === 0 ? thumb.url : image.src,
+      srcset: index === 0 ? null : image.srcset,
+      width: image.width,
+      height: image.height,
+      loading: index <= this.slideIndex + 1 ? "eager" : "lazy",
+    }));
+  }
+
+  get dots() {
+    return (this.gallery || []).map((_, index) => ({
+      active: index === this.slideIndex,
+    }));
+  }
+
+  get atFirstSlide() {
+    return this.slideIndex === 0;
+  }
+
+  get atLastSlide() {
+    return this.slideIndex >= (this.gallery?.length || 1) - 1;
+  }
+
+  get previousLabel() {
+    return this.text("previous_image");
+  }
+
+  get nextLabel() {
+    return this.text("next_image");
+  }
+
+  @action
+  onSlidesScroll(event) {
+    const track = event.currentTarget;
+    const index = Math.round(track.scrollLeft / (track.clientWidth || 1));
+    if (index !== this.slideIndex) {
+      this.slideIndex = index;
+    }
+  }
+
+  @action
+  previousSlide(event) {
+    this.moveSlide(event, -1);
+  }
+
+  @action
+  nextSlide(event) {
+    this.moveSlide(event, 1);
+  }
+
+  moveSlide(event, step) {
+    event.stopPropagation();
+    const track = event.currentTarget
+      .closest(".ig-post__media")
+      ?.querySelector(".ig-post__slides");
+    track?.scrollBy({ left: step * track.clientWidth, behavior: "smooth" });
+  }
+
+  // Instagram: double-click the media to like (never unlikes)
+  @action
+  likeFromMedia(event) {
+    clearTimeout(this.clickTimer);
+    if (event.target.closest("button") || inGrid(event.target)) {
+      return;
+    }
+    this.heartPop = true;
+    clearTimeout(this.heartTimer);
+    this.heartTimer = setTimeout(() => (this.heartPop = false), 900);
+    if (!this.liked) {
+      this.toggleLike(event);
     }
   }
 
@@ -183,38 +382,62 @@ export default class Item extends Component {
 
   @action
   async toggleLike(event) {
-    event.stopPropagation();
+    event?.stopPropagation();
 
-    if (this.isTogglingLike || !this.canToggleLike) {
+    if (this.isTogglingLike) {
+      return;
+    }
+
+    // visitors: Discourse's own "log in, then the like is applied"
+    if (!this.currentUser) {
+      const postId = await this.resolvePostId().catch(() => null);
+      if (postId) {
+        await deferAnonymousAction(this, "like_post", { post_id: postId });
+      } else {
+        DiscourseURL.routeTo("/login");
+      }
+      return;
+    }
+
+    if (!this.canToggleLike) {
       return;
     }
 
     this.isTogglingLike = true;
+    const before = {
+      liked: this.liked,
+      likeCount: this.likeCount,
+      canLike: this.canLike,
+    };
 
     try {
-      const post = this.likePost ?? (await this.topic.firstPost());
-      this.likePost = post;
-      this.liked = post.liked;
-
-      if (!this.currentUser) {
-        await deferAnonymousAction(this, "like_post", { post_id: post.id });
+      const postId = await this.resolvePostId();
+      if (!postId || !this.canToggleLike) {
         return;
       }
 
-      if (!post.canToggleLike) {
-        return;
-      }
+      // optimistic, like the post menu; the server's answer settles it
+      const liking = !this.liked;
+      this.liked = liking;
+      this.likeCount = Math.max(0, Number(this.likeCount) + (liking ? 1 : -1));
 
-      const wasLiked = post.liked;
-      await post.likeAction.togglePromise(post);
-      this.liked = post.liked;
+      const result = liking
+        ? await ajax("/post_actions", {
+            type: "POST",
+            data: { id: postId, post_action_type_id: LIKE, flag_topic: false },
+          })
+        : await ajax(`/post_actions/${postId}`, {
+            type: "DELETE",
+            data: { post_action_type_id: LIKE },
+          });
 
-      if (wasLiked !== post.liked) {
-        this.likeCount = Math.max(
-          0,
-          Number(this.topicLikeCount) + (post.liked ? 1 : -1)
-        );
+      this.syncLike(result?.actions_summary);
+      if (!liking && !result?.actions_summary?.some((a) => a.id === LIKE)) {
+        this.canLike = true;
       }
+    } catch (error) {
+      Object.assign(this, before);
+      popupAjaxError(error);
     } finally {
       this.isTogglingLike = false;
     }
@@ -237,11 +460,13 @@ export default class Item extends Component {
     this.isTogglingSave = true;
 
     try {
-      const post = this.likePost ?? (await this.topic.firstPost());
-      this.likePost = post;
+      const postId = await this.resolvePostId();
 
       if (this.saved) {
-        const id = this.savedBookmarkId ?? post.bookmark_id;
+        const id =
+          this.savedBookmarkId ??
+          this.bookmarkId ??
+          (await this.firstPost())?.bookmark_id;
         if (!id) {
           // saved on a later post: manage it inside the topic
           DiscourseURL.routeTo(this.topic.lastUnreadUrl);
@@ -252,7 +477,7 @@ export default class Item extends Component {
         this.saved = false;
       } else {
         const created = await this.bookmarkApi.create(
-          this.bookmarkApi.buildNewBookmark("Post", post.id)
+          this.bookmarkApi.buildNewBookmark("Post", postId)
         );
         this.savedBookmarkId = created?.id ?? null;
         this.saved = true;
@@ -320,15 +545,52 @@ export default class Item extends Component {
       </header>
 
       {{#if this.thumbnail}}
-        <div class="ig-post__media" style={{this.mediaStyle}}>
-          <img
-            alt={{this.topic.title}}
-            loading="lazy"
-            decoding="async"
-            width={{this.thumbnail.width}}
-            height={{this.thumbnail.height}}
-            src={{this.thumbnail.url}}
-          />
+        <div
+          class="ig-post__media
+            {{if this.hasGallery 'ig-post__media--gallery'}}"
+          style={{this.mediaStyle}}
+          {{this.watchGallery}}
+          {{on "dblclick" this.likeFromMedia}}
+        >
+          <div class="ig-post__slides" {{on "scroll" this.onSlidesScroll}}>
+            {{#each this.slides as |slide|}}
+              <div class="ig-post__slide">
+                <img
+                  alt={{this.topic.title}}
+                  loading={{slide.loading}}
+                  decoding="async"
+                  width={{slide.width}}
+                  height={{slide.height}}
+                  src={{slide.src}}
+                  srcset={{slide.srcset}}
+                />
+              </div>
+            {{/each}}
+          </div>
+          {{#if this.hasGallery}}
+            {{#unless this.atFirstSlide}}
+              <button
+                type="button"
+                class="ig-post__nav ig-post__nav--prev"
+                title={{this.previousLabel}}
+                aria-label={{this.previousLabel}}
+                {{on "click" this.previousSlide}}
+              ></button>
+            {{/unless}}
+            {{#unless this.atLastSlide}}
+              <button
+                type="button"
+                class="ig-post__nav ig-post__nav--next"
+                title={{this.nextLabel}}
+                aria-label={{this.nextLabel}}
+                {{on "click" this.nextSlide}}
+              ></button>
+            {{/unless}}
+            <span class="ig-post__gallery-badge" aria-hidden="true"></span>
+          {{/if}}
+          {{#if this.heartPop}}
+            <span class="ig-post__heart-pop" aria-hidden="true"></span>
+          {{/if}}
         </div>
       {{else}}
         <div class="ig-post__text">
@@ -388,6 +650,15 @@ export default class Item extends Component {
       </div>
 
       <div class="ig-post__actions">
+        {{#if this.hasGallery}}
+          <div class="ig-post__dots" aria-hidden="true">
+            {{#each this.dots as |dot|}}
+              <span
+                class="ig-post__dot-indicator {{if dot.active 'is-active'}}"
+              ></span>
+            {{/each}}
+          </div>
+        {{/if}}
         {{#if settings.show_like_count}}
           <button
             type="button"

@@ -109,3 +109,9 @@ instagram_explore_category:
   description:
     en: "ID of the category the rail's Explore opens (the number at the end of its URL, /c/keyboards/13 → 13). That category and its subcategories list topics as an Instagram Explore grid (3 columns, a tall tile every five, title and counts on hover), without stories or the right column. 0: Explore opens /categories and lists stay the normal feed."
     zh_CN: "左栏「探索」打开的类别 ID（类别网址最后的数字，/c/keyboards/13 填 13）。该类别及其二级类别的话题列表显示为 Instagram 探索网格（三列、每五个一个竖长格、鼠标移上显示标题和点赞/回复数），不显示 Stories 和右栏。填 0 则「探索」打开 /categories，列表保持信息流。"
+
+instagram_post_gallery:
+  default: true
+  description:
+    en: "Feed cards show every image of the topic's first post as an Instagram carousel (arrows, swipe, dots under the image; a stack icon on grid tiles). The post is loaded once a card is near the screen and the next image is preloaded. Off: only the first image."
+    zh_CN: "信息流卡片把话题首帖里的所有图片做成 Instagram 多图轮播（左右箭头、可滑动、图下圆点；网格中显示多图图标）。卡片接近屏幕时才加载首帖，并预加载下一张。关闭则只显示第一张图。"

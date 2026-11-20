@@ -20,6 +20,7 @@ en:
       instagram_topic_style: "Topic pages keep the native layout with the theme's look."
       instagram_auth_modal: "Log-in and sign-up pages as an Instagram-style pop-up card."
       instagram_explore_category: "Explore opens this category ID, shown as an Instagram Explore grid (0: /categories)."
+      instagram_post_gallery: "Feed cards show all first-post images as a carousel."
   ig:
     auth:
       close: "Close"
@@ -41,6 +42,8 @@ en:
       log_in: "Log in"
       sign_up: "Sign up"
     feed:
+      previous_image: "Previous image"
+      next_image: "Next image"
       more: "more"
       view_comments:
         one: "View %{count} comment"

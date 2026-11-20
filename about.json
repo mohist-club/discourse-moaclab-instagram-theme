@@ -31,14 +31,16 @@
     "ig-dots": "assets/ig-dots.svg",
     "ig-close": "assets/ig-close.svg",
     "ig-comment-filled": "assets/ig-comment-filled.svg",
+    "ig-carousel": "assets/ig-carousel.svg",
     "ig-chevron": "assets/ig-chevron.svg",
     "ig-compose": "assets/ig-compose.svg",
     "ig-refresh": "assets/ig-refresh.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.13.0",
+  "theme_version": "1.14.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
+    "serialize_topic_op_likes_data": true,
     "topic_thumbnail_sizes": [
       [
         600,

@@ -20,6 +20,7 @@ zh_CN:
       instagram_topic_style: "帖子详情页沿用原生布局，样式统一到主题。"
       instagram_auth_modal: "登录和注册页显示为 Instagram 弹窗样式。"
       instagram_explore_category: "「探索」打开的类别 ID，列表显示为 Instagram 探索网格（0 则打开 /categories）。"
+      instagram_post_gallery: "信息流卡片把首帖所有图片做成多图轮播。"
   ig:
     auth:
       close: "关闭"
@@ -41,6 +42,8 @@ zh_CN:
       log_in: "登录"
       sign_up: "注册"
     feed:
+      previous_image: "上一张"
+      next_image: "下一张"
       more: "更多"
       view_comments: "查看全部 %{count} 条评论"
       like: "赞"
