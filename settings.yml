@@ -115,3 +115,10 @@ instagram_post_gallery:
   description:
     en: "Feed cards show every image of the topic's first post as an Instagram carousel (arrows, swipe, dots under the image; a stack icon on grid tiles). The post is loaded once a card is near the screen and the next image is preloaded. Off: only the first image."
     zh_CN: "信息流卡片把话题首帖里的所有图片做成 Instagram 多图轮播（左右箭头、可滑动、图下圆点；网格中显示多图图标）。卡片接近屏幕时才加载首帖，并预加载下一张。关闭则只显示第一张图。"
+
+instagram_qa_category:
+  type: integer
+  default: 4
+  description:
+    en: "ID of the Q&A category linked in the right column's footer (the number at the end of its URL, /c/faq/4 → 4). 0 hides the link."
+    zh_CN: "右栏页脚「问答与求助」链接的类别 ID（类别网址最后的数字，/c/faq/4 填 4）。填 0 不显示。"

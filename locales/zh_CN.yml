@@ -21,6 +21,7 @@ zh_CN:
       instagram_auth_modal: "登录和注册页显示为 Instagram 弹窗样式。"
       instagram_explore_category: "「探索」打开的类别 ID，列表显示为 Instagram 探索网格（0 则打开 /categories）。"
       instagram_post_gallery: "信息流卡片把首帖所有图片做成多图轮播。"
+      instagram_qa_category: "右栏页脚「问答与求助」链接的类别 ID，默认 4 即 /c/faq/4。"
   ig:
     auth:
       close: "关闭"
@@ -89,6 +90,7 @@ zh_CN:
       privacy: "隐私"
       categories: "所有类别"
       tags: "标签"
+      qa: "问答与求助"
     messages:
       title: "消息"
       unread: "%{count} 条未读"

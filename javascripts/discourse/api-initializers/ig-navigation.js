@@ -844,7 +844,6 @@ function ensureRightSidebar(api, siteSettings) {
   }
 
   // 4. footer: site pages, then all categories, tags and the Q&A category
-  const qa = qaCategory(site);
   const links = [
     ["/about", t("right.about")],
     ["/faq", t("right.faq")],
@@ -854,7 +853,7 @@ function ensureRightSidebar(api, siteSettings) {
     ["/privacy", t("right.privacy")],
     ["/categories", t("right.categories")],
     ["/tags", t("right.tags")],
-    qa ? [qa.url || `/c/${qa.slug}/${qa.id}`, qa.name] : null,
+    qaLink(site),
   ]
     .filter(Boolean)
     .map(([href, label]) => `<a href="${href}">${escapeHtml(label)}</a>`)
@@ -890,17 +889,15 @@ function ensureRightSidebar(api, siteSettings) {
   });
 }
 
-// the 问答与求助 category (by name, else a Q&A-like slug)
-const QA_NAMES = ["问答与求助"];
-const QA_SLUGS = ["qa", "q-a", "help", "questions", "support"];
-
-function qaCategory(site) {
-  const categories = site?.categories || [];
-  return (
-    categories.find((c) => QA_NAMES.includes(c.name?.trim())) ||
-    categories.find((c) => QA_SLUGS.includes(c.slug?.toLowerCase())) ||
-    null
-  );
+// the 问答与求助 category (instagram_qa_category, default 4 = /c/faq/4):
+// its own name and URL when loaded, else the plain /c/<id> link
+function qaLink(site) {
+  const id = parseInt(settings.instagram_qa_category, 10) || 0;
+  if (!id) {
+    return null;
+  }
+  const category = findCategory(site, id);
+  return [category?.url || `/c/${id}`, category?.name?.trim() || t("right.qa")];
 }
 
 function meBlock(user) {

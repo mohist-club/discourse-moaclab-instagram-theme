@@ -21,6 +21,7 @@ en:
       instagram_auth_modal: "Log-in and sign-up pages as an Instagram-style pop-up card."
       instagram_explore_category: "Explore opens this category ID, shown as an Instagram Explore grid (0: /categories)."
       instagram_post_gallery: "Feed cards show all first-post images as a carousel."
+      instagram_qa_category: "Q&A category ID linked in the right column footer (default 4 = /c/faq/4)."
   ig:
     auth:
       close: "Close"
@@ -93,6 +94,7 @@ en:
       privacy: "Privacy"
       categories: "All categories"
       tags: "Tags"
+      qa: "Q&A"
     messages:
       title: "Messages"
       unread:
