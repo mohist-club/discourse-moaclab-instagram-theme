@@ -15,7 +15,8 @@ en:
       instagram_hide_header: "Hide the top Discourse header on desktop (avatar menu floats top-right)."
       instagram_right_sidebar: "Show the Instagram-style right column on wide desktop."
       instagram_messages_dock: "Show the floating Messages dock with your personal messages (desktop)."
-      instagram_suggested_category: "Right column suggestions: subcategories (studios) of the category with this ID; 0 looks up 键盘 by name."
+      instagram_suggested_categories: "Right column suggestions: subcategories (studios) of these category IDs; empty uses 键盘 and 键帽库."
+      instagram_tools_section: "Sidebar section shown as the tools module in the right column."
   ig:
     rail:
       home: "Home"
@@ -62,6 +63,13 @@ en:
       view: "View"
       follow: "Follow"
       following: "Following"
+      refresh: "Refresh"
+      auth_title: "Join %{site}"
+      auth_text: "Log in to like, save, follow studios and join the discussion."
+      sign_up: "Sign up"
+      log_in: "Log in"
+      tools: "Services"
+      open: "Open"
       fallback_subtitle: "Active community member"
       topics:
         one: "%{count} topic"

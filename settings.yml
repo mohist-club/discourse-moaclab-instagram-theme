@@ -77,10 +77,16 @@ instagram_messages_dock:
     en: "Desktop: show Instagram's floating Messages dock (bottom right), listing your Discourse personal messages."
     zh_CN: "桌面端：右下角显示 Instagram 风格的「消息」浮窗，列出你的 Discourse 私信。"
 
-instagram_suggested_category:
-  type: integer
-  default: 0
-  min: 0
+instagram_suggested_categories:
+  type: list
+  default: ""
   description:
-    en: "ID of the category whose subcategories (studios) fill \"Suggested for you\" in the right column (the number at the end of the category URL, e.g. /c/keyboards/10). 0: use the top-level category named 键盘; if none, show active users."
-    zh_CN: "右栏「为你推荐」使用该类别下的二级类别（工作室），填类别 ID（类别网址最后的数字，如 /c/keyboards/10 填 10）。填 0 则使用名为「键盘」的一级类别；都没有时显示活跃用户。"
+    en: "IDs of the categories whose subcategories (studios) fill \"Suggested for you\" (the number at the end of a category URL, e.g. /c/keyboards/10). Empty: the top-level categories named 键盘 and 键帽库. With none, active users are shown."
+    zh_CN: "右栏「为你推荐」使用这些类别下的二级类别（工作室），填类别 ID（类别网址最后的数字，如 /c/keyboards/10 填 10）。留空则使用名为「键盘」「键帽库」的一级类别；都没有时显示活跃用户。"
+
+instagram_tools_section:
+  type: string
+  default: "服务"
+  description:
+    en: "Title of the sidebar section whose links (Typing, drawings, group buys …) appear as a module in the right column. Empty hides the module."
+    zh_CN: "右栏「服务」模块读取的侧边栏分区标题（如 Typing、图纸、团购所在的分区）。留空则不显示该模块。"

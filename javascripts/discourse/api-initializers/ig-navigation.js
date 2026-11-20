@@ -389,11 +389,25 @@ function isDiscovery() {
   return !!onList && !inTopic;
 }
 
-// ---- Stories: people who posted most recently (Instagram's tray) ----
-// Source: Discourse's latest-posts endpoint (public posts only). A ring opens
-// that person's latest post; opened rings turn grey like Instagram's "seen",
-// remembered only in this browser.
-const STORY_TTL = 2 * 60 * 1000;
+// ---- shared: the latest-topics list (stories + studio recency) ----
+const FEED_TTL = 2 * 60 * 1000;
+let latestPromise = null;
+let latestAt = 0;
+
+function loadLatest() {
+  if (!latestPromise || Date.now() - latestAt > FEED_TTL) {
+    latestAt = Date.now();
+    latestPromise = ajax("/latest.json").catch(() => null);
+  }
+  return latestPromise;
+}
+
+// ---- Stories: the people active most recently (Instagram's tray) ----
+// Merges Discourse's latest public posts with the posters of the latest
+// topics, newest activity first, one ring per person (not you, not system
+// accounts). A ring opens that person's newest post or topic; opened rings
+// turn grey like Instagram's "seen" (remembered only in this browser) and
+// light up again when that person has something newer.
 const STORY_MAX = 20;
 const SEEN_KEY = "ig-stories-seen";
 let storyCache = null;
@@ -457,41 +471,87 @@ function ensureStories(api) {
 }
 
 async function loadStoryItems(api) {
-  if (storyCache && Date.now() - storyCache.at < STORY_TTL) {
+  if (storyCache && Date.now() - storyCache.at < FEED_TTL) {
     return storyCache.items;
   }
 
   const me = api.getCurrentUser()?.username;
-  try {
-    const result = await ajax("/posts.json");
-    const people = new Set();
-    const items = [];
-    for (const post of result?.latest_posts || []) {
-      if (
-        !post.username ||
-        post.user_id <= 0 ||
-        post.username === me ||
-        (post.post_type && post.post_type !== 1) ||
-        people.has(post.username)
-      ) {
-        continue;
-      }
-      people.add(post.username);
-      items.push({
-        postId: post.id,
-        label: post.username,
-        href: `/t/${post.topic_slug}/${post.topic_id}/${post.post_number}`,
-        imageUrl: post.avatar_template?.replace("{size}", "160"),
-      });
-      if (items.length >= STORY_MAX) {
-        break;
-      }
+  const people = new Map();
+  const consider = (username, userId, when, href, avatarTemplate, postId) => {
+    if (!username || username === me || userId <= 0 || !when) {
+      return;
     }
-    storyCache = { at: Date.now(), items };
-    return items;
-  } catch {
-    return [];
+    const prev = people.get(username);
+    if (prev && prev.when >= when) {
+      return;
+    }
+    people.set(username, {
+      label: username,
+      when,
+      href,
+      postId,
+      imageUrl: avatarTemplate?.replace("{size}", "160"),
+    });
+  };
+
+  const [posts, latest] = await Promise.all([
+    ajax("/posts.json").catch(() => null),
+    loadLatest(),
+  ]);
+
+  for (const post of posts?.latest_posts || []) {
+    if (post.post_type && post.post_type !== 1) {
+      continue;
+    }
+    consider(
+      post.username,
+      post.user_id,
+      Date.parse(post.created_at),
+      `/t/${post.topic_slug}/${post.topic_id}/${post.post_number}`,
+      post.avatar_template,
+      `p${post.id}`
+    );
   }
+
+  const users = new Map((latest?.users || []).map((u) => [u.id, u]));
+  for (const topic of latest?.topic_list?.topics || []) {
+    (topic.posters || []).forEach((poster, index) => {
+      const user = users.get(poster.user_id);
+      if (!user) {
+        return;
+      }
+      const isLast =
+        /latest/.test(poster.extras || "") ||
+        user.username === topic.last_poster_username;
+      // Discourse lists the original poster first; middle posters have no
+      // reliable time, so only the newest and the original poster count
+      if (isLast) {
+        consider(
+          user.username,
+          user.id,
+          Date.parse(topic.bumped_at || topic.last_posted_at),
+          `/t/${topic.slug}/${topic.id}/last`,
+          user.avatar_template,
+          `t${topic.id}-${topic.highest_post_number}`
+        );
+      } else if (index === 0) {
+        consider(
+          user.username,
+          user.id,
+          Date.parse(topic.created_at),
+          `/t/${topic.slug}/${topic.id}`,
+          user.avatar_template,
+          `t${topic.id}-op`
+        );
+      }
+    });
+  }
+
+  const items = [...people.values()]
+    .sort((x, y) => y.when - x.when)
+    .slice(0, STORY_MAX);
+  storyCache = { at: Date.now(), items };
+  return items;
 }
 
 function readSeen() {
@@ -579,42 +639,38 @@ function ensureRightSidebar(api, siteSettings) {
   }
 
   const user = api.getCurrentUser();
+  const site = api.container.lookup("service:site");
+  const title = siteSettings?.title || "Moaclab";
   const aside = document.createElement("aside");
   aside.className = "ig-right";
 
-  if (user) {
-    const me = document.createElement("div");
-    me.className = "ig-right__me";
-    me.innerHTML = `
-      <a class="ig-right__avatar" href="/u/${user.username}/summary">
-        <img src="${user.avatar_template.replace("{size}", "96")}" alt="">
-      </a>
-      <div class="ig-right__text">
-        <a class="ig-right__user" href="/u/${user.username}/summary">${escapeHtml(
-          user.username
-        )}</a>
-        <span class="ig-right__sub">${escapeHtml(user.name || "")}</span>
-      </div>
-      <a class="ig-right__action" href="/u/${user.username}/preferences/account">${escapeHtml(
-        t("right.switch")
-      )}</a>`;
-    aside.append(me);
-  }
+  // 1. you — or, logged out, the sign-up / log-in module
+  aside.append(user ? meBlock(user) : authBlock(title));
 
-  const site = api.container.lookup("service:site");
-  const parent = suggestedParent(site);
+  // 2. suggested studios
+  const parents = suggestedParents(site);
   const sugg = document.createElement("section");
   sugg.className = "ig-right__sugg";
   sugg.innerHTML = `
     <div class="ig-right__head">
       <h2>${escapeHtml(t("right.suggested"))}</h2>
-      <a href="${parent ? categoryUrl(parent) : "/u"}">${escapeHtml(
+      <button type="button" class="ig-right__refresh" hidden title="${escapeHtml(
+        t("right.refresh")
+      )}" aria-label="${escapeHtml(t("right.refresh"))}"></button>
+      <a href="${parents.length === 1 ? categoryUrl(parents[0]) : "/categories"}">${escapeHtml(
         t("right.see_all")
       )}</a>
     </div>
     <div class="ig-right__list"></div>`;
   aside.append(sugg);
 
+  // 3. tools from the sidebar's 服务 section (Typing, 图纸, 团购 …)
+  const tools = toolsBlock();
+  if (tools) {
+    aside.append(tools);
+  }
+
+  // 4. footer
   const links = [
     ["/about", "about"],
     ["/faq", "faq"],
@@ -634,32 +690,154 @@ function ensureRightSidebar(api, siteSettings) {
   footer.innerHTML = `
     <nav class="ig-right__links">${links}</nav>
     <p class="ig-right__copy">© ${new Date().getFullYear()} ${escapeHtml(
-      siteSettings?.title || "Moaclab"
+      title
     )}</p>`;
   aside.append(footer);
 
   wrap.append(aside);
 
   const listEl = sugg.querySelector(".ig-right__list");
-  if (parent) {
-    fillStudios(listEl, parent, site, user);
+  if (parents.length) {
+    fillStudios(
+      listEl,
+      parents,
+      site,
+      user,
+      sugg.querySelector(".ig-right__refresh")
+    );
   } else {
     fillSuggestions(listEl);
   }
 }
 
-// "Suggested for you" = the studios: subcategories of the keyboard category.
-// The parent comes from the instagram_suggested_category setting, or the
-// top-level category named 键盘; with neither, fall back to active users.
-function suggestedParent(site) {
+function meBlock(user) {
+  const me = document.createElement("div");
+  me.className = "ig-right__me";
+  me.innerHTML = `
+    <a class="ig-right__avatar" href="/u/${user.username}/summary">
+      <img src="${user.avatar_template.replace("{size}", "96")}" alt="">
+    </a>
+    <div class="ig-right__text">
+      <a class="ig-right__user" href="/u/${user.username}/summary">${escapeHtml(
+        user.username
+      )}</a>
+      <span class="ig-right__sub">${escapeHtml(user.name || "")}</span>
+    </div>
+    <a class="ig-right__action" href="/u/${user.username}/preferences/account">${escapeHtml(
+      t("right.switch")
+    )}</a>`;
+  return me;
+}
+
+// Logged out: Discourse's own /signup and /login (they open the native
+// sign-up / log-in flow); replaces the buttons in the top-right corner.
+function authBlock(title) {
+  const auth = document.createElement("section");
+  auth.className = "ig-right__auth";
+  auth.innerHTML = `
+    <h2 class="ig-right__auth-title">${escapeHtml(
+      t("right.auth_title", { site: title })
+    )}</h2>
+    <p class="ig-right__auth-text">${escapeHtml(t("right.auth_text"))}</p>
+    <a class="ig-right__btn ig-right__btn--primary" href="/signup">${escapeHtml(
+      t("right.sign_up")
+    )}</a>
+    <a class="ig-right__btn" href="/login">${escapeHtml(t("right.log_in"))}</a>`;
+  return auth;
+}
+
+// The sidebar's 服务 custom section (name in instagram_tools_section), read
+// live so labels, links and icons stay whatever the sidebar says.
+function toolsBlock() {
+  const name = String(settings.instagram_tools_section || "").trim();
+  const sections = [
+    ...document.querySelectorAll(
+      ".sidebar-wrapper .sidebar-section-wrapper, .sidebar-wrapper .sidebar-section"
+    ),
+  ];
+  const section = sections.find(
+    (sec) =>
+      sec
+        .querySelector(".sidebar-section-header-text, .sidebar-section-header")
+        ?.textContent.trim() === name
+  );
+  const anchors = section
+    ? [...section.querySelectorAll("a.sidebar-section-link")]
+    : [];
+  if (!anchors.length) {
+    return null;
+  }
+
+  const block = document.createElement("section");
+  block.className = "ig-right__tools";
+  const head = document.createElement("div");
+  head.className = "ig-right__head";
+  const h2 = document.createElement("h2");
+  h2.textContent = name || t("right.tools");
+  head.append(h2);
+  block.append(head);
+
+  const seen = new Set();
+  for (const link of anchors) {
+    const href = link.getAttribute("href");
+    if (!href || seen.has(href)) {
+      continue;
+    }
+    seen.add(href);
+
+    const row = document.createElement("a");
+    row.className = "ig-right__row ig-right__tool";
+    row.href = href;
+
+    const icon = document.createElement("span");
+    icon.className = "ig-right__tool-icon";
+    const prefix = link.querySelector(".sidebar-section-link-prefix");
+    if (prefix) {
+      icon.append(prefix.cloneNode(true));
+    }
+
+    const label = document.createElement("span");
+    label.className = "ig-right__user";
+    label.textContent = (
+      link.querySelector(".sidebar-section-link-content-text")?.textContent ||
+      link.textContent ||
+      ""
+    ).trim();
+
+    const open = document.createElement("span");
+    open.className = "ig-right__action";
+    open.textContent = t("right.open");
+
+    const text = document.createElement("span");
+    text.className = "ig-right__text";
+    text.append(label);
+
+    row.append(icon, text, open);
+    block.append(row);
+  }
+  return block;
+}
+
+// "Suggested for you" = the studios: subcategories of the keyboard / keycap
+// categories. Parents come from instagram_suggested_categories (IDs), else
+// the top-level categories named below; with none, active users instead.
+const DEFAULT_PARENTS = ["键盘", "键帽库", "键帽"];
+const STUDIO_MAX = 5;
+
+function suggestedParents(site) {
   const categories = site?.categories || [];
-  const id = parseInt(settings.instagram_suggested_category, 10);
-  return (
-    (id && categories.find((c) => c.id === id)) ||
-    categories.find(
-      (c) => !c.parent_category_id && c.name?.trim() === "键盘"
-    ) ||
-    null
+  const ids = String(settings.instagram_suggested_categories || "")
+    .split("|")
+    .map((v) => parseInt(v, 10))
+    .filter(Boolean);
+  const byId = ids
+    .map((id) => categories.find((c) => c.id === id))
+    .filter(Boolean);
+  if (byId.length) {
+    return byId;
+  }
+  return categories.filter(
+    (c) => !c.parent_category_id && DEFAULT_PARENTS.includes(c.name?.trim())
   );
 }
 
@@ -669,21 +847,47 @@ function categoryUrl(category, parent) {
     : `/c/${category.slug}/${category.id}`;
 }
 
-async function fillStudios(listEl, parent, site, user) {
-  let studios = (site?.categories || []).filter(
-    (c) => c.parent_category_id === parent.id
-  );
-  if (!studios.length) {
-    // lazily loaded categories: ask Discourse for the subcategories
-    try {
-      const result = await ajax("/categories.json", {
-        data: { parent_category_id: parent.id },
-      });
-      studios = result?.category_list?.categories || [];
-    } catch {
-      studios = [];
+function shuffled(list) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+async function fillStudios(listEl, parents, site, user, refreshBtn) {
+  const studios = [];
+  for (const parent of parents) {
+    let subs = (site?.categories || []).filter(
+      (c) => c.parent_category_id === parent.id
+    );
+    if (!subs.length) {
+      // lazily loaded categories: ask Discourse for the subcategories
+      try {
+        const result = await ajax("/categories.json", {
+          data: { parent_category_id: parent.id },
+        });
+        subs = result?.category_list?.categories || [];
+      } catch {
+        subs = [];
+      }
+    }
+    for (const c of subs) {
+      studios.push({ category: c, parent });
     }
   }
+
+  // newest activity first: when a studio last appeared in the latest topics
+  const latest = await loadLatest();
+  const lastActive = new Map();
+  for (const topic of latest?.topic_list?.topics || []) {
+    const when = Date.parse(topic.bumped_at || topic.last_posted_at) || 0;
+    if (when > (lastActive.get(topic.category_id) || 0)) {
+      lastActive.set(topic.category_id, when);
+    }
+  }
+
   if (!listEl.isConnected) {
     return;
   }
@@ -692,27 +896,55 @@ async function fillStudios(listEl, parent, site, user) {
     return;
   }
 
-  // a fresh handful each visit, so every studio gets seen
-  const picks = [...studios];
-  for (let i = picks.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [picks[i], picks[j]] = [picks[j], picks[i]];
-  }
+  const active = studios
+    .filter((s) => lastActive.has(s.category.id))
+    .sort(
+      (x, y) => lastActive.get(y.category.id) - lastActive.get(x.category.id)
+    );
+  const quiet = shuffled(studios.filter((s) => !lastActive.has(s.category.id)));
+  let shown = [...active, ...quiet].slice(0, STUDIO_MAX);
 
-  listEl.innerHTML = picks
-    .slice(0, 5)
-    .map((c) => {
-      const url = categoryUrl(c, parent);
-      const logo = c.uploaded_logo?.url;
-      const avatar = logo
-        ? `<img src="${escapeHtml(logo)}" alt="">`
-        : `<span class="ig-right__letter" style="background:#${escapeHtml(
-            c.color || "8e8e8e"
-          )}">${escapeHtml((c.name || "·").trim().charAt(0))}</span>`;
-      const subtitle =
-        (c.description_text || "").trim() ||
-        t("right.topics", { count: c.topic_count || 0 });
-      return `
+  const render = () => {
+    listEl.innerHTML = shown
+      .map((s) => studioRow(s.category, s.parent))
+      .join("");
+  };
+  render();
+
+  listEl.addEventListener("click", (event) => {
+    const btn = event.target.closest(".ig-right__follow");
+    if (btn) {
+      toggleFollow(btn, user);
+    }
+  });
+
+  // "换一批": a random handful, preferring studios not on screen
+  if (refreshBtn && studios.length > STUDIO_MAX) {
+    refreshBtn.hidden = false;
+    refreshBtn.addEventListener("click", () => {
+      const current = new Set(shown.map((s) => s.category.id));
+      const fresh = shuffled(
+        studios.filter((s) => !current.has(s.category.id))
+      );
+      const rest = shuffled(studios.filter((s) => current.has(s.category.id)));
+      shown = [...fresh, ...rest].slice(0, STUDIO_MAX);
+      render();
+    });
+  }
+}
+
+function studioRow(c, parent) {
+  const url = categoryUrl(c, parent);
+  const logo = c.uploaded_logo?.url;
+  const avatar = logo
+    ? `<img src="${escapeHtml(logo)}" alt="">`
+    : `<span class="ig-right__letter" style="background:#${escapeHtml(
+        c.color || "8e8e8e"
+      )}">${escapeHtml((c.name || "·").trim().charAt(0))}</span>`;
+  const subtitle =
+    (c.description_text || "").trim() ||
+    t("right.topics", { count: c.topic_count || 0 });
+  return `
       <div class="ig-right__row">
         <a class="ig-right__avatar" href="${url}">${avatar}</a>
         <div class="ig-right__text">
@@ -721,15 +953,6 @@ async function fillStudios(listEl, parent, site, user) {
         </div>
         ${followButton(c.id, isFollowing(c.notification_level))}
       </div>`;
-    })
-    .join("");
-
-  listEl.addEventListener("click", (event) => {
-    const btn = event.target.closest(".ig-right__follow");
-    if (btn) {
-      toggleFollow(btn, user);
-    }
-  });
 }
 
 // Instagram's "Follow" = Discourse's native category notification level:

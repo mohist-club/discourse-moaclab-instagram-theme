@@ -15,7 +15,8 @@ zh_CN:
       instagram_hide_header: "桌面端隐藏顶部头部（头像菜单浮在右上角）。"
       instagram_right_sidebar: "宽屏桌面显示 Instagram 风格右侧栏。"
       instagram_messages_dock: "桌面端右下角显示消息浮窗（Discourse 私信）。"
-      instagram_suggested_category: "右栏「为你推荐」使用该 ID 的类别下的二级类别（工作室）；0 表示按名称找「键盘」。"
+      instagram_suggested_categories: "右栏「为你推荐」使用这些 ID 的类别下的二级类别（工作室）；留空用「键盘」「键帽库」。"
+      instagram_tools_section: "右栏「服务」模块读取的侧边栏分区标题。"
   ig:
     rail:
       home: "首页"
@@ -60,6 +61,13 @@ zh_CN:
       view: "查看"
       follow: "关注"
       following: "已关注"
+      refresh: "换一批"
+      auth_title: "加入 %{site}"
+      auth_text: "登录后可以点赞、收藏、关注工作室并参与讨论。"
+      sign_up: "注册"
+      log_in: "登录"
+      tools: "服务"
+      open: "打开"
       fallback_subtitle: "社区活跃成员"
       topics: "%{count} 个话题"
       about: "关于"

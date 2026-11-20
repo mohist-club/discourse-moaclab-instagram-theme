@@ -166,8 +166,8 @@
 .ig-right__footer {
   margin-top: 32px;
   color: var(--ig-muted);
-  font-size: 12px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 22px;
 
   .ig-right__links a {
     color: var(--ig-muted);
@@ -195,4 +195,141 @@
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
+}
+
+// ---- "换一批" refresh, next to "See all" ----
+.ig-right__head .ig-right__refresh {
+  width: 20px;
+  height: 20px;
+  margin: 0 8px 0 auto;
+  padding: 0;
+  border: 0;
+  background: var(--ig-muted);
+  cursor: pointer;
+  mask: url($ig-refresh) center / 16px 16px no-repeat;
+
+  &:hover {
+    background: var(--ig-ink);
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+// ---- logged out: sign-up / log-in module (replaces the corner buttons) ----
+.ig-right__auth {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--ig-border);
+  border-radius: 8px;
+}
+
+.ig-right__auth-title {
+  margin: 0;
+  color: var(--ig-ink);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.ig-right__auth-text {
+  margin: 0 0 4px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.ig-right a.ig-right__btn {
+  display: block;
+  padding: 7px 16px;
+  border-radius: 8px;
+  background: var(--ig-pill);
+  color: var(--ig-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+
+  &:hover {
+    background: var(--ig-pill-hover);
+  }
+
+  &--primary {
+    background: var(--ig-accent);
+    color: #fff;
+
+    &:hover {
+      background: var(--ig-accent);
+      color: #fff;
+      filter: brightness(0.92);
+    }
+  }
+}
+
+// the corner buttons go away only while this module is on screen
+@media (width >= 1264px) {
+  body.ig-rightcol:has(.ig-right__auth) .d-header {
+    .auth-buttons,
+    .sign-up-button,
+    .login-button {
+      display: none;
+    }
+  }
+}
+
+// ---- tools module (the sidebar's 服务 section) ----
+.ig-right__tools {
+  margin-top: 24px;
+}
+
+.ig-right a.ig-right__tool {
+  &:hover {
+    border-radius: 8px;
+    background: var(--ig-hover);
+  }
+}
+
+.ig-right__tool-icon {
+  display: flex;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ig-pill);
+  color: var(--ig-ink);
+
+  .sidebar-section-link-prefix {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .d-icon,
+  img {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  img {
+    border-radius: 4px;
+    object-fit: cover;
+  }
+
+  .prefix-span {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+}
+
+.ig-right__tool .ig-right__user {
+  font-weight: 600;
 }

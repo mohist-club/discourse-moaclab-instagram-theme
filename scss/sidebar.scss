@@ -97,7 +97,7 @@ body.ig-desktop-shell:not(.admin-interface) {
   .ig-logo-word {
     min-width: 0;
     overflow: hidden;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.2px;
     text-overflow: ellipsis;
@@ -112,14 +112,14 @@ body.ig-desktop-shell:not(.admin-interface) {
     left: 11px;
     display: flex;
     align-items: center;
-    height: 28px;
+    height: 40px;
     transform: translateY(-50%);
 
     img {
       display: block;
       width: auto;
-      max-width: 190px;
-      height: 28px;
+      max-width: 200px;
+      height: 40px;
       object-fit: contain;
       object-position: left center;
     }
