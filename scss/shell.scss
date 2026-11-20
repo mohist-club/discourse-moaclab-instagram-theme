@@ -144,13 +144,3 @@ body.ig-clean-feed:not(.admin-interface) {
     display: none;
   }
 }
-
-// =========================================================
-// Reserve room for the fixed right column so the centered feed
-// shifts left into Instagram's feed + suggestions layout.
-// =========================================================
-@media (width >= 1264px) {
-  body.ig-rightcol.ig-desktop-shell:not(.admin-interface) #main-outlet {
-    padding-right: calc(319px + 28px);
-  }
-}

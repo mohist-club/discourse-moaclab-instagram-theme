@@ -258,12 +258,14 @@ function railLabel(key) {
 let suggestionCache = null;
 
 function ensureRightSidebar(api, siteSettings) {
-  const main = document.querySelector("#main-outlet");
-  if (!main || !isDiscovery()) {
+  // Inject as a sibling of #main-outlet inside #main-outlet-wrapper so it
+  // becomes a real grid column (see right-sidebar.scss), not an overlay.
+  const wrap = document.querySelector("#main-outlet-wrapper");
+  if (!wrap || !isDiscovery()) {
     document.querySelector(".ig-right")?.remove();
     return;
   }
-  if (main.querySelector(".ig-right")) {
+  if (wrap.querySelector(".ig-right")) {
     return;
   }
 
@@ -307,7 +309,7 @@ function ensureRightSidebar(api, siteSettings) {
     )}</span>`;
   aside.append(footer);
 
-  main.append(aside);
+  wrap.append(aside);
 
   fillSuggestions(sugg.querySelector(".ig-right__sugg-list"));
 }

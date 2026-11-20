@@ -4,18 +4,39 @@
 // on wide desktop (>=1264px). Layout is reserved in shell.scss.
 // =========================================================
 .ig-right {
-  display: none; // shown at >=1264px via shell.scss
+  display: none; // becomes a grid column at >=1264px on discovery
+  box-sizing: border-box;
+  color: var(--ig-ink);
 }
 
+// Turn #main-outlet-wrapper into Instagram's 5-column grid only when the
+// right column is present (discovery + desktop shell + wide). Mirrors the
+// proven redditish layout: sidebar | lspace | feed | rightcol | rspace.
 @media (width >= 1264px) {
-  body.ig-desktop-shell:not(.admin-interface) .ig-right {
-    display: block;
-    position: fixed;
-    top: 76px;
-    right: max(16px, calc((100vw - 245px - 470px - 28px - 319px) / 2));
-    width: 319px;
-    box-sizing: border-box;
-    color: var(--ig-ink);
+  body.ig-rightcol.ig-desktop-shell:not(.admin-interface)
+    #main-outlet-wrapper:has(.ig-right) {
+    grid-template-columns:
+      var(--d-sidebar-width) minmax(0, 1fr) minmax(0, var(--ig-feed-width))
+      319px minmax(0, 1fr);
+    grid-template-areas: "sidebar lspace content rightcol rspace";
+    column-gap: 28px;
+
+    > .sidebar-wrapper {
+      grid-area: sidebar;
+    }
+
+    > #main-outlet {
+      grid-area: content;
+      padding-top: 8px;
+    }
+
+    > .ig-right {
+      display: block;
+      position: static;
+      grid-area: rightcol;
+      width: auto;
+      padding-top: 8px;
+    }
   }
 }
 
