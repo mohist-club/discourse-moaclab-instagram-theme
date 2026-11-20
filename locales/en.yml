@@ -75,6 +75,8 @@ en:
       log_in: "Log in"
       sign_up: "Sign up"
     feed:
+      cannot_like_own: "You can't like your own post"
+      cannot_like: "You can't like this post"
       previous_image: "Previous image"
       next_image: "Next image"
       more: "more"

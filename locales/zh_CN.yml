@@ -75,6 +75,8 @@ zh_CN:
       log_in: "登录"
       sign_up: "注册"
     feed:
+      cannot_like_own: "不能给自己的帖子点赞"
+      cannot_like: "无法给这个帖子点赞"
       previous_image: "上一张"
       next_image: "下一张"
       more: "更多"

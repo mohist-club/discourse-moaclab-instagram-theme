@@ -303,7 +303,6 @@ body.tags-page {
 
 // action row
 .ig-post__actions {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 13px;
@@ -377,20 +376,21 @@ body.tags-page {
   }
 }
 
-// dots, centred in the action row under the image
+// dots: their own row, centred under the image (instagram.com 2026:
+// 6px dots 4px apart, centre 16px below the image; at most five, the
+// end ones 4px while more images lie beyond)
 .ig-post__dots {
-  position: absolute;
-  top: 12px;
-  left: 50%;
   display: flex;
-  align-items: center;
   gap: 4px;
-  height: 24px;
-  transform: translateX(-50%);
+  align-items: center;
+  justify-content: center;
+  height: 6px;
+  margin-top: 14px;
   pointer-events: none;
 }
 
 .ig-post__dot-indicator {
+  flex: 0 0 auto;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -398,12 +398,25 @@ body.tags-page {
   opacity: 0.4;
   transition:
     background 0.2s ease,
-    opacity 0.2s ease;
+    opacity 0.2s ease,
+    width 0.2s ease,
+    height 0.2s ease;
 
   &.is-active {
-    background: var(--ig-accent);
+    background: var(--ig-btn-primary);
     opacity: 1;
   }
+
+  &.is-small {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+// a like Discourse does not allow (your own post): dimmed, no hand
+.ig-post .ig-post__like.is-unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 // stack icon: only on grid tiles (Explore, suggested topics)

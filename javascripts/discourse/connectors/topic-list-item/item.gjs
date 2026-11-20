@@ -134,7 +134,20 @@ export default class Item extends Component {
   }
 
   get likeLabel() {
+    if (this.currentUser && !this.canToggleLike) {
+      // Discourse does not let you like your own post (Instagram does)
+      return this.text(this.isOwnPost ? "cannot_like_own" : "cannot_like");
+    }
     return this.text(this.liked ? "unlike" : "like");
+  }
+
+  get isOwnPost() {
+    const op = this.topic.posters?.[0]?.user_id ?? this.topic.user_id;
+    return !!this.currentUser && op === this.currentUser.id;
+  }
+
+  get likeUnavailable() {
+    return !!this.currentUser && !this.canToggleLike;
   }
 
   get saveLabel() {
@@ -298,10 +311,25 @@ export default class Item extends Component {
     }));
   }
 
+  // Instagram shows at most five dots: a window that follows the current
+  // image, the end dots smaller while more images lie beyond them
   get dots() {
-    return (this.gallery || []).map((_, index) => ({
-      active: index === this.slideIndex,
-    }));
+    const count = this.gallery?.length || 0;
+    const max = 5;
+    const start =
+      count <= max
+        ? 0
+        : Math.min(Math.max(this.slideIndex - 2, 0), count - max);
+    const end = Math.min(count, start + max) - 1;
+    const dots = [];
+    for (let index = start; index <= end; index++) {
+      dots.push({
+        active: index === this.slideIndex,
+        small:
+          (index === start && start > 0) || (index === end && end < count - 1),
+      });
+    }
+    return dots;
   }
 
   get atFirstSlide() {
@@ -351,7 +379,11 @@ export default class Item extends Component {
   @action
   likeFromMedia(event) {
     clearTimeout(this.clickTimer);
-    if (event.target.closest("button") || inGrid(event.target)) {
+    if (
+      event.target.closest("button") ||
+      inGrid(event.target) ||
+      this.likeUnavailable
+    ) {
       return;
     }
     this.heartPop = true;
@@ -649,20 +681,25 @@ export default class Item extends Component {
         </span>
       </div>
 
+      {{#if this.hasGallery}}
+        <div class="ig-post__dots" aria-hidden="true">
+          {{#each this.dots as |dot|}}
+            <span
+              class="ig-post__dot-indicator
+                {{if dot.active 'is-active'}}
+                {{if dot.small 'is-small'}}"
+            ></span>
+          {{/each}}
+        </div>
+      {{/if}}
+
       <div class="ig-post__actions">
-        {{#if this.hasGallery}}
-          <div class="ig-post__dots" aria-hidden="true">
-            {{#each this.dots as |dot|}}
-              <span
-                class="ig-post__dot-indicator {{if dot.active 'is-active'}}"
-              ></span>
-            {{/each}}
-          </div>
-        {{/if}}
         {{#if settings.show_like_count}}
           <button
             type="button"
-            class="ig-post__action ig-post__like {{if this.liked 'is-liked'}}"
+            class="ig-post__action ig-post__like
+              {{if this.liked 'is-liked'}}
+              {{if this.likeUnavailable 'is-unavailable'}}"
             title={{this.likeLabel}}
             aria-pressed={{if this.liked "true" "false"}}
             disabled={{this.likeDisabled}}
