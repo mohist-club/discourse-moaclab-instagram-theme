@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
+import bodyClass from "discourse/helpers/body-class";
 import DiscourseURL from "discourse/lib/url";
 import { i18n } from "discourse-i18n";
 import { canGoBackInApp, currentTopic } from "../lib/ig-last-page";
@@ -43,6 +44,19 @@ export default class IgTopicBar extends Component {
       .map((u) => u.username)
       .filter((name) => name && name !== me);
     return names.length ? names.join("、") : null;
+  }
+
+  // a group conversation: more than two people, or a group invited
+  get isGroupChat() {
+    const topic = currentTopic(this.router);
+    if (topic?.archetype !== "private_message") {
+      return false;
+    }
+    const details = topic.details || {};
+    return (
+      (details.allowed_users?.length || 0) > 2 ||
+      (details.allowed_groups?.length || 0) > 0
+    );
   }
 
   get title() {
@@ -90,6 +104,9 @@ export default class IgTopicBar extends Component {
   }
 
   <template>
+    {{#if this.isGroupChat}}
+      {{bodyClass "ig-group-chat"}}
+    {{/if}}
     {{#if this.show}}
       <div class="ig-topic-bar">
         <button

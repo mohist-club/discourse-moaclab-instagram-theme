@@ -95,20 +95,54 @@
       max-width: 100%;
     }
 
-    // time after the actions; names are not shown in a conversation
+    // the name line goes above the bubble, the time after the actions
     .topic-post .topic-meta-data {
-      order: 3;
-      min-height: 0;
-      margin: 0 4px;
+      display: contents;
 
       .names {
         display: none;
+        order: -1;
+        flex-basis: 100%;
+        margin: 6px 0 2px 14px;
+        color: var(--ig-muted);
+        font-size: 12px;
+        line-height: 16px;
+
+        a {
+          color: var(--ig-muted);
+          font-weight: 400;
+        }
+
+        .second,
+        .user-title {
+          display: none;
+        }
       }
 
       .post-infos {
-        margin: 0;
+        order: 3;
+        margin: 0 4px;
+        color: var(--ig-muted);
         font-size: 11px;
       }
+    }
+
+    // group chats: the sender's name over the first of their messages
+    &.ig-group-chat
+      .topic-post:not(.current-user-post, .ig-chat-continued)
+      .topic-meta-data
+      .names {
+      display: block;
+    }
+
+    // a run of messages: the avatar only beside the last one, tighter rows
+    .topic-post.ig-chat-followed .topic-avatar img.avatar {
+      visibility: hidden;
+    }
+
+    .topic-post.ig-chat-continued .post__row,
+    .topic-post.ig-chat-continued article > .row {
+      padding-top: 0;
     }
 
     .topic-post .regular.contents,

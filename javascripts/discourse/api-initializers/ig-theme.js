@@ -42,6 +42,27 @@ export default apiInitializer((api) => {
   applyFlags();
   api.onPageChange(applyFlags);
 
+  // conversations: mark runs of messages from the same person, so the chat
+  // shows the name once (first message) and the avatar once (last message)
+  api.registerValueTransformer("post-class", ({ value, context }) => {
+    const { post, prevPost, nextPost } = context || {};
+    if (post?.topic?.archetype !== "private_message") {
+      return value;
+    }
+    const sameSender = (other) =>
+      !!other &&
+      other.user_id === post.user_id &&
+      other.post_type === post.post_type;
+    const classes = [...(value || [])];
+    if (sameSender(prevPost)) {
+      classes.push("ig-chat-continued");
+    }
+    if (sameSender(nextPost)) {
+      classes.push("ig-chat-followed");
+    }
+    return classes;
+  });
+
   // the page before log-in / sign-up, for their close button and Esc
   api.onPageChange((url) => {
     rememberPage(url);
