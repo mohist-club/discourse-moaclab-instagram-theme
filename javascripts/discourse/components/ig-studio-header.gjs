@@ -24,7 +24,8 @@ import { i18n } from "discourse-i18n";
 // 发帖 = the native composer in this category, share = copy the link.
 
 const MEMBER_PREVIEW = 3;
-const membersCache = new Map();
+const HIGHLIGHTS_MAX = 8;
+const studioCache = new Map();
 
 function parentIds() {
   const ids = String(settings.instagram_suggested_categories || "")
@@ -50,9 +51,11 @@ export default class IgStudioHeader extends Component {
   @service currentUser;
   @service composer;
   @service router;
+  @service interfaceColor;
 
   @tracked level = this.args.category?.notification_level;
   @tracked members = null;
+  @tracked highlights = null;
   @tracked copied = false;
   @tracked busy = false;
 
@@ -66,6 +69,20 @@ export default class IgStudioHeader extends Component {
 
   text(key, options) {
     return i18n(themePrefix(`ig.studio.${key}`), options);
+  }
+
+  // the category's background image (Discourse paints it on <body>); here
+  // it becomes the hero's cover instead (see studio.scss)
+  get coverUrl() {
+    const light = this.category.uploaded_background?.url;
+    const dark = this.category.uploaded_background_dark?.url;
+    return (this.interfaceColor?.darkModeActive && dark) || light || null;
+  }
+
+  get coverStyle() {
+    return this.coverUrl
+      ? htmlSafe(`background-image: url("${encodeURI(this.coverUrl)}")`)
+      : null;
   }
 
   get parent() {
@@ -166,21 +183,23 @@ export default class IgStudioHeader extends Component {
       : this.text("members", { names });
   }
 
-  // recent posters of this studio (from its latest topics), newest first
-  loadMembers = modifier(() => {
+  // from the studio's latest topics: recent posters (newest first) and
+  // highlights — pinned topics first, then the newest with an image
+  loadStudio = modifier(() => {
     if (!this.show) {
       return;
     }
     const id = this.category.id;
-    let promise = membersCache.get(id);
+    let promise = studioCache.get(id);
     if (!promise) {
       promise = ajax(`${this.category.url}/l/latest.json`)
         .then((result) => {
+          const topics = result?.topic_list?.topics || [];
           const users = new Map(
             (result?.users || []).map((user) => [user.id, user])
           );
           const seen = new Map();
-          for (const topic of result?.topic_list?.topics || []) {
+          for (const topic of topics) {
             for (const poster of topic.posters || []) {
               const user = users.get(poster.user_id);
               if (user && user.id > 0 && !seen.has(user.id)) {
@@ -188,17 +207,33 @@ export default class IgStudioHeader extends Component {
               }
             }
           }
-          return [...seen.values()];
+          const highlights = [
+            ...topics.filter((t) => t.pinned && t.image_url),
+            ...topics.filter((t) => !t.pinned && t.image_url),
+          ]
+            .slice(0, HIGHLIGHTS_MAX)
+            .map((t) => ({
+              title: t.title,
+              url: `/t/${t.slug}/${t.id}`,
+              image: t.image_url,
+              pinned: !!t.pinned,
+            }));
+          return { members: [...seen.values()], highlights };
         })
-        .catch(() => []);
-      membersCache.set(id, promise);
+        .catch(() => ({ members: [], highlights: [] }));
+      studioCache.set(id, promise);
     }
-    promise.then((list) => {
+    promise.then(({ members, highlights }) => {
       if (!this.isDestroying && !this.isDestroyed) {
-        this.members = list;
+        this.members = members;
+        this.highlights = highlights;
       }
     });
   });
+
+  highlightStyle(item) {
+    return htmlSafe(`background-image: url("${encodeURI(item.image)}")`);
+  }
 
   avatarUrl(user) {
     return user.avatar_template.replace("{size}", "64");
@@ -251,7 +286,13 @@ export default class IgStudioHeader extends Component {
 
   <template>
     {{#if this.show}}
-      <section class="ig-studio" {{this.loadMembers}}>
+      <section
+        class="ig-studio {{if this.coverUrl 'ig-studio--cover'}}"
+        {{this.loadStudio}}
+      >
+        {{#if this.coverUrl}}
+          <div class="ig-studio__cover" style={{this.coverStyle}}></div>
+        {{/if}}
         <div class="ig-studio__top">
           <div class="ig-studio__ring">
             {{#if this.logoUrl}}
@@ -339,6 +380,29 @@ export default class IgStudioHeader extends Component {
             {{on "click" this.share}}
           ></button>
         </div>
+
+        {{#if this.highlights.length}}
+          <div class="ig-studio__highlights">
+            {{#each this.highlights as |item|}}
+              <a
+                class="ig-studio__highlight"
+                href={{item.url}}
+                title={{item.title}}
+              >
+                <span
+                  class="ig-studio__highlight-ring
+                    {{if item.pinned 'is-pinned'}}"
+                >
+                  <span
+                    class="ig-studio__highlight-image"
+                    style={{this.highlightStyle item}}
+                  ></span>
+                </span>
+                <span class="ig-studio__highlight-label">{{item.title}}</span>
+              </a>
+            {{/each}}
+          </div>
+        {{/if}}
 
         <nav class="ig-studio__tabs">
           <a

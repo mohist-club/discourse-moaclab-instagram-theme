@@ -14,6 +14,12 @@
   display: none;
 }
 
+// a background image becomes the hero's cover, not the page background
+// (core paints it on body.category-<slug>, see d-styles)
+body.category:has(.ig-studio--cover) {
+  background-image: none;
+}
+
 .ig-studio {
   box-sizing: border-box;
   margin: 0;
@@ -27,11 +33,49 @@
   }
 }
 
-// header and buttons 640px centred; the tabs span the whole grid
+// header and buttons 640px centred; cover and tabs span the whole grid
 .ig-studio__top,
-.ig-studio__actions {
+.ig-studio__actions,
+.ig-studio__highlights {
   max-width: 640px;
   margin-inline: auto;
+}
+
+// ---- cover (category background image) ----
+.ig-studio--cover {
+  padding-top: 16px;
+}
+
+.ig-studio__cover {
+  position: relative;
+  height: clamp(160px, 26vw, 280px);
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: var(--ig-pill);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  // a soft fade at the bottom so the ring sits on it cleanly
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 45%;
+    background: linear-gradient(to bottom, transparent, rgb(0 0 0 / 35%));
+  }
+}
+
+// the ring overlaps the cover's bottom edge
+.ig-studio--cover .ig-studio__ring {
+  position: relative;
+  z-index: 1;
+  margin-top: -82px;
+  box-shadow: 0 0 0 5px var(--ig-page);
+}
+
+.ig-studio--cover .ig-studio__info {
+  padding-top: 16px;
 }
 
 .ig-studio__top {
@@ -237,6 +281,73 @@
   }
 }
 
+// ---- highlights: pinned topics and the newest with an image ----
+.ig-studio__highlights {
+  display: flex;
+  gap: 28px;
+  margin-top: 32px;
+  padding: 4px 2px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.ig-studio__highlight {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 87px;
+  color: var(--ig-ink);
+
+  &:hover {
+    color: var(--ig-ink);
+  }
+}
+
+// Instagram highlight: grey hairline ring (gradient when pinned), page gap
+.ig-studio__highlight-ring {
+  box-sizing: border-box;
+  display: block;
+  width: 87px;
+  height: 87px;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--ig-border);
+
+  &.is-pinned {
+    padding: 2px;
+    background: var(--ig-story-ring);
+  }
+}
+
+.ig-studio__highlight-image {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 3px solid var(--ig-page);
+  border-radius: 50%;
+  background-color: var(--ig-pill);
+  background-position: center;
+  background-size: cover;
+}
+
+.ig-studio__highlight-label {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 // ---- tabs ----
 .ig-studio__tabs {
   display: flex;
@@ -347,5 +458,38 @@ body.ig-explore #main-outlet:has(.ig-studio) .topic-list {
 
   .ig-studio__tabs {
     margin: 20px -16px 0;
+  }
+
+  .ig-studio--cover {
+    padding-top: 0;
+  }
+
+  .ig-studio__cover {
+    height: 140px;
+    margin: -16px -16px 0;
+    border-radius: 0;
+  }
+
+  .ig-studio--cover .ig-studio__ring {
+    margin-top: -43px;
+    box-shadow: 0 0 0 4px var(--ig-page);
+  }
+
+  .ig-studio--cover .ig-studio__info {
+    padding-top: 8px;
+  }
+
+  .ig-studio__highlights {
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .ig-studio__highlight {
+    width: 64px;
+  }
+
+  .ig-studio__highlight-ring {
+    width: 64px;
+    height: 64px;
   }
 }
