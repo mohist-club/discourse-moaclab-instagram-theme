@@ -15,7 +15,7 @@ zh_CN:
       instagram_hide_header: "桌面端隐藏顶部头部（头像菜单浮在右上角）。"
       instagram_right_sidebar: "宽屏桌面显示 Instagram 风格右侧栏。"
       instagram_messages_dock: "桌面端右下角显示消息浮窗（Discourse 私信）。"
-      instagram_suggested_category: "右栏「为你推荐」使用该类别下的二级类别（工作室）。"
+      instagram_suggested_category: "右栏「为你推荐」使用该 ID 的类别下的二级类别（工作室）；0 表示按名称找「键盘」。"
   ig:
     rail:
       home: "首页"

@@ -15,7 +15,7 @@ en:
       instagram_hide_header: "Hide the top Discourse header on desktop (avatar menu floats top-right)."
       instagram_right_sidebar: "Show the Instagram-style right column on wide desktop."
       instagram_messages_dock: "Show the floating Messages dock with your personal messages (desktop)."
-      instagram_suggested_category: "Right column suggestions: subcategories (studios) of this category."
+      instagram_suggested_category: "Right column suggestions: subcategories (studios) of the category with this ID; 0 looks up 键盘 by name."
   ig:
     rail:
       home: "Home"

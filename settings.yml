@@ -78,8 +78,9 @@ instagram_messages_dock:
     zh_CN: "桌面端：右下角显示 Instagram 风格的「消息」浮窗，列出你的 Discourse 私信。"
 
 instagram_suggested_category:
-  type: category
-  default: ""
+  type: integer
+  default: 0
+  min: 0
   description:
-    en: "Category whose subcategories (studios) fill \"Suggested for you\" in the right column. Empty: the top-level category named 键盘; if none, active users."
-    zh_CN: "右栏「为你推荐」列出该类别下的二级类别（工作室）。留空则使用名为「键盘」的一级类别；都没有时显示活跃用户。"
+    en: "ID of the category whose subcategories (studios) fill \"Suggested for you\" in the right column (the number at the end of the category URL, e.g. /c/keyboards/10). 0: use the top-level category named 键盘; if none, show active users."
+    zh_CN: "右栏「为你推荐」使用该类别下的二级类别（工作室），填类别 ID（类别网址最后的数字，如 /c/keyboards/10 填 10）。填 0 则使用名为「键盘」的一级类别；都没有时显示活跃用户。"
