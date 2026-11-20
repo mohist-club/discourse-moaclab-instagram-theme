@@ -35,3 +35,26 @@
     --d-sidebar-width: 0;
   }
 }
+
+// =========================================================
+// Clean feed: show only the stories tray + posts on discovery,
+// like Instagram. Gated by body.ig-clean-feed (desktop).
+// Search / create / activity move to the left rail.
+// =========================================================
+@media (width >= 768px) {
+  body.ig-clean-feed:not(.admin-interface) {
+    // welcome banner ("欢迎回来" + search box)
+    .welcome-banner,
+    .above-main-container-outlet .welcome-banner {
+      display: none;
+    }
+
+    // filter dropdowns + sort tabs + new-topic button above the feed
+    .list-controls .navigation-container,
+    .list-controls #navigation-bar,
+    .list-controls .category-breadcrumb,
+    .list-controls .navigation-controls {
+      display: none;
+    }
+  }
+}

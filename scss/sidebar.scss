@@ -16,7 +16,7 @@ $ig-sidebar-icons: (
   ("bookmark", "far-bookmark"): $ig-bookmark,
   ("user", "users", "user-group", "circle-user"): $ig-user,
   ("gear", "wrench", "sliders"): $ig-settings,
-  ("bars", "list", "ellipsis"): $ig-menu,
+  ("bars", "list", "ellipsis", "ellipsis-vertical"): $ig-menu,
 );
 
 body.ig-desktop-shell:not(.admin-interface) {
@@ -193,6 +193,109 @@ body.ig-desktop-shell:not(.admin-interface) {
       .sidebar-section-link-prefix {
         margin-right: 0;
       }
+    }
+  }
+}
+
+// =========================================================
+// Injected Instagram action group at the top of the rail
+// (#ig-rail: wordmark + search / create / activity / profile)
+// =========================================================
+body.ig-desktop-shell:not(.admin-interface) {
+  #ig-rail {
+    padding: 0 12px 4px;
+  }
+
+  .ig-rail-nav {
+    display: flex;
+    flex-direction: column;
+    margin-top: 4px;
+  }
+
+  .ig-rail-link {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 48px;
+    padding: 12px;
+    margin: 2px 0;
+    border-radius: 10px;
+    color: var(--ig-ink);
+    text-decoration: none;
+    font-size: 16px;
+    line-height: 20px;
+
+    &:hover {
+      background: var(--ig-pill);
+    }
+
+    &.active {
+      font-weight: 700;
+    }
+  }
+
+  .ig-rail-ico {
+    position: relative;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--ig-ink);
+      mask-position: center;
+      mask-repeat: no-repeat;
+      mask-size: 24px 24px;
+    }
+
+    &--search::before {
+      mask-image: url($ig-search);
+    }
+
+    &--create::before {
+      mask-image: url($ig-create);
+    }
+
+    &--activity::before {
+      mask-image: url($ig-heart);
+    }
+
+    &--avatar {
+      &::before {
+        content: none;
+      }
+
+      img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+    }
+  }
+
+  // bold the glyph on the active injected row
+  .ig-rail-link.active .ig-rail-ico::before {
+    mask-size: 24px 24px;
+  }
+
+  // Tablet icon-only rail hides injected labels too
+  @media (width <= 1263px) and (width >= 768px) {
+    .ig-rail-label {
+      display: none;
+    }
+
+    .ig-rail-link {
+      justify-content: center;
+      padding: 12px 0;
+    }
+
+    .ig-rail-ico {
+      margin-right: 0;
     }
   }
 }

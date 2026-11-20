@@ -52,3 +52,9 @@ instagram_stories:
   description:
     en: "Show an Instagram-style stories tray (built from categories) at the top of the feed."
     zh_CN: "在信息流顶部显示 Instagram 风格的 Stories 横条（由分类生成）。"
+
+instagram_clean_feed:
+  default: true
+  description:
+    en: "Desktop: hide the welcome banner, search box and filter/sort tabs so the feed shows only stories and posts (search/create move to the rail)."
+    zh_CN: "桌面端：隐藏欢迎横幅、搜索框和筛选/排序标签，让信息流只剩 Stories 和帖子（搜索/创建移到左栏）。"

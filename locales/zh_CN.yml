@@ -11,3 +11,4 @@ zh_CN:
       accent_color: "强调色/链接色。"
       instagram_desktop_shell: "桌面端把左侧边栏变成 Instagram 导航竖栏。"
       instagram_stories: "信息流顶部显示由分类生成的 Stories 横条。"
+      instagram_clean_feed: "信息流隐藏欢迎横幅、搜索与筛选标签（桌面端）。"

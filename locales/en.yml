@@ -11,3 +11,4 @@ en:
       accent_color: "Accent / link color."
       instagram_desktop_shell: "Turn the left sidebar into an Instagram nav rail (desktop)."
       instagram_stories: "Show a stories tray built from categories at the top of the feed."
+      instagram_clean_feed: "Hide welcome banner, search and filter tabs on the feed (desktop)."

@@ -1,7 +1,10 @@
 import { apiInitializer } from "discourse/lib/api";
 
-// Builds the Instagram desktop shell: brand wordmark at the top of the
-// left rail, and a "stories" tray at the top of the discovery feed.
+// Instagram desktop shell:
+//  - brand wordmark + a fixed Instagram action group (search / create /
+//    activity / profile) injected at the top of the left rail
+//  - a "stories" tray at the top of the discovery feed
+//  - a `ig-clean-feed` body flag so the feed shows only stories + posts
 export default apiInitializer((api) => {
   const site = api.container.lookup("service:site");
   const siteSettings = api.container.lookup("service:site-settings");
@@ -10,15 +13,19 @@ export default apiInitializer((api) => {
   if (settings.instagram_desktop_shell && desktop) {
     document.body.classList.add("ig-desktop-shell");
   }
+  if (settings.instagram_clean_feed && desktop) {
+    document.body.classList.add("ig-clean-feed");
+  }
 
   const ensure = () => {
     try {
       if (settings.instagram_desktop_shell && desktop) {
-        ensureWordmark(siteSettings);
+        ensureRail(api, siteSettings);
       }
       if (settings.instagram_stories) {
         ensureStories(api, site);
       }
+      syncActive();
     } catch {
       // never let decoration break navigation
     }
@@ -28,22 +35,103 @@ export default apiInitializer((api) => {
   api.onPageChange(ensure);
 });
 
-function ensureWordmark(siteSettings) {
+const RAIL_ID = "ig-rail";
+
+function ensureRail(api, siteSettings) {
   const sections = document.querySelector(".sidebar-wrapper .sidebar-sections");
-  if (!sections || sections.querySelector(".ig-wordmark")) {
+  if (!sections) {
     return;
   }
-  const link = document.createElement("a");
-  link.className = "ig-wordmark";
-  link.href = "/";
-  link.textContent = siteSettings?.title || "Moaclab";
-  sections.prepend(link);
+  if (sections.querySelector(`#${RAIL_ID}`)) {
+    return;
+  }
+
+  const user = api.getCurrentUser();
+  const rail = document.createElement("div");
+  rail.id = RAIL_ID;
+
+  const wordmark = document.createElement("a");
+  wordmark.className = "ig-wordmark";
+  wordmark.href = "/";
+  wordmark.textContent = siteSettings?.title || "Moaclab";
+  rail.append(wordmark);
+
+  const nav = document.createElement("nav");
+  nav.className = "ig-rail-nav";
+  nav.setAttribute("aria-label", "Instagram");
+
+  const items = [
+    {
+      key: "search",
+      href: "/search",
+      icon: "search",
+      label: railLabel("search"),
+    },
+    {
+      key: "create",
+      href: "/new-topic",
+      icon: "create",
+      label: railLabel("create"),
+    },
+  ];
+  if (user) {
+    items.push({
+      key: "activity",
+      href: `/u/${user.username}/notifications`,
+      icon: "activity",
+      label: railLabel("activity"),
+    });
+    items.push({
+      key: "profile",
+      href: `/u/${user.username}/summary`,
+      avatar: user.avatar_template?.replace("{size}", "48"),
+      label: railLabel("profile"),
+    });
+  }
+
+  for (const it of items) {
+    const a = document.createElement("a");
+    a.className = "ig-rail-link";
+    a.href = it.href;
+    a.dataset.key = it.key;
+
+    const ico = document.createElement("span");
+    if (it.avatar) {
+      ico.className = "ig-rail-ico ig-rail-ico--avatar";
+      const img = document.createElement("img");
+      img.src = it.avatar;
+      img.alt = "";
+      ico.append(img);
+    } else {
+      ico.className = `ig-rail-ico ig-rail-ico--${it.icon}`;
+    }
+
+    const label = document.createElement("span");
+    label.className = "ig-rail-label";
+    label.textContent = it.label;
+
+    a.append(ico, label);
+    nav.append(a);
+  }
+
+  rail.append(nav);
+  sections.prepend(rail);
+}
+
+function syncActive() {
+  const path = window.location.pathname;
+  document.querySelectorAll("#ig-rail .ig-rail-link").forEach((a) => {
+    const href = a.getAttribute("href");
+    const active = href === "/" ? path === "/" : path.startsWith(href);
+    a.classList.toggle("active", active);
+  });
 }
 
 function isDiscovery() {
-  const b = document.body.classList;
   const onList = document.querySelector("#main-outlet .topic-list");
-  const inTopic = [...b].some((c) => c.startsWith("archetype-"));
+  const inTopic = [...document.body.classList].some((c) =>
+    c.startsWith("archetype-")
+  );
   return !!onList && !inTopic;
 }
 
@@ -60,8 +148,6 @@ function ensureStories(api, site) {
     existing?.remove();
     return;
   }
-
-  // already in the right place
   if (existing && existing.nextElementSibling === list) {
     return;
   }
@@ -75,7 +161,7 @@ function ensureStories(api, site) {
   tray.append(
     storyNode({
       href: "/new-topic",
-      label: user ? user.username : i18nLabel("your_story"),
+      label: user ? user.username : railLabel("your_story"),
       mine: true,
       avatarUrl: user?.avatar_template?.replace("{size}", "120"),
       fallback: user?.username,
@@ -131,7 +217,14 @@ function storyNode({ href, label, mine, color, avatarUrl, fallback }) {
   return a;
 }
 
-function i18nLabel(key) {
-  const map = { your_story: "你的故事" };
+function railLabel(key) {
+  const map = {
+    home: "首页",
+    search: "搜索",
+    create: "创建",
+    activity: "动态",
+    profile: "我的",
+    your_story: "你的故事",
+  };
   return map[key] || key;
 }
