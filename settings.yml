@@ -50,8 +50,8 @@ instagram_desktop_shell:
 instagram_stories:
   default: true
   description:
-    en: "Show an Instagram-style stories tray (built from categories) at the top of the feed."
-    zh_CN: "在信息流顶部显示 Instagram 风格的 Stories 横条（由分类生成）。"
+    en: "Home page only: an Instagram-style stories tray of the most recently active people (latest posts and topics, topped up from the user directory, up to 20)."
+    zh_CN: "仅首页：顶部显示 Instagram 风格的 Stories 横条，列出最近活跃的用户（最新帖子和话题的参与者，不足时从用户目录补足，最多 20 人）。"
 
 instagram_clean_feed:
   default: true
@@ -62,8 +62,8 @@ instagram_clean_feed:
 instagram_hide_header:
   default: true
   description:
-    en: "Desktop: hide the top Discourse header for a pure Instagram layout (the user/avatar menu floats top-right; hamburger, logo, search and language are hidden)."
-    zh_CN: "桌面端：隐藏顶部 Discourse 头部，做纯 Instagram 布局（用户/头像菜单浮在右上角；汉堡、Logo、搜索、语言切换隐藏）。"
+    en: "Desktop: hide the top Discourse header entirely for a pure Instagram layout. Search, notifications, profile and posting are in the left rail; settings, activity, saved and log out under its More menu."
+    zh_CN: "桌面端：完全隐藏顶部 Discourse 头部（包括右上角头像），做纯 Instagram 布局。搜索、通知、主页、发帖在左栏，设置、你的动态、收藏、退出在左栏「更多」里。"
 
 instagram_right_sidebar:
   default: true
@@ -102,3 +102,10 @@ instagram_auth_modal:
   description:
     en: "Log-in and sign-up pages look like an Instagram pop-up: a centred card on a dimmed backdrop with the site logo and a close button. Discourse's own form, validation and log-in methods are unchanged."
     zh_CN: "登录和注册页显示为 Instagram 弹窗样式：变暗背景上的居中卡片，带站点 Logo 和关闭按钮。表单、校验和各种登录方式仍是 Discourse 原生的。"
+
+instagram_explore_category:
+  type: integer
+  default: 13
+  description:
+    en: "ID of the category the rail's Explore opens (the number at the end of its URL, /c/keyboards/13 → 13). That category and its subcategories list topics as an Instagram Explore grid (3 columns, a tall tile every five, title and counts on hover), without stories or the right column. 0: Explore opens /categories and lists stay the normal feed."
+    zh_CN: "左栏「探索」打开的类别 ID（类别网址最后的数字，/c/keyboards/13 填 13）。该类别及其二级类别的话题列表显示为 Instagram 探索网格（三列、每五个一个竖长格、鼠标移上显示标题和点赞/回复数），不显示 Stories 和右栏。填 0 则「探索」打开 /categories，列表保持信息流。"

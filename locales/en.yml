@@ -19,6 +19,7 @@ en:
       instagram_tools_section: "Sidebar section shown as the tools module in the right column."
       instagram_topic_style: "Topic pages keep the native layout with the theme's look."
       instagram_auth_modal: "Log-in and sign-up pages as an Instagram-style pop-up card."
+      instagram_explore_category: "Explore opens this category ID, shown as an Instagram Explore grid (0: /categories)."
   ig:
     auth:
       close: "Close"
@@ -61,9 +62,8 @@ en:
       previous: "Previous"
       next: "Next"
     right:
-      switch: "Switch"
+      profile: "Profile"
       suggested: "Suggested for you"
-      see_all: "See all"
       view: "View"
       follow: "Follow"
       following: "Following"

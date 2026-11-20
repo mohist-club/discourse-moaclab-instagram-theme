@@ -372,6 +372,21 @@ export default class Item extends Component {
         </div>
       {{/if}}
 
+      {{! grid views (Explore, suggested topics): title and counts on hover }}
+      <div class="ig-post__overlay" aria-hidden="true">
+        <span class="ig-post__overlay-title">{{this.topic.title}}</span>
+        <span class="ig-post__overlay-stats">
+          <span class="ig-post__overlay-stat">
+            <span class="ig-glyph ig-glyph--heart-filled"></span>
+            {{this.topicLikeCount}}
+          </span>
+          <span class="ig-post__overlay-stat">
+            <span class="ig-glyph ig-glyph--comment-filled"></span>
+            {{this.replyCount}}
+          </span>
+        </span>
+      </div>
+
       <div class="ig-post__actions">
         {{#if settings.show_like_count}}
           <button

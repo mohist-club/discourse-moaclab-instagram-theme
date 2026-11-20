@@ -86,9 +86,10 @@
 
 // =========================================================
 // Hide the top Discourse header on desktop (Instagram has no
-// top bar). Keep the user-avatar menu reachable by floating
-// the header's right cluster top-right; hide hamburger, logo,
-// search and language. Gated by body.ig-hide-header (desktop).
+// top bar, and nothing in its top-right corner). Everything the
+// header offered is in the rail: search, notifications, profile,
+// create, and settings / activity / saved / log out under 更多.
+// Gated by body.ig-hide-header (desktop).
 // =========================================================
 @media (width >= 768px) {
   body.ig-hide-header.ig-desktop-shell.has-sidebar-page:not(.admin-interface) {
@@ -99,48 +100,8 @@
       min-height: 0;
     }
 
-    // float the header to the top-right, transparent, content-sized
     .d-header {
-      position: fixed;
-      inset: 6px 12px auto auto;
-      width: auto;
-      height: auto;
-      padding: 0;
-      background: transparent;
-      border: 0;
-      box-shadow: none;
-      z-index: 1001;
-    }
-
-    .d-header .wrap,
-    .d-header .contents,
-    .d-header .panel {
-      width: auto;
-      min-width: 0;
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      box-shadow: none;
-    }
-
-    // hide everything except the user-avatar menu (logout/prefs/notifications)
-    .d-header .header-sidebar-toggle,
-    .d-header .home-logo-wrapper-outlet,
-    .d-header .title,
-    .d-header .home-logo,
-    .d-header .before-header-panel-outlet,
-    .d-header .floating-search-input-wrapper,
-    .d-header .search-dropdown,
-    .d-header #search-button,
-    .d-header .btn-search,
-    .d-header .language-switcher-trigger {
       display: none;
-    }
-
-    // tidy the surviving avatar button
-    .d-header .d-header-icons {
-      margin: 0;
-      gap: 4px;
     }
 
     --ig-feed-top: 20px;

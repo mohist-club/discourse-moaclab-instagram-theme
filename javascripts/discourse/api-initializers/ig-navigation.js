@@ -32,13 +32,23 @@ export default apiInitializer((api) => {
         );
         ensureRail(api, siteSettings);
       }
+      // Explore: the configured category (and its subcategories) as a grid
+      const explore = isExplorePage(site);
+      document.body.classList.toggle("ig-explore", explore);
+
       if (settings.instagram_clean_feed && desktop) {
         document.body.classList.add("ig-clean-feed");
       }
-      if (settings.instagram_stories) {
+      // Stories only on the home page, as on instagram.com
+      const home = window.location.pathname === "/";
+      if (settings.instagram_stories && home) {
         ensureStories(api);
+      } else {
+        document.querySelector(".ig-stories")?.remove();
       }
-      if (settings.instagram_right_sidebar && desktop) {
+      if (explore) {
+        document.querySelector(".ig-right")?.remove();
+      } else if (settings.instagram_right_sidebar && desktop) {
         document.body.classList.add("ig-rightcol");
         ensureRightSidebar(api, siteSettings);
       }
@@ -115,7 +125,7 @@ function ensureRail(api, siteSettings) {
     { key: "home", href: "/", icon: "home", label: railLabel("home") },
     {
       key: "explore",
-      href: "/categories",
+      href: exploreHref(api.container.lookup("service:site")),
       icon: "explore",
       label: railLabel("explore"),
     },
@@ -370,15 +380,68 @@ function closeMorePanel() {
 
 function syncActive() {
   const path = window.location.pathname;
+  const explore = document.body.classList.contains("ig-explore");
   document.querySelectorAll("#ig-rail a.ig-rail-link").forEach((a) => {
     const href = a.getAttribute("href");
     if (!href || href === "/login") {
       a.classList.remove("active");
       return;
     }
+    if (a.querySelector(".ig-rail-ico--explore") && exploreCategoryId()) {
+      a.classList.toggle("active", explore);
+      return;
+    }
     const active = href === "/" ? path === "/" : path.startsWith(href);
     a.classList.toggle("active", active);
   });
+}
+
+// ---- Explore: one category (instagram_explore_category) as Instagram's
+// Explore grid. The rail opens its topic list (/l/latest, so a category
+// set to show subcategories first still lists topics).
+function exploreCategoryId() {
+  return parseInt(settings.instagram_explore_category, 10) || 0;
+}
+
+function findCategory(site, id) {
+  return (
+    (site?.categories || []).find((c) => c.id === id) ||
+    Category.findById?.(id) ||
+    null
+  );
+}
+
+function exploreHref(site) {
+  const id = exploreCategoryId();
+  if (!id) {
+    return "/categories";
+  }
+  const category = findCategory(site, id);
+  return category?.url ? `${category.url}/l/latest` : `/c/${id}/l/latest`;
+}
+
+// a topic list of the explore category or one of its subcategories
+function isExplorePage(site) {
+  const id = exploreCategoryId();
+  const match = window.location.pathname.match(/^\/c\/(.+)$/);
+  if (!id || !match) {
+    return false;
+  }
+  // /c/<parent>/<slug>/<id>[/l/<filter>|/none|/all]: the last number
+  const path = match[1].split("/l/")[0];
+  const current = parseInt(
+    path
+      .split("/")
+      .filter((part) => /^\d+$/.test(part))
+      .pop(),
+    10
+  );
+  if (!current) {
+    return false;
+  }
+  return (
+    current === id || findCategory(site, current)?.parent_category_id === id
+  );
 }
 
 function isDiscovery() {
@@ -692,9 +755,6 @@ function ensureRightSidebar(api, siteSettings) {
       <button type="button" class="ig-right__refresh" hidden title="${escapeHtml(
         t("right.refresh")
       )}" aria-label="${escapeHtml(t("right.refresh"))}"></button>
-      <a class="ig-right__see-all" href="/categories">${escapeHtml(
-        t("right.see_all")
-      )}</a>
     </div>
     <div class="ig-right__list"></div>`;
   aside.append(sugg);
@@ -740,9 +800,6 @@ function ensureRightSidebar(api, siteSettings) {
       fillSuggestions(listEl);
       return;
     }
-    if (parents.length === 1) {
-      sugg.querySelector(".ig-right__see-all").href = categoryUrl(parents[0]);
-    }
     fillStudios(
       listEl,
       parents,
@@ -766,8 +823,8 @@ function meBlock(user) {
       )}</a>
       <span class="ig-right__sub">${escapeHtml(user.name || "")}</span>
     </div>
-    <a class="ig-right__action" href="/u/${user.username}/preferences/account">${escapeHtml(
-      t("right.switch")
+    <a class="ig-right__action" href="/u/${user.username}/summary">${escapeHtml(
+      t("right.profile")
     )}</a>`;
   return me;
 }

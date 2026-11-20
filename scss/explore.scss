@@ -1,0 +1,222 @@
+// =========================================================
+// Explore grid — instagram.com/explore, for the category in
+// instagram_explore_category and its subcategories
+// (body.ig-explore, set in ig-navigation.js).
+//
+// 975px column, 3 equal columns, 4px gaps, square tiles; in
+// every ten tiles one tall (1×2) tile: the 3rd on the right, the
+// 6th on the left. Tiles show only the image (text-only topics:
+// title + excerpt on grey). Hover: 40% black with the title and
+// white heart / comment counts. No stories, no right column.
+// Markup: connectors/topic-list-item/item.gjs (.ig-post).
+// =========================================================
+
+// the hover layer exists on every card but only grids show it
+.ig-post__overlay {
+  display: none;
+}
+
+body.ig-explore:not(.admin-interface) {
+  #main-outlet {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 975px;
+    margin: 0 auto;
+    padding-inline: 20px;
+  }
+
+  .topic-list,
+  .topic-list tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .topic-list-header {
+    display: none;
+  }
+
+  .topic-list tbody {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    gap: 4px;
+    border: 0;
+  }
+
+  .topic-list-item {
+    display: block;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    > td {
+      display: block;
+      height: 100%;
+      padding: 0;
+    }
+  }
+
+  .topic-list-item:nth-child(10n + 3 of .topic-list-item) {
+    grid-row: span 2;
+    grid-column: 3;
+  }
+
+  .topic-list-item:nth-child(10n + 6 of .topic-list-item) {
+    grid-row: span 2;
+    grid-column: 1;
+  }
+
+  .ig-post {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    aspect-ratio: 1;
+    cursor: pointer;
+  }
+
+  .topic-list-item:nth-child(10n + 3 of .topic-list-item) .ig-post,
+  .topic-list-item:nth-child(10n + 6 of .topic-list-item) .ig-post {
+    aspect-ratio: auto;
+  }
+
+  .ig-post__header,
+  .ig-post__actions,
+  .ig-post__comments,
+  .ig-post__tags {
+    display: none;
+  }
+
+  // the caption keeps the topic link for keyboard and screen readers
+  .ig-post__caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ig-post__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--ig-pill);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  // text-only topics: title + excerpt on grey
+  .ig-post__text {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 20px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    background: var(--ig-pill);
+  }
+
+  .ig-post__title {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .ig-post__excerpt .topic-excerpt {
+    -webkit-line-clamp: 6;
+  }
+}
+
+// ---- hover layer: Explore and the suggested-topics grid ----
+body.ig-explore:not(.admin-interface) .topic-list,
+body.ig-topic-style:not(.admin-interface) .more-topics__container {
+  .ig-post__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgb(0 0 0 / 40%);
+    color: #fff;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .ig-post:hover .ig-post__overlay,
+  .ig-post:focus-within .ig-post__overlay {
+    opacity: 1;
+  }
+
+  .ig-post__overlay-title {
+    display: -webkit-box;
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .ig-post__overlay-stats {
+    display: flex;
+    gap: 30px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .ig-post__overlay-stat {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+
+    .ig-glyph {
+      flex-basis: 19px;
+      width: 19px;
+      height: 19px;
+      mask-size: 19px 19px;
+    }
+  }
+}
+
+// phones: Instagram's mobile Explore, edge to edge with 3px gaps
+@media (width < 768px) {
+  body.ig-explore:not(.admin-interface) {
+    #main-outlet {
+      padding-inline: 0;
+    }
+
+    .topic-list tbody {
+      gap: 3px;
+    }
+
+    .ig-post__overlay-stats {
+      display: none;
+    }
+  }
+}

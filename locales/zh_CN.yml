@@ -19,6 +19,7 @@ zh_CN:
       instagram_tools_section: "右栏「服务」模块读取的侧边栏分区标题。"
       instagram_topic_style: "帖子详情页沿用原生布局，样式统一到主题。"
       instagram_auth_modal: "登录和注册页显示为 Instagram 弹窗样式。"
+      instagram_explore_category: "「探索」打开的类别 ID，列表显示为 Instagram 探索网格（0 则打开 /categories）。"
   ig:
     auth:
       close: "关闭"
@@ -59,9 +60,8 @@ zh_CN:
       previous: "上一组"
       next: "下一组"
     right:
-      switch: "切换"
+      profile: "主页"
       suggested: "为你推荐"
-      see_all: "查看全部"
       view: "查看"
       follow: "关注"
       following: "已关注"

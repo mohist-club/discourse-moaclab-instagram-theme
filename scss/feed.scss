@@ -86,6 +86,10 @@ body.tags-page {
     mask-image: url($ig-comment);
   }
 
+  &--comment-filled {
+    mask-image: url($ig-comment-filled);
+  }
+
   &--share {
     mask-image: url($ig-share);
   }
