@@ -1,13 +1,16 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
+import { fn } from "@ember/helper";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
+import bodyClass from "discourse/helpers/body-class";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import { NotificationLevels } from "discourse/lib/notification-levels";
 import DiscourseURL from "discourse/lib/url";
 import { i18n } from "discourse-i18n";
+import { studioParentIds } from "./ig-studio-header";
 
 // /categories as a grid of Instagram profile cards — one per top-level
 // category, in Discourse's own order:
@@ -88,6 +91,216 @@ class IgCategoryFollow extends Component {
   </template>
 }
 
+// The keyboard / keycap category (a studio parent, see ig-studio-header):
+// a full-width card whose studios form a directory — filter by name, sort
+// by activity / topics / name, compact tiles with their own Follow, the
+// first rows shown and "show all" for the rest.
+const STUDIOS_COLLAPSED = 12;
+const SORTS = ["active", "topics", "name"];
+
+class IgStudioDirectory extends Component {
+  @tracked query = "";
+  @tracked sort = "active";
+  @tracked expanded = false;
+
+  get card() {
+    return this.args.card;
+  }
+
+  get studios() {
+    const q = this.query.trim().toLowerCase();
+    const list = this.card.studios.filter(
+      (s) => !q || s.name.toLowerCase().includes(q)
+    );
+    const by = {
+      active: (a, b) => b.week - a.week || b.topics - a.topics,
+      topics: (a, b) => b.topics - a.topics,
+      name: (a, b) => a.name.localeCompare(b.name),
+    }[this.sort];
+    return [...list].sort(by);
+  }
+
+  get visible() {
+    return this.expanded || this.query
+      ? this.studios
+      : this.studios.slice(0, STUDIOS_COLLAPSED);
+  }
+
+  get hiddenCount() {
+    return this.studios.length - this.visible.length;
+  }
+
+  get canCollapse() {
+    return (
+      this.expanded && !this.query && this.studios.length > STUDIOS_COLLAPSED
+    );
+  }
+
+  get sortTabs() {
+    return SORTS.map((key) => ({
+      key,
+      label: t(`sort_${key}`),
+      active: key === this.sort,
+    }));
+  }
+
+  get studiosTitle() {
+    return t("studios", { count: this.card.studios.length });
+  }
+
+  get filterPlaceholder() {
+    return t("filter_studios");
+  }
+
+  get showAllLabel() {
+    return t("show_all", { count: this.hiddenCount });
+  }
+
+  get collapseLabel() {
+    return t("collapse");
+  }
+
+  get noMatch() {
+    return this.query && this.studios.length === 0;
+  }
+
+  label(key, options) {
+    return t(key, options);
+  }
+
+  @action
+  onFilter(event) {
+    this.query = event.target.value;
+  }
+
+  @action
+  setSort(key) {
+    this.sort = key;
+  }
+
+  @action
+  toggleExpanded() {
+    this.expanded = !this.expanded;
+  }
+
+  <template>
+    <article class="ig-cat ig-cat--featured" style={{this.card.style}}>
+      <a
+        class="ig-cat__cover {{if this.card.coverStyle 'has-image'}}"
+        href={{this.card.url}}
+        style={{this.card.coverStyle}}
+        aria-label={{this.card.name}}
+      ></a>
+
+      <div class="ig-cat__top">
+        <a class="ig-cat__ring" href={{this.card.url}} tabindex="-1">
+          {{#if this.card.logo}}
+            <img class="ig-cat__logo" src={{this.card.logo}} alt="" />
+          {{else}}
+            <span
+              class="ig-cat__logo ig-cat__logo--letter"
+            >{{this.card.letter}}</span>
+          {{/if}}
+        </a>
+        <IgCategoryFollow @category={{this.card.category}} />
+      </div>
+
+      <div class="ig-cat__body">
+        <h2 class="ig-cat__name"><a
+            href={{this.card.url}}
+          >{{this.card.name}}</a></h2>
+        {{#if this.card.description}}
+          <p class="ig-cat__desc">{{this.card.description}}</p>
+        {{/if}}
+        <p class="ig-cat__stats">
+          <span><b>{{this.card.studios.length}}</b>{{this.label
+              "studios_short"
+            }}</span>
+          <span><b>{{this.card.topics}}</b>{{this.label "topics"}}</span>
+          {{#if this.card.week}}
+            <span><b>{{this.card.week}}</b>{{this.label "this_week"}}</span>
+          {{/if}}
+        </p>
+      </div>
+
+      <div class="ig-studios">
+        <div class="ig-studios__bar">
+          <h3>{{this.studiosTitle}}</h3>
+          <div class="ig-studios__tools">
+            <div class="ig-studios__sort" role="tablist">
+              {{#each this.sortTabs as |tab|}}
+                <button
+                  type="button"
+                  role="tab"
+                  class="ig-studios__sort-tab {{if tab.active 'is-active'}}"
+                  aria-selected={{if tab.active "true" "false"}}
+                  {{on "click" (fn this.setSort tab.key)}}
+                >{{tab.label}}</button>
+              {{/each}}
+            </div>
+            <label class="ig-studios__filter">
+              <span class="ig-studios__filter-icon" aria-hidden="true"></span>
+              <input
+                type="search"
+                value={{this.query}}
+                placeholder={{this.filterPlaceholder}}
+                aria-label={{this.filterPlaceholder}}
+                {{on "input" this.onFilter}}
+              />
+            </label>
+          </div>
+        </div>
+
+        <ul class="ig-studios__grid">
+          {{#each this.visible as |studio|}}
+            <li class="ig-studio-tile" style={{studio.style}}>
+              <a class="ig-studio-tile__link" href={{studio.url}}>
+                <span class="ig-studio-tile__ring">
+                  {{#if studio.logo}}
+                    <img
+                      class="ig-studio-tile__logo"
+                      src={{studio.logo}}
+                      alt=""
+                      loading="lazy"
+                    />
+                  {{else}}
+                    <span
+                      class="ig-studio-tile__logo ig-studio-tile__logo--letter"
+                    >{{studio.letter}}</span>
+                  {{/if}}
+                </span>
+                <span class="ig-studio-tile__name">{{studio.name}}</span>
+                <span class="ig-studio-tile__meta">
+                  {{this.label "topics_count" count=studio.topics}}
+                </span>
+              </a>
+              <IgCategoryFollow @category={{studio.category}} />
+            </li>
+          {{/each}}
+        </ul>
+
+        {{#if this.noMatch}}
+          <p class="ig-studios__empty">{{this.label "no_studios"}}</p>
+        {{/if}}
+
+        {{#if this.hiddenCount}}
+          <button
+            type="button"
+            class="ig-studios__more"
+            {{on "click" this.toggleExpanded}}
+          >{{this.showAllLabel}}</button>
+        {{else if this.canCollapse}}
+          <button
+            type="button"
+            class="ig-studios__more"
+            {{on "click" this.toggleExpanded}}
+          >{{this.collapseLabel}}</button>
+        {{/if}}
+      </div>
+    </article>
+  </template>
+}
+
 export default class IgCategoriesGrid extends Component {
   get show() {
     return !!settings.instagram_categories_page && this.cards.length > 0;
@@ -99,7 +312,8 @@ export default class IgCategoriesGrid extends Component {
   }
 
   get cards() {
-    return this.categories
+    const studioParents = studioParentIds();
+    const cards = this.categories
       .filter((c) => !c.parent_category_id)
       .map((c) => {
         const subs = c.subcategories || [];
@@ -127,6 +341,17 @@ export default class IgCategoriesGrid extends Component {
             style: colorStyle(sub),
           })),
           moreChips: Math.max(0, subs.length - MAX_CHIPS),
+          featured: studioParents.includes(c.id) && subs.length > 0,
+          studios: subs.map((sub) => ({
+            category: sub,
+            url: sub.url,
+            name: sub.name || "",
+            logo: sub.uploaded_logo?.url || sub.uploaded_logo_dark?.url || null,
+            letter: letterOf(sub),
+            style: colorStyle(sub),
+            topics: sub.topic_count || 0,
+            week: sub.topics_week || 0,
+          })),
           latest: latest
             ? {
                 title: latest.title,
@@ -135,6 +360,11 @@ export default class IgCategoriesGrid extends Component {
             : null,
         };
       });
+    // the studio parents first, as wide cards
+    return [
+      ...cards.filter((card) => card.featured),
+      ...cards.filter((card) => !card.featured),
+    ];
   }
 
   get totalTopics() {
@@ -158,6 +388,7 @@ export default class IgCategoriesGrid extends Component {
 
   <template>
     {{#if this.show}}
+      {{bodyClass "ig-categories-page"}}
       <section class="ig-cats">
         <header class="ig-cats__head">
           <h1>{{this.heading}}</h1>
@@ -166,84 +397,93 @@ export default class IgCategoriesGrid extends Component {
 
         <div class="ig-cats__grid">
           {{#each this.cards as |card|}}
-            <article class="ig-cat" style={{card.style}}>
-              <a
-                class="ig-cat__cover {{if card.coverStyle 'has-image'}}"
-                href={{card.url}}
-                style={{card.coverStyle}}
-                aria-label={{card.name}}
-              ></a>
+            {{#if card.featured}}
+              <IgStudioDirectory @card={{card}} />
+            {{else}}
+              <article class="ig-cat" style={{card.style}}>
+                <a
+                  class="ig-cat__cover {{if card.coverStyle 'has-image'}}"
+                  href={{card.url}}
+                  style={{card.coverStyle}}
+                  aria-label={{card.name}}
+                ></a>
 
-              <div class="ig-cat__top">
-                <a class="ig-cat__ring" href={{card.url}} tabindex="-1">
-                  {{#if card.logo}}
-                    <img class="ig-cat__logo" src={{card.logo}} alt="" />
-                  {{else}}
-                    <span
-                      class="ig-cat__logo ig-cat__logo--letter"
-                    >{{card.letter}}</span>
-                  {{/if}}
-                </a>
-                <IgCategoryFollow @category={{card.category}} />
-              </div>
-
-              <div class="ig-cat__body">
-                <h2 class="ig-cat__name"><a
-                    href={{card.url}}
-                  >{{card.name}}</a></h2>
-                {{#if card.description}}
-                  <p class="ig-cat__desc">{{card.description}}</p>
-                {{/if}}
-                <p class="ig-cat__stats">
-                  <span><b>{{card.topics}}</b>{{this.label "topics"}}</span>
-                  {{#if card.week}}
-                    <span><b>{{card.week}}</b>{{this.label "this_week"}}</span>
-                  {{/if}}
-                </p>
-
-                {{#if card.chips.length}}
-                  <ul class="ig-cat__chips">
-                    {{#each card.chips as |chip|}}
-                      <li>
-                        <a
-                          class="ig-cat__chip"
-                          href={{chip.url}}
-                          style={{chip.style}}
-                        >
-                          {{#if chip.logo}}
-                            <img src={{chip.logo}} alt="" />
-                          {{else}}
-                            <span
-                              class="ig-cat__chip-letter"
-                            >{{chip.letter}}</span>
-                          {{/if}}
-                          {{chip.name}}
-                        </a>
-                      </li>
-                    {{/each}}
-                    {{#if card.moreChips}}
-                      <li>
-                        <a
-                          class="ig-cat__chip ig-cat__chip--more"
-                          href={{card.url}}
-                        >
-                          +{{card.moreChips}}
-                        </a>
-                      </li>
+                <div class="ig-cat__top">
+                  <a class="ig-cat__ring" href={{card.url}} tabindex="-1">
+                    {{#if card.logo}}
+                      <img class="ig-cat__logo" src={{card.logo}} alt="" />
+                    {{else}}
+                      <span
+                        class="ig-cat__logo ig-cat__logo--letter"
+                      >{{card.letter}}</span>
                     {{/if}}
-                  </ul>
-                {{/if}}
-
-                {{#if card.latest}}
-                  <a class="ig-cat__latest" href={{card.latest.url}}>
-                    <span class="ig-cat__latest-icon" aria-hidden="true"></span>
-                    <span
-                      class="ig-cat__latest-title"
-                    >{{card.latest.title}}</span>
                   </a>
-                {{/if}}
-              </div>
-            </article>
+                  <IgCategoryFollow @category={{card.category}} />
+                </div>
+
+                <div class="ig-cat__body">
+                  <h2 class="ig-cat__name"><a
+                      href={{card.url}}
+                    >{{card.name}}</a></h2>
+                  {{#if card.description}}
+                    <p class="ig-cat__desc">{{card.description}}</p>
+                  {{/if}}
+                  <p class="ig-cat__stats">
+                    <span><b>{{card.topics}}</b>{{this.label "topics"}}</span>
+                    {{#if card.week}}
+                      <span><b>{{card.week}}</b>{{this.label
+                          "this_week"
+                        }}</span>
+                    {{/if}}
+                  </p>
+
+                  {{#if card.chips.length}}
+                    <ul class="ig-cat__chips">
+                      {{#each card.chips as |chip|}}
+                        <li>
+                          <a
+                            class="ig-cat__chip"
+                            href={{chip.url}}
+                            style={{chip.style}}
+                          >
+                            {{#if chip.logo}}
+                              <img src={{chip.logo}} alt="" />
+                            {{else}}
+                              <span
+                                class="ig-cat__chip-letter"
+                              >{{chip.letter}}</span>
+                            {{/if}}
+                            {{chip.name}}
+                          </a>
+                        </li>
+                      {{/each}}
+                      {{#if card.moreChips}}
+                        <li>
+                          <a
+                            class="ig-cat__chip ig-cat__chip--more"
+                            href={{card.url}}
+                          >
+                            +{{card.moreChips}}
+                          </a>
+                        </li>
+                      {{/if}}
+                    </ul>
+                  {{/if}}
+
+                  {{#if card.latest}}
+                    <a class="ig-cat__latest" href={{card.latest.url}}>
+                      <span
+                        class="ig-cat__latest-icon"
+                        aria-hidden="true"
+                      ></span>
+                      <span
+                        class="ig-cat__latest-title"
+                      >{{card.latest.title}}</span>
+                    </a>
+                  {{/if}}
+                </div>
+              </article>
+            {{/if}}
           {{/each}}
         </div>
       </section>

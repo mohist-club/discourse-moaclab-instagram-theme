@@ -28,6 +28,16 @@ zh_CN:
       instagram_categories_page: "/categories 显示为 Instagram 主页卡片网格。"
   ig:
     categories:
+      studios: "工作室 · %{count}"
+      studios_short: " 个工作室"
+      sort_active: "最活跃"
+      sort_topics: "帖子最多"
+      sort_name: "名称"
+      filter_studios: "搜索工作室"
+      show_all: "显示全部（还有 %{count} 个）"
+      collapse: "收起"
+      no_studios: "没有匹配的工作室。"
+      topics_count: "%{count} 个帖子"
       title: "所有类别"
       summary: "%{categories} 个类别 · %{topics} 个帖子"
       topics: " 个帖子"

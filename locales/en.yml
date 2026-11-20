@@ -28,6 +28,16 @@ en:
       instagram_categories_page: "/categories as Instagram profile cards."
   ig:
     categories:
+      studios: "Studios · %{count}"
+      studios_short: " studios"
+      sort_active: "Most active"
+      sort_topics: "Most topics"
+      sort_name: "Name"
+      filter_studios: "Search studios"
+      show_all: "Show all (%{count} more)"
+      collapse: "Show less"
+      no_studios: "No studios match."
+      topics_count: "%{count} topics"
       title: "All categories"
       summary: "%{categories} categories · %{topics} topics"
       topics: " topics"

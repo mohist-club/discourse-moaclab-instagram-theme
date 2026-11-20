@@ -27,7 +27,7 @@ const MEMBER_PREVIEW = 3;
 const HIGHLIGHTS_MAX = 8;
 const studioCache = new Map();
 
-function parentIds() {
+export function studioParentIds() {
   const ids = String(settings.instagram_suggested_categories || "")
     .split("|")
     .map((v) => parseInt(v, 10))
@@ -43,7 +43,7 @@ export function isStudio(category) {
   return (
     !!settings.instagram_studio_profile &&
     !!category?.parent_category_id &&
-    parentIds().includes(category.parent_category_id)
+    studioParentIds().includes(category.parent_category_id)
   );
 }
 
