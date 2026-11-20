@@ -34,6 +34,7 @@ body:not(.admin-interface) {
 @import "mobile-profile";
 @import "messages-list";
 @import "messages-chat";
+@import "mobile-notifications";
 
 html:not(:has(> body.admin-interface)) {
   background: var(--ig-page);

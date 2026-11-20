@@ -1,0 +1,196 @@
+// =========================================================
+// Notifications on phones (< 768px) as Instagram's activity page
+// (instagram_mobile_layout). Discourse's own notifications page —
+// filters, read/unread, the items and where they lead — restyled:
+//   top bar: ‹ back + 通知 (ig-topic-bar.gjs)
+//   filters (全部 / 回复 / 赞 / 提及 …): Instagram's grey chips
+//   rows: 44px avatar (or the type's icon in a grey circle),
+//     **username** + what happened in 14px, time on the right
+//     (connectors/menu-item-end/ig-note-time.gjs), blue dot if unread
+// =========================================================
+
+// the time only appears on this page on phones
+.ig-note-time {
+  display: none;
+}
+
+@media (width < 768px) {
+  body.ig-mobile-shell.user-notifications-page:not(.admin-interface) {
+    // no profile header or profile tabs: the page is the activity list
+    .user-main .details,
+    .user-main .user-profile-image,
+    .user-navigation-primary {
+      display: none;
+    }
+
+    #main-outlet {
+      padding-inline: 0;
+    }
+
+    .user-content {
+      padding: 0;
+    }
+
+    // ---- filters as chips ----
+    .user-navigation-secondary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      padding: 12px 16px 8px;
+      border: 0;
+
+      .nav-pills,
+      ul {
+        display: flex;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+
+      li {
+        flex: 0 0 auto;
+        margin: 0;
+      }
+
+      li a {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        height: 32px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--ig-btn-secondary);
+        color: var(--ig-ink);
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+
+        .d-icon {
+          color: inherit;
+        }
+
+        &.active {
+          background: var(--ig-ink);
+          color: var(--ig-page);
+        }
+      }
+
+      .navigation-controls {
+        margin-left: auto;
+      }
+    }
+
+    .user-notifications-filter {
+      margin: 0;
+      padding: 0 16px 8px;
+    }
+
+    // ---- rows ----
+    .user-notifications-list {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .user-notifications-list li.notification,
+    .user-notifications-list li.item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      padding: 0 16px 0 0;
+      border: 0;
+      background: transparent;
+      list-style: none;
+
+      > a {
+        display: flex;
+        flex: 1;
+        gap: 12px;
+        align-items: center;
+        min-width: 0;
+        padding: 8px 0 8px 16px;
+        border: 0;
+        background: transparent;
+        color: var(--ig-ink);
+
+        &:hover,
+        &:focus-visible {
+          background: transparent;
+        }
+
+        // the type's icon, in Instagram's avatar spot
+        > .d-icon {
+          box-sizing: border-box;
+          flex: 0 0 44px;
+          width: 44px;
+          height: 44px;
+          margin: 0;
+          padding: 12px;
+          border-radius: 50%;
+          background: var(--ig-btn-secondary);
+          color: var(--ig-ink);
+        }
+
+        // the actor's avatar (site setting show_user_menu_avatars)
+        img.avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+        }
+
+        > div {
+          display: -webkit-box;
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          font-size: 14px;
+          line-height: 18px;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+        }
+      }
+
+      .item-label {
+        margin-right: 4px;
+        color: var(--ig-ink);
+        font-weight: 600;
+      }
+
+      .item-description {
+        color: var(--ig-ink);
+        font-weight: 400;
+      }
+
+      .ig-note-time {
+        display: block;
+        flex: 0 0 auto;
+        color: var(--ig-muted);
+        font-size: 12px;
+      }
+
+      // unread: Instagram's blue dot
+      &.unread {
+        background: transparent;
+
+        &::after {
+          content: "";
+          flex: 0 0 8px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--ig-btn-primary);
+        }
+      }
+    }
+  }
+}

@@ -24,12 +24,17 @@ export default class IgTopicBar extends Component {
     return this.route.startsWith("userPrivateMessages");
   }
 
+  get isNotifications() {
+    return this.route.startsWith("userNotifications");
+  }
+
   get show() {
     return (
       !!settings.instagram_mobile_layout &&
       (this.route.startsWith("topic.") ||
         this.route.startsWith("user.") ||
-        this.isMessages)
+        this.isMessages ||
+        this.isNotifications)
     );
   }
 
@@ -65,6 +70,9 @@ export default class IgTopicBar extends Component {
     }
     if (this.isMessages) {
       return i18n(themePrefix("ig.rail.messages"));
+    }
+    if (this.isNotifications) {
+      return i18n(themePrefix("ig.rail.activity"));
     }
     if (this.route.startsWith("user.")) {
       // the profile's username, from the URL (/u/<username>/…)
