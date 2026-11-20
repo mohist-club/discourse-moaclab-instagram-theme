@@ -134,3 +134,9 @@ instagram_admin_style:
   description:
     en: "Admin pages take the theme's colours and shapes (white sidebar, round filter, grey headings, rounded rows and cards, black switches, blue / grey buttons). Discourse's own admin layout, header, sidebar and controls are unchanged; the left rail is not shown in admin."
     zh_CN: "管理后台使用主题的配色与形状（白色侧边栏、圆形搜索框、灰色分组标题、圆角行与卡片、黑色开关、蓝 / 灰按钮）。后台的布局、顶栏、侧边栏和各项操作仍是 Discourse 原生的；后台不显示左栏导航。"
+
+instagram_explore_search:
+  default: true
+  description:
+    en: "On the Explore category's page (instagram_explore_category) the category heading and list controls give way to Instagram's search: a round field showing your recent searches when focused and live results while typing (studios, people, tags, posts — Discourse's quick search); Enter opens Discourse's full search."
+    zh_CN: "在探索类别页（instagram_explore_category）隐藏类别信息和列表控件，改为 Instagram 搜索：圆形搜索框，聚焦时显示最近搜索，输入时实时显示结果（工作室、用户、标签、帖子，使用 Discourse 快速搜索）；回车打开 Discourse 完整搜索页。"

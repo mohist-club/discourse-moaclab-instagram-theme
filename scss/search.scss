@@ -1,0 +1,290 @@
+// =========================================================
+// Explore search (instagram_explore_search) — Instagram's search
+// field and results panel on the Explore category's page.
+//   field: 44px, 12px radius, grey, glass icon, round clear button
+//   panel: elevated, 16px radius; "Recent" + "Clear all"; rows of
+//          44px avatar · 14/600 title · grey subtitle; hover grey
+// The category heading and list controls give way to it.
+// Markup: components/ig-explore-search.gjs
+// =========================================================
+#main-outlet:has(.ig-search) {
+  .category-heading,
+  .list-controls {
+    display: none;
+  }
+}
+
+.ig-search {
+  position: relative;
+  z-index: 50;
+  margin: calc(var(--ig-feed-top, 8px) + 8px) 0 20px;
+  color: var(--ig-ink);
+}
+
+.ig-search__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 12px 0 44px;
+  border-radius: 12px;
+  background: var(--ig-btn-secondary);
+}
+
+.ig-search__icon {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  width: 20px;
+  height: 20px;
+  background: var(--ig-muted);
+  mask: url($ig-search) center / 20px 20px no-repeat;
+}
+
+.ig-search .ig-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ig-ink);
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+
+  &::placeholder {
+    color: var(--ig-muted);
+  }
+
+  // the browser's own clear cross: Instagram's round one replaces it
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.ig-search .ig-search__clear {
+  position: relative;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ig-border-strong);
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--ig-page);
+    mask: url($ig-close) center / 10px 10px no-repeat;
+  }
+}
+
+.ig-search__spinner {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ig-border);
+  border-top-color: var(--ig-muted);
+  border-radius: 50%;
+  animation: ig-search-spin 0.8s linear infinite;
+}
+
+@keyframes ig-search-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ---- panel ----
+.ig-search__panel {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  left: 0;
+  max-height: min(70vh, 560px);
+  padding: 8px 0;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--ig-elevated);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+}
+
+.ig-search__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 8px;
+
+  h3 {
+    margin: 0;
+    color: var(--ig-ink);
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.ig-search .ig-search__link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ig-link);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ig-search .ig-search__row,
+.ig-search .ig-search__all {
+  box-sizing: border-box;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 8px 24px;
+  border: 0;
+  background: transparent;
+  color: var(--ig-ink);
+  font-family: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover,
+  &.is-active {
+    background: var(--ig-hover);
+    color: var(--ig-ink);
+  }
+}
+
+.ig-search .ig-search__all {
+  margin-top: 4px;
+  padding-block: 12px;
+  border-top: 1px solid var(--ig-border);
+}
+
+.ig-search__avatar {
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+
+  &.is-square {
+    border-radius: 8px;
+  }
+
+  &--letter {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  // tag, post without an image, search term: outlined circle with a glyph
+  &--tag,
+  &--topic,
+  &--search {
+    border: 1px solid var(--ig-border);
+
+    &::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: var(--ig-ink);
+      mask-position: center;
+      mask-repeat: no-repeat;
+      mask-size: 18px 18px;
+    }
+  }
+
+  &--tag::before {
+    content: "#";
+    width: auto;
+    height: auto;
+    background: none;
+    color: var(--ig-ink);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+    mask: none;
+  }
+
+  &--topic::before {
+    mask-image: url($ig-comment);
+  }
+
+  &--search::before {
+    mask-image: url($ig-search);
+  }
+}
+
+.ig-search__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ig-search__title,
+.ig-search__sub {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-search__title {
+  color: var(--ig-ink);
+  font-weight: 600;
+}
+
+.ig-search__sub {
+  color: var(--ig-muted);
+}
+
+.ig-search__empty {
+  margin: 0;
+  padding: 24px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (width < 768px) {
+  .ig-search {
+    margin: 8px 12px 12px;
+  }
+
+  .ig-search__field {
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .ig-search__icon {
+    top: 8px;
+  }
+
+  .ig-search__panel {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 70dvh;
+    border-radius: 16px 16px 0 0;
+  }
+}
