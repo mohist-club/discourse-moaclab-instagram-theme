@@ -11,10 +11,13 @@
 // =========================================================
 
 // Discovery pages: one 630px feed column, posts centred in it
-body.navigation-topics:not(.admin-interface),
-body.navigation-categories:not(.admin-interface),
-body[class*="navigation-"]:not([class*="archetype-"], .admin-interface),
-body.tags-page:not(.admin-interface) {
+body.ig-card-feed.navigation-topics:not(.admin-interface),
+body.ig-card-feed.navigation-categories:not(.admin-interface),
+body.ig-card-feed[class*="navigation-"]:not(
+    [class*="archetype-"],
+    .admin-interface
+  ),
+body.ig-card-feed.tags-page:not(.admin-interface) {
   #main-outlet {
     box-sizing: border-box;
     width: 100%;
@@ -23,23 +26,25 @@ body.tags-page:not(.admin-interface) {
     padding-inline: 0;
   }
 
-  .topic-list,
-  .topic-list tbody {
+  // only a list of cards drops its table layout (card feed off, or bulk
+  // select, keeps Discourse's own rows)
+  .topic-list:has(.ig-post),
+  .topic-list:has(.ig-post) tbody {
     display: block;
     width: 100%;
   }
 
-  .topic-list-header {
+  .topic-list:has(.ig-post) .topic-list-header {
     display: none;
   }
 
-  .topic-list tbody {
+  .topic-list:has(.ig-post) tbody {
     display: flex;
     flex-direction: column;
     border: 0;
   }
 
-  .topic-list-item {
+  .topic-list-item:has(.ig-post) {
     display: block;
     padding: 0;
     border: 0;

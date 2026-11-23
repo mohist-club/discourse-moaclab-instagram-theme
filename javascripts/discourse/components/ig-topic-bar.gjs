@@ -8,13 +8,15 @@ import { i18n } from "discourse-i18n";
 import { canGoBackInApp, currentTopic } from "../lib/ig-last-page";
 
 // Instagram's top bar on phones for a post or a profile: a back arrow and
-// "帖子" (topic pages) or the username (profile pages). Rendered in the
+// "帖子" (topic pages), the username (profile pages), the studio's name
+// (a subcategory: a studio is a profile) or the #tag. Rendered in the
 // header (header-contents__before); shown below 768px on those pages only
 // (scss/mobile-topic.scss, scss/mobile-profile.scss), replacing the logo.
 export default class IgTopicBar extends Component {
   @service router;
   @service composer;
   @service currentUser;
+  @service discovery;
 
   get route() {
     return this.router.currentRouteName || "";
@@ -32,6 +34,24 @@ export default class IgTopicBar extends Component {
     return this.route.startsWith("preferences");
   }
 
+  // a subcategory's list (a studio, a board): reached from its parent, so
+  // it gets a way back; top-level categories are tab-bar destinations
+  get subcategory() {
+    if (!this.discovery?.onDiscoveryRoute) {
+      return null;
+    }
+    const category = this.discovery.category;
+    return category?.parent_category_id ? category : null;
+  }
+
+  get tagName() {
+    if (!this.discovery?.onDiscoveryRoute) {
+      return null;
+    }
+    const tag = this.discovery.tag;
+    return tag?.name || tag?.id || null;
+  }
+
   get show() {
     return (
       !!settings.instagram_mobile_layout &&
@@ -39,7 +59,9 @@ export default class IgTopicBar extends Component {
         this.route.startsWith("user.") ||
         this.isMessages ||
         this.isNotifications ||
-        this.isPreferences)
+        this.isPreferences ||
+        !!this.subcategory ||
+        !!this.tagName)
     );
   }
 
@@ -81,6 +103,12 @@ export default class IgTopicBar extends Component {
     }
     if (this.isPreferences) {
       return i18n(themePrefix("ig.menu.settings"));
+    }
+    if (this.subcategory) {
+      return this.subcategory.name;
+    }
+    if (this.tagName) {
+      return `#${this.tagName}`;
     }
     if (this.route.startsWith("user.")) {
       // the profile's username, from the URL (/u/<username>/…)

@@ -68,8 +68,8 @@ instagram_hide_header:
 instagram_right_sidebar:
   default: true
   description:
-    en: "Desktop (>=1264px): show an Instagram-style right column with the current user, suggested users and footer links."
-    zh_CN: "桌面端（≥1264px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、页脚链接）。"
+    en: "Desktop (>=1160px): show an Instagram-style right column with the current user, suggested users and footer links."
+    zh_CN: "桌面端（≥1160px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、页脚链接）。"
 
 instagram_messages_dock:
   default: true

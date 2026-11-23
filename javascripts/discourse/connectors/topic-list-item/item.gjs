@@ -89,6 +89,12 @@ export default class Item extends Component {
     return this.topic.posters?.[0]?.user;
   }
 
+  // the Instagram card, unless the setting is off or staff are bulk
+  // selecting (Discourse's own row has the checkboxes)
+  get showCard() {
+    return !!settings.card_feed && !this.args.outletArgs.bulkSelectEnabled;
+  }
+
   // ---- private messages: an Instagram inbox row instead of a post ----
   get isMessage() {
     return (
@@ -611,7 +617,7 @@ export default class Item extends Component {
           {{/if}}
         </a>
       {{/if}}
-    {{else}}
+    {{else if this.showCard}}
       <article
         {{on "click" this.openTopic}}
         class="ig-post {{if this.thumbnail 'ig-post--media' 'ig-post--text'}}"
@@ -904,6 +910,9 @@ export default class Item extends Component {
           >{{this.viewCommentsLabel}}</a>
         {{/if}}
       </article>
+    {{else}}
+      {{! card feed off, or bulk select: Discourse's own row }}
+      {{yield}}
     {{/if}}
   </template>
 }

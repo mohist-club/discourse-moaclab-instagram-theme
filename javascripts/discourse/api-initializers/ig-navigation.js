@@ -48,7 +48,8 @@ export default apiInitializer((api) => {
         ensureRail(api, siteSettings);
       }
       // Explore: the configured category (and its subcategories) as a grid
-      const explore = isExplorePage(site);
+      // of the feed's cards, so only with the card feed on
+      const explore = !!settings.card_feed && isExplorePage(site);
       document.body.classList.toggle("ig-explore", explore);
 
       if (settings.instagram_clean_feed && desktop) {
