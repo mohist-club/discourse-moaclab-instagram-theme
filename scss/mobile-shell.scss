@@ -56,15 +56,19 @@
     }
 
     .d-header .panel {
-      flex: 0 1 auto;
+      display: flex;
+      flex: 1 1 auto;
+      justify-content: flex-end;
       min-width: 0;
-      margin-left: auto;
     }
 
     .d-header .d-header-icons {
       display: flex;
+      flex: 1 1 auto;
+      justify-content: flex-end;
       align-items: center;
       gap: 4px;
+      min-width: 0;
       margin: 0;
     }
 
@@ -112,15 +116,17 @@
     }
 
     // search: Instagram's grey field, opening Discourse's own search
-    .d-header .search-dropdown {
-      flex: 0 1 auto;
+    // the field takes the room the wordmark leaves, up to 268px
+    .d-header .d-header-icons > .search-dropdown {
+      flex: 0 1 268px;
       min-width: 0;
     }
 
     .d-header .d-header-icons .search-dropdown .icon {
       justify-content: flex-start;
       gap: 8px;
-      width: clamp(120px, 46vw, 268px);
+      width: 100%;
+      min-width: 0;
       height: 36px;
       padding: 0 12px;
       border-radius: 8px;

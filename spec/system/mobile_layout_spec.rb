@@ -98,7 +98,19 @@ RSpec.describe "Instagram theme on phones", mobile: true do
         mediaImg: rect(".ig-post__media img"),
         cookedImg: rect(".topic-post .cooked img:not(.avatar):not(.emoji)"),
         header: rect(".d-header"),
-        headerHtml: (document.querySelector(".d-header")?.outerHTML || "").slice(0, 6000),
+        headerItems: [...document.querySelectorAll(".d-header .contents > *, .d-header-icons > li")]
+          .filter((el) => getComputedStyle(el).display !== "none")
+          .map((el) => describe(el) + " " + Math.round(el.getBoundingClientRect().left) + "+" + Math.round(el.getBoundingClientRect().width)),
+        cookedChain: (() => {
+          const out = [];
+          let n = document.querySelector(".topic-post .cooked img:not(.avatar):not(.emoji)");
+          for (let i = 0; n && i < 7; i++, n = n.parentElement) {
+            const r = n.getBoundingClientRect();
+            const cs = getComputedStyle(n);
+            out.push(describe(n) + " " + Math.round(r.left) + "+" + Math.round(r.width) + " d=" + cs.display + " w=" + cs.width + " mw=" + cs.maxWidth + " m=" + cs.margin + " p=" + cs.padding);
+          }
+          return out;
+        })(),
       });
     })()
   JS
