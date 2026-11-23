@@ -86,10 +86,10 @@ instagram_suggested_categories:
 
 instagram_apps_categories:
   type: list
-  default: ""
+  default: "5|9"
   description:
-    en: "IDs of the categories listed at the top of the rail's Community & tools menu (the number at the end of a category URL, /c/event/5 → 5), in this order. Empty: the categories with the slug event(s) / resources or the name 活动 / 资源; with none, the menu shows only the tools."
-    zh_CN: "左侧导航「社区与工具」菜单顶部列出的类别，填类别 ID，即类别网址最后的数字（/c/event/5 填 5），按填写顺序显示。留空时按别名 event(s) / resources 或名称「活动」「资源」查找；都没有则菜单只显示工具。"
+    en: "IDs of the categories listed at the top of the rail's Community & tools menu (the number at the end of a category URL, /c/event/5 → 5), in this order. Default: 活动 (5) and 资源 (9). Empty: the categories with the slug event(s) / resources or the name 活动 / 资源; with none, the menu shows only the tools."
+    zh_CN: "左侧导航「社区与工具」菜单顶部列出的类别，填类别 ID，即类别网址最后的数字（/c/event/5 填 5），按填写顺序显示。默认为活动（5）和资源（9）。留空时按别名 event(s) / resources 或名称「活动」「资源」查找；都没有则菜单只显示工具。"
 
 instagram_tools_section:
   type: string

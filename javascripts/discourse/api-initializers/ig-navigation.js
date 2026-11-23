@@ -426,7 +426,7 @@ function toolGroups(site) {
 }
 
 // Category entries of the 社区与工具 menu: the IDs in
-// instagram_apps_categories (default empty). Empty: categories whose slug or
+// instagram_apps_categories (default 5|9 = /c/event/5, /c/resources/9). Empty: categories whose slug or
 // name is event(s) / resources / 活动 / 资源. A configured ID the browser has
 // not loaded yet (lazily loaded categories) is fetched once, when the rail
 // is built, so it is ready before the menu opens.
