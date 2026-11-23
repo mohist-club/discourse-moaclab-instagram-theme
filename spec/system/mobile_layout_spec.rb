@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# Phones: no page may scroll sideways, and the theme's mobile pages are
-# measured. Each page prints a report (and a small screenshot) to the log.
+# Phones (390px, touch): no page may pan sideways, and posts and their
+# images run edge to edge. Each page also prints a report and a small
+# screenshot to the CI log (IGREPORT / IGSHOT lines) for visual review.
 RSpec.describe "Instagram theme on phones", mobile: true do
   let!(:theme) { upload_theme }
 
@@ -72,7 +73,7 @@ RSpec.describe "Instagram theme on phones", mobile: true do
         const cs = getComputedStyle(el);
         if (cs.display === "none" || cs.visibility === "hidden") continue;
         const r = el.getBoundingClientRect();
-        if (!r.width || !r.height) continue;
+        if (r.width <= 1 || r.height <= 1) continue;
         if (r.right <= vw + 0.5 && r.left >= -0.5) continue;
         if (clipped(el)) continue;
         const parent = el.parentElement;
@@ -114,34 +115,51 @@ RSpec.describe "Instagram theme on phones", mobile: true do
     JSON.parse(json)
   end
 
-  it "measures the signed-in pages" do
-    sign_in(user)
-    {
-      "latest" => "/latest",
-      "topic" => topics.first.relative_url,
-      "explore" => parent.url,
-      "studio" => studio.url,
-      "categories" => "/categories",
-      "profile" => "/u/#{user.username}/summary",
-      "messages" => "/u/#{user.username}/messages",
-      "pm" => pm.relative_url,
-      "notifications" => "/u/#{user.username}/notifications",
-      "search" => "/search?q=keyboard",
-      "preferences" => "/u/#{user.username}/preferences/account",
-    }.each do |name, url|
-      visit(url)
-      report(name)
+  def expect_no_sideways_scroll(data)
+    expect(data["scrollWidth"]).to eq(data["vw"]),
+    -> { "page is #{data["scrollWidth"]}px wide: #{data["offenders"].to_json}" }
+    expect(data["offenders"]).to eq([])
+  end
+
+  def expect_full_width(rect, data)
+    expect(rect).to be_present
+    expect([rect["left"], rect["width"]]).to eq([0, data["vw"]])
+  end
+
+  signed_in_pages = {
+    "home" => ->(_) { "/" },
+    "latest" => ->(_) { "/latest" },
+    "topic" => ->(ctx) { ctx.topics.first.relative_url },
+    "explore" => ->(ctx) { ctx.parent.url },
+    "studio" => ->(ctx) { ctx.studio.url },
+    "categories" => ->(_) { "/categories" },
+    "profile" => ->(ctx) { "/u/#{ctx.user.username}/summary" },
+    "messages" => ->(ctx) { "/u/#{ctx.user.username}/messages" },
+    "pm" => ->(ctx) { ctx.pm.relative_url },
+    "notifications" => ->(ctx) { "/u/#{ctx.user.username}/notifications" },
+    "search" => ->(_) { "/search?q=keyboard" },
+    "preferences" => ->(ctx) { "/u/#{ctx.user.username}/preferences/account" },
+  }
+
+  signed_in_pages.each do |name, url|
+    it "fits the screen: #{name}" do
+      sign_in(user)
+      visit(url.call(self))
+      data = report(name)
+
+      expect_no_sideways_scroll(data)
+      expect_full_width(data["media"], data) if %w[home latest].include?(name)
+      expect_full_width(data["cookedImg"], data) if name == "topic"
+      expect(data["media"]["width"]).to be < data["vw"] / 2 if name == "explore"
     end
   end
 
-  it "measures the signed-out pages" do
-    {
-      "anon-latest" => "/latest",
-      "anon-topic" => topics.first.relative_url,
-      "login" => "/login",
-    }.each do |name, url|
-      visit(url)
-      report(name)
+  { "anon-home" => "/", "anon-topic" => nil, "login" => "/login" }.each do |name, path|
+    it "fits the screen signed out: #{name}" do
+      visit(path || topics.first.relative_url)
+      data = report(name)
+
+      expect_no_sideways_scroll(data)
     end
   end
 end

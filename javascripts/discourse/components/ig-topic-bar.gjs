@@ -119,6 +119,21 @@ export default class IgTopicBar extends Component {
     return i18n(themePrefix("ig.topic.title"));
   }
 
+  // your own profile: Instagram's ≡ on the right (the native sidebar
+  // drawer, with chat, categories and tools)
+  get isOwnProfile() {
+    if (!this.route.startsWith("user.") || !this.currentUser) {
+      return false;
+    }
+    const url = this.router.currentURL || window.location.pathname;
+    const match = url.match(/^\/u\/([^/?#]+)/);
+    return (
+      !!match &&
+      decodeURIComponent(match[1]).toLowerCase() ===
+        this.currentUser.username.toLowerCase()
+    );
+  }
+
   get backLabel() {
     return i18n(themePrefix("ig.topic.back"));
   }
@@ -152,7 +167,7 @@ export default class IgTopicBar extends Component {
       {{bodyClass "ig-group-chat"}}
     {{/if}}
     {{#if this.show}}
-      <div class="ig-topic-bar">
+      <div class="ig-topic-bar {{if this.isOwnProfile 'ig-topic-bar--menu'}}">
         <button
           type="button"
           class="ig-topic-bar__back"

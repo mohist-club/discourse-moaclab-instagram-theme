@@ -299,9 +299,12 @@
       padding-bottom: calc(72px + env(safe-area-inset-bottom));
     }
 
+    // a chat has no reading-position pill and no topic footer: the
+    // message bar sends (it presses the footer's own reply button)
     #topic-progress-wrapper,
-    #topic-progress-wrapper.docked {
-      bottom: calc(68px + env(safe-area-inset-bottom));
+    #topic-footer-buttons,
+    .topic-footer-main-buttons {
+      display: none;
     }
   }
 }

@@ -22,7 +22,10 @@
 
 @media (width < 768px) {
   body.ig-mobile-shell:not(.admin-interface) {
-    // ---- top bar ----
+    // ---- top bar (Instagram mobile web) ----
+    //   home: wordmark · [ 🔍 搜索 ] · ♡
+    //   signed out: wordmark · 登录
+    //   sub-pages: ‹ title (ig-topic-bar.gjs), no other icons
     .d-header {
       height: 60px;
       border-bottom: 1px solid var(--ig-border);
@@ -30,26 +33,56 @@
       box-shadow: none;
     }
 
+    .d-header > .wrap {
+      padding-inline: 0;
+    }
+
     .d-header .contents {
-      gap: 4px;
-      padding-inline: 12px 4px;
+      gap: 8px;
+      padding-inline: 16px 8px;
     }
 
     // Instagram's wordmark: the site logo, 32px tall
+    .d-header .title {
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+
     .d-header #site-logo {
       max-height: 32px;
       width: auto;
+      max-width: 120px;
+      object-fit: contain;
+      object-position: left center;
+    }
+
+    .d-header .panel {
+      flex: 0 1 auto;
+      min-width: 0;
+      margin-left: auto;
     }
 
     .d-header .d-header-icons {
-      gap: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 0;
+    }
+
+    .d-header .d-header-icons > li {
+      display: flex;
+      align-items: center;
+      min-width: 0;
     }
 
     .d-header .d-header-icons .icon {
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 44px;
       height: 44px;
+      margin: 0;
+      padding: 0;
       border-radius: 50%;
       color: var(--ig-ink);
 
@@ -59,18 +92,108 @@
       }
 
       .d-icon {
+        flex: 0 0 auto;
         width: 24px;
         height: 24px;
         color: var(--ig-ink);
       }
+
+      // core puts a zero-width space beside the icon; in a flex row it
+      // pushed the glyph off centre
+      > span[aria-hidden="true"] {
+        display: none;
+      }
+    }
+
+    // Instagram's top bar has no chat bubble and no menu: chat and the
+    // menu (the native sidebar drawer) are on your profile page's bar
+    .d-header .chat-header-icon,
+    .d-header .hamburger-dropdown {
+      display: none;
+    }
+
+    // search: Instagram's grey field, opening Discourse's own search
+    .d-header .search-dropdown {
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+
+    .d-header .d-header-icons .search-dropdown .icon {
+      justify-content: flex-start;
+      gap: 8px;
+      width: clamp(120px, 46vw, 268px);
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: var(--ig-pill);
+      color: var(--ig-muted);
+
+      &:hover,
+      &:focus-visible {
+        background: var(--ig-pill-hover);
+      }
+
+      .d-icon {
+        width: 16px;
+        height: 16px;
+        color: var(--ig-muted);
+      }
+
+      // the native button's own label ("搜索" / "Search")
+      &::after {
+        content: attr(aria-label);
+        overflow: hidden;
+        min-width: 0;
+        font-size: 15px;
+        font-weight: 400;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
 
     .d-header .d-icon-magnifying-glass {
-      @include ig-mobile-glyph($ig-search);
+      @include ig-mobile-glyph($ig-search, 16px);
     }
 
     .d-header .d-icon-bars {
       @include ig-mobile-glyph($ig-menu);
+    }
+
+    // signed out: Instagram's small blue 登录 button, no search field
+    .d-header:not(:has(#current-user)) .search-dropdown {
+      display: none;
+    }
+
+    .d-header .header-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .btn {
+        min-height: 32px;
+        padding: 0 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 32px;
+
+        .d-icon {
+          display: none;
+        }
+      }
+
+      .login-button {
+        border: 0;
+        background: var(--ig-btn-primary);
+        color: #fff;
+      }
+
+      .sign-up-button {
+        padding-inline: 4px;
+        border: 0;
+        background: transparent;
+        color: var(--ig-btn-primary);
+      }
     }
 
     // the user menu (notifications, bookmarks, profile, log out) shows as
@@ -99,16 +222,64 @@
       }
     }
 
+    // sub-pages: the bar is ‹ + title only (your own profile adds ≡)
+    &:has(.ig-topic-bar) .d-header {
+      .d-header-icons > li {
+        display: none;
+      }
+
+      .contents {
+        padding-inline: 8px;
+      }
+    }
+
+    &:has(.ig-topic-bar--menu) .d-header .d-header-icons > .hamburger-dropdown {
+      display: flex;
+    }
+
     // Instagram has no welcome banner: search is in the top bar
     .welcome-banner,
     .above-main-container-outlet .welcome-banner {
       display: none;
     }
 
-    // ---- feed: edge to edge ----
+    // ---- nothing scrolls sideways ----
+    // the page never pans left / right; wide things (stories, tab rows,
+    // highlights) scroll inside their own rows
+    overflow-x: clip;
+
+    #main-outlet,
+    #main-outlet-wrapper > * {
+      min-width: 0;
+    }
+
+    // ---- feed, posts, Explore, studios, profiles: edge to edge ----
+    // Discourse's .wrap keeps 0.67em at each side; Instagram's posts and
+    // grids touch the screen edges (their text keeps its own padding)
+    &[class*="navigation-"]:not(.navigation-categories),
+    &.archetype-regular,
+    &.user-summary-page {
+      #main-outlet-wrapper {
+        padding-inline: 0;
+      }
+    }
+
     &[class*="navigation-"]:not([class*="archetype-"]) #main-outlet {
       max-width: none;
       padding-inline: 0;
+    }
+
+    // Instagram's feed has no list header: the home feed's sort menu and
+    // "new topic" button (+ is in the tab bar), and the studio's / Explore's
+    // category breadcrumbs (their own header replaces them)
+    &.navigation-topics .list-controls,
+    &:has(.ig-studio, .ig-search) .list-controls {
+      display: none;
+    }
+
+    // no "Powered by Discourse" footer in the app
+    .powered-by-discourse {
+      display: none;
     }
 
     .topic-list .ig-post {
@@ -140,6 +311,11 @@
     .ig-dock {
       display: none;
     }
+  }
+
+  // iOS pans the page sideways if <html> overflows, too
+  html:has(> body.ig-mobile-shell:not(.admin-interface)) {
+    overflow-x: clip;
   }
 
   // ---- bottom tab bar ----

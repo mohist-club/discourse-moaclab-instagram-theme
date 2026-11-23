@@ -10,7 +10,13 @@
   position: relative;
   box-sizing: border-box;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   margin: 0 0 30px;
+
+  // the tray is as wide as its ~20 rings; it must not widen the page
+  // (grid layouts size items to their content)
+  contain: inline-size;
 }
 
 .ig-stories__track {

@@ -54,6 +54,10 @@
     .ig-topic-bar__title {
       position: absolute;
       left: 50%;
+      overflow: hidden;
+      max-width: calc(100% - 120px);
+      text-overflow: ellipsis;
+      white-space: nowrap;
       color: var(--ig-ink);
       font-size: 16px;
       font-weight: 600;
