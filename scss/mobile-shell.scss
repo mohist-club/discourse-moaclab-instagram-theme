@@ -44,8 +44,7 @@
 
     // Instagram's wordmark: the site logo, 32px tall
     .d-header .title {
-      flex: 0 1 auto;
-      min-width: 0;
+      flex: 0 0 auto;
     }
 
     .d-header #site-logo {
@@ -107,8 +106,8 @@
 
     // Instagram's top bar has no chat bubble and no menu: chat and the
     // menu (the native sidebar drawer) are on your profile page's bar
-    .d-header .chat-header-icon,
-    .d-header .hamburger-dropdown {
+    .d-header .d-header-icons > .chat-header-icon,
+    .d-header .d-header-icons > .hamburger-dropdown {
       display: none;
     }
 

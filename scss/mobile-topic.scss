@@ -229,8 +229,15 @@
             margin: 0 -12px 10px;
             border-radius: 0;
 
+            // core's lightbox link shrink-wraps the image: fill instead
+            .lightbox {
+              display: block;
+              width: 100%;
+            }
+
             img {
               width: 100%;
+              max-width: none;
               height: auto;
               border-radius: 0;
             }
