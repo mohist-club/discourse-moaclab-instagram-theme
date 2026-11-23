@@ -156,3 +156,9 @@ instagram_mobile_layout:
   description:
     en: "Below 768px wide (phones and narrow windows): Discourse's header as Instagram's top bar (wordmark, search, heart = the native user menu, menu = the native sidebar drawer) and posts edge to edge with Instagram's mobile spacing."
     zh_CN: "宽度小于 768px 时（手机和窄窗口）：Discourse 顶栏改为 Instagram 顶栏（Logo、搜索、爱心 = 原生用户菜单、菜单 = 原生侧边栏抽屉），帖子通栏显示、按 Instagram 移动端间距。"
+
+instagram_custom_services:
+  default: true
+  description:
+    en: "The /custom-services page (its content comes from another component) in the theme's look: an Instagram profile header, the section links as profile tabs, works / DLC / re-anodizing as a 3-column grid, and each item's details as Instagram's post pop-up. Content, links and the DLC filter are unchanged. Off: the page's own styling."
+    zh_CN: "/custom-services 定制服务页（内容由其他组件提供）使用主题样式：Instagram 主页式页头、分区导航改为主页标签栏、社区作品 / DLC / 重新阳极改为三列网格、详情改为 Instagram 帖子弹窗。内容、链接和 DLC 筛选不变。关闭则为页面自带样式。"

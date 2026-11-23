@@ -32,6 +32,7 @@ export default apiInitializer((api) => {
     "ig-topic-style": settings.instagram_topic_style,
     "ig-auth-modal": settings.instagram_auth_modal,
     "ig-mobile-shell": settings.instagram_mobile_layout,
+    "ig-custom-services": settings.instagram_custom_services,
   };
   const applyFlags = () => {
     const admin = isAdminPage();
