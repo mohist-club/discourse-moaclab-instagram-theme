@@ -84,6 +84,13 @@ instagram_suggested_categories:
     en: "IDs of the categories whose subcategories (studios) fill \"Suggested for you\" — the number at the end of a category URL (/c/keyboards/13 → 13). Add more IDs (e.g. the keycap category) to mix their studios in. Empty: top-level categories with the slug keyboards / keycaps or the name 键盘 / 键帽库; with none, active users are shown."
     zh_CN: "右栏「为你推荐」列出这些类别下的二级类别（工作室），填类别 ID，即类别网址最后的数字（/c/keyboards/13 填 13）。可再加键帽类别等的 ID 一起列出。留空时按别名 keyboards / keycaps 或名称「键盘」「键帽库」查找一级类别；都没有则显示活跃用户。"
 
+instagram_apps_categories:
+  type: list
+  default: ""
+  description:
+    en: "IDs of the categories listed at the top of the rail's Community & tools menu (the number at the end of a category URL, /c/events/12 → 12), in this order. Empty: the categories with the slug events / resources or the name 活动 / 资源; with none, the menu shows only the tools."
+    zh_CN: "左侧导航「社区与工具」菜单顶部列出的类别，填类别 ID，即类别网址最后的数字（/c/events/12 填 12），按填写顺序显示。留空时按别名 events / resources 或名称「活动」「资源」查找；都没有则菜单只显示工具。"
+
 instagram_tools_section:
   type: string
   default: "服务"
