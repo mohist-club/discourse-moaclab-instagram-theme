@@ -117,6 +117,10 @@
 
     // search: Instagram's grey field, opening Discourse's own search
     // the field takes the room the wordmark leaves, up to 268px
+    .d-header .d-header-icons:has(> .search-dropdown) {
+      flex: 1 1 auto;
+    }
+
     .d-header .d-header-icons > .search-dropdown {
       flex: 0 1 268px;
       min-width: 0;
