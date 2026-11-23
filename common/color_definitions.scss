@@ -37,6 +37,12 @@ $ig-love: #ed4956; // like / heart red
   --ig-border: #{dark-light-choose(#dbdbdb, #262626)};
   --ig-border-strong: #{dark-light-choose(#c7c7c7, #363636)};
 
+  // the site's icon (logo_small), set by ig-theme.js
+  --ig-site-icon: #{dark-light-choose(
+      var(--ig-site-icon-light, none),
+      var(--ig-site-icon-dark, none)
+    )};
+
   // interactive
   --ig-accent: #{$ig-accent};
 

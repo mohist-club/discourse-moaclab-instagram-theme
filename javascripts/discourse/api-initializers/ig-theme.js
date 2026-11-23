@@ -22,6 +22,19 @@ export default apiInitializer((api) => {
     );
   }
 
+  // 1c. the site's icon (logo_small, its dark version for dark schemes)
+  //     as CSS custom properties, for /custom-services' profile picture
+  //     (scss/custom-services.scss); body.ig-has-site-icon when there is one
+  const siteSettings = api.container.lookup("service:site-settings");
+  const icon = siteSettings?.site_logo_small_url;
+  if (icon) {
+    const iconDark = siteSettings.site_logo_small_dark_url || icon;
+    const root = document.documentElement.style;
+    root.setProperty("--ig-site-icon-light", `url("${icon}")`);
+    root.setProperty("--ig-site-icon-dark", `url("${iconDark}")`);
+    body.classList.add("ig-has-site-icon");
+  }
+
   // 2. feature classes from boolean settings — never on admin pages, which
   //    stay Discourse-native (re-checked on every page change)
   const flags = {
