@@ -116,7 +116,8 @@
       }
 
       // ---- buttons: one row, 32px, grey (the main one blue) ----
-      .controls {
+      .details > section.controls,
+      .details > .controls {
         margin: 0;
         padding: 12px 16px 0;
 
