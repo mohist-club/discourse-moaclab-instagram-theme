@@ -36,6 +36,7 @@ body:not(.admin-interface) {
 @import "messages-chat";
 @import "mobile-notifications";
 @import "mobile-search";
+@import "mobile-preferences";
 @import "custom-services";
 
 html:not(:has(> body.admin-interface)) {

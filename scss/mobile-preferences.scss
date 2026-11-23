@@ -1,0 +1,229 @@
+// =========================================================
+// Settings (user preferences) on phones (< 768px) as Instagram's
+// settings (instagram_mobile_layout). Discourse's own preference
+// pages — every field, the save flow — restyled:
+//   top bar: ‹ back + 设置 (ig-topic-bar.gjs)
+//   sections (账户 / 安全 / 个人资料 / 邮件 / 通知 …): grey chips
+//   each setting group: a rounded bordered card, bold title, grey help
+//   fields: 44px, 12px radius; checkboxes drawn as Instagram's black
+//     switches (still real checkboxes); Save: a full-width blue button
+// =========================================================
+
+@media (width < 768px) {
+  body.ig-mobile-shell.user-preferences-page:not(.admin-interface) {
+    // no profile header or profile tabs: the page is settings
+    .user-main .details,
+    .user-main .user-profile-image,
+    .user-navigation-primary {
+      display: none;
+    }
+
+    #main-outlet {
+      padding-inline: 0;
+    }
+
+    .user-content {
+      padding: 0 16px 24px;
+    }
+
+    // ---- sections as chips ----
+    .user-navigation-secondary {
+      margin: 0;
+      padding: 12px 16px 8px;
+      border: 0;
+
+      ul,
+      .nav-pills {
+        display: flex;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+
+      li {
+        flex: 0 0 auto;
+        margin: 0;
+      }
+
+      li a {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        height: 32px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--ig-btn-secondary);
+        color: var(--ig-ink);
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+
+        .d-icon {
+          color: inherit;
+        }
+
+        &.active {
+          background: var(--ig-ink);
+          color: var(--ig-page);
+        }
+      }
+    }
+
+    // ---- each setting group: a card ----
+    .control-group {
+      box-sizing: border-box;
+      margin: 0 0 12px;
+      padding: 16px;
+      border: 1px solid var(--ig-border);
+      border-radius: 16px;
+      background: var(--ig-page);
+    }
+
+    .control-label {
+      margin: 0 0 8px;
+      color: var(--ig-ink);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 20px;
+    }
+
+    .instructions {
+      color: var(--ig-muted);
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .controls {
+      margin: 0;
+    }
+
+    // fields
+    input:is(
+      [type="text"],
+      [type="email"],
+      [type="url"],
+      [type="password"],
+      [type="number"],
+      [type="search"]
+    ),
+    textarea,
+    .select-kit .select-kit-header {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: none;
+      min-height: 44px;
+      border: 1px solid var(--ig-border);
+      border-radius: 12px;
+      background: var(--ig-field);
+      color: var(--ig-ink);
+      font-size: 16px;
+
+      &:focus,
+      &:focus-within {
+        border-color: var(--ig-muted);
+        outline: none;
+        box-shadow: none;
+      }
+    }
+
+    textarea {
+      padding: 12px;
+    }
+
+    // checkboxes drawn as Instagram's switches (still real checkboxes)
+    .controls label.checkbox-label,
+    .controls .checkbox-label {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin: 4px 0;
+      color: var(--ig-ink);
+      font-size: 14px;
+      line-height: 18px;
+
+      input[type="checkbox"] {
+        order: 2;
+      }
+    }
+
+    .controls input[type="checkbox"] {
+      position: relative;
+      flex: 0 0 40px;
+      width: 40px;
+      height: 24px;
+      margin: 0;
+      border-radius: 12px;
+      background: var(--ig-border-strong);
+      cursor: pointer;
+      appearance: none;
+      transition: background 0.2s ease;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.2s ease;
+      }
+
+      &:checked {
+        background: var(--ig-ink);
+
+        &::before {
+          background: var(--ig-page);
+          transform: translateX(16px);
+        }
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--ig-btn-primary);
+        outline-offset: 2px;
+      }
+    }
+
+    // buttons inside groups
+    .control-group .btn-default {
+      border: 0;
+      border-radius: 8px;
+      background: var(--ig-btn-secondary);
+      color: var(--ig-ink);
+
+      .d-icon {
+        color: var(--ig-ink);
+      }
+    }
+
+    // ---- Save: Instagram's full-width blue button ----
+    .save-controls {
+      margin: 16px 0 0;
+      padding: 0;
+
+      .btn-primary {
+        width: 100%;
+        min-height: 44px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--ig-btn-primary);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+
+        &:disabled {
+          opacity: 0.4;
+        }
+      }
+    }
+  }
+}

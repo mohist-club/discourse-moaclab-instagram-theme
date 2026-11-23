@@ -527,3 +527,255 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     }
   }
 }
+
+// =========================================================
+// Phones (< 768px): Instagram's mobile log-in — no card, no aurora,
+// the page itself: big logo, 54px fields, a blue pill button,
+// "忘记密码？" centred, other log-in methods after a hairline, and
+// Discourse's sign-up / log-in link as an outlined pill at the bottom.
+// The nesting differs between Discourse's phone and desktop
+// templates, so it is flattened (display: contents) and ordered.
+// =========================================================
+@media (width < 768px) {
+  body.ig-auth-modal:is(.login-page, .signup-page) {
+    background: var(--ig-page);
+
+    .login-fullpage,
+    .signup-fullpage {
+      min-height: 100dvh;
+      padding: 56px 16px calc(16px + env(safe-area-inset-bottom));
+      overflow: visible;
+
+      &::before {
+        content: none;
+      }
+    }
+
+    // the page is the card
+    .login-body,
+    .signup-body {
+      flex: 1;
+      flex-direction: column;
+      max-width: none;
+      padding: 0;
+      border-radius: 0;
+      animation: none;
+
+      &::before {
+        content: none;
+      }
+
+      // flatten the wrappers so every piece can be ordered
+      > .login-left-side,
+      > div:not([class]),
+      > div[class=""],
+      .login-page-cta,
+      .signup-page-cta,
+      .login-page-cta__buttons,
+      .signup-page-cta__buttons {
+        display: contents;
+
+        &::before {
+          content: none;
+        }
+      }
+
+      // default place for anything else (plugin outlets, code log-in …);
+      // :where keeps it weaker than the placements below
+      :where(
+        & > *,
+        & > .login-left-side > *,
+        & > div:not([class]) > *,
+        & > div[class=""] > *
+      ) {
+        order: 2;
+      }
+    }
+
+    // ---- top: back arrow, then the logo ----
+    .ig-auth-head {
+      order: 0;
+      margin: 8px 0 36px;
+    }
+
+    .ig-auth-head__logo img {
+      max-width: 240px;
+      height: 56px;
+    }
+
+    .ig-auth-head__close {
+      position: fixed;
+      top: 8px;
+      right: auto;
+      left: 8px;
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+
+      &::before {
+        mask-image: url($ig-chevron);
+        mask-size: 26px 26px;
+        transform: scaleX(-1);
+      }
+
+      &:hover {
+        background: none;
+        transform: none;
+      }
+    }
+
+    .ig-auth-head__esc {
+      display: none;
+    }
+
+    // log-in has no heading on Instagram; sign-up keeps its title
+    &.login-page .login-welcome-header {
+      display: none;
+    }
+
+    .signup-progress-bar,
+    .login-welcome-header {
+      order: 1;
+    }
+
+    // ---- fields: 54px, label inside ----
+    #login-form {
+      order: 2;
+    }
+
+    #login-form .input-group {
+      margin-bottom: 10px;
+
+      input:is(
+        [type="text"],
+        [type="email"],
+        [type="password"],
+        [type="tel"],
+        [type="number"],
+        :not([type])
+      ) {
+        height: 54px;
+        padding: 16px 14px;
+        border-radius: 12px;
+        background: var(--ig-page);
+        font-size: 16px;
+      }
+
+      label.alt-placeholder {
+        top: 17px;
+        left: 15px;
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      input:focus + label.alt-placeholder,
+      input.value-entered + label.alt-placeholder {
+        top: 8px;
+        left: 15px;
+        font-size: 12px;
+        line-height: 14px;
+      }
+
+      input:is(:focus, .value-entered):has(+ label.alt-placeholder) {
+        padding: 24px 14px 8px;
+      }
+    }
+
+    .login__password-links,
+    #email-login-link,
+    #one-time-code-link {
+      justify-content: center;
+      color: var(--ig-ink);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .signup-page-cta__disclaimer {
+      order: 3;
+      margin: 4px 0 8px;
+    }
+
+    // ---- the main button: Instagram's blue pill ----
+    .login-page-cta .login-page-cta__login,
+    .signup-page-cta .signup-page-cta__signup {
+      order: 4;
+      flex: 0 0 auto; // a column here: the desktop "100%" basis is height
+      min-height: 44px;
+      margin: 8px 0 0;
+      border-radius: 22px;
+      background: var(--ig-btn-primary);
+      box-shadow: none;
+      font-size: 15px !important;
+
+      &:hover,
+      &:focus-visible {
+        background: var(--ig-btn-primary);
+        box-shadow: none;
+        transform: none;
+        filter: brightness(0.92);
+      }
+    }
+
+    // ---- other ways in, after a hairline ----
+    .login-right-side,
+    .login-body > #login-buttons,
+    .signup-body > #login-buttons,
+    .login-or-separator {
+      order: 5;
+    }
+
+    .login-right-side,
+    .login-body > #login-buttons {
+      margin-top: 20px;
+    }
+
+    .login-right-side::before {
+      margin: 0 0 16px;
+    }
+
+    #login-buttons {
+      flex-direction: column;
+      padding: 0;
+
+      .btn-social {
+        flex: none;
+        min-height: 44px;
+        border-radius: 22px;
+        background: transparent;
+        font-size: 15px;
+      }
+    }
+
+    // ---- bottom: sign-up / log-in as an outlined pill ----
+    .login-page-cta__no-account-yet,
+    .signup-page-cta__existing-account {
+      display: none;
+    }
+
+    .login-page-cta .login-page-cta__signup,
+    .signup-page-cta .signup-page-cta__login {
+      order: 6;
+      flex: 0 0 auto;
+      width: 100%;
+      min-height: 44px;
+      margin: auto 0 0;
+
+      // never touching the content above it
+      transform: translateY(0);
+      padding: 0 16px;
+      border: 1px solid var(--ig-btn-primary);
+      border-radius: 22px;
+      background: transparent;
+      color: var(--ig-btn-primary);
+      font-size: 15px !important;
+      font-weight: 600;
+
+      &:hover,
+      &:focus-visible {
+        background: transparent;
+        color: var(--ig-btn-primary);
+        text-decoration: none;
+      }
+    }
+  }
+}

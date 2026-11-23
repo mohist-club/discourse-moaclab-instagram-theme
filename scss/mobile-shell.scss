@@ -175,6 +175,12 @@
   }
 }
 
+// on every page the open composer owns the bottom of the screen (new
+// topic from the tab bar's +, a message, a reply)
+body:has(#reply-control.open) .ig-bottom-nav {
+  display: none;
+}
+
 .ig-bottom-nav .ig-bottom-nav__item {
   display: flex;
   flex: 1;

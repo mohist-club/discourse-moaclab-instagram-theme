@@ -27,6 +27,7 @@ zh_CN:
       instagram_categories_page: "/categories 显示为 Instagram 主页卡片网格。"
       new_topic_composer_height: "创建话题编辑器的高度，占屏幕高度的百分比（0 为 Discourse 默认）。"
       instagram_mobile_layout: "宽度小于 768px：Instagram 移动端顶栏与通栏帖子。"
+      instagram_custom_services: "/custom-services 定制服务页使用主题样式：Instagram 主页式页头、标签栏、三列网格和帖子弹窗。"
   ig:
     profile:
       topics: "帖子"
@@ -145,8 +146,6 @@ zh_CN:
       faq: "帮助"
       badges: "徽章"
       users: "用户"
-      tos: "条款"
-      privacy: "隐私"
       categories: "所有类别"
       tags: "标签"
       qa: "问答与求助"

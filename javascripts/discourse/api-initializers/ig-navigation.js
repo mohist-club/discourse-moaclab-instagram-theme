@@ -48,7 +48,8 @@ export default apiInitializer((api) => {
         ensureRail(api, siteSettings);
       }
       // Explore: the configured category (and its subcategories) as a grid
-      const explore = isExplorePage(site);
+      // of the feed's cards, so only with the card feed on
+      const explore = !!settings.card_feed && isExplorePage(site);
       document.body.classList.toggle("ig-explore", explore);
 
       if (settings.instagram_clean_feed && desktop) {
@@ -234,12 +235,14 @@ function ensureRail(api, siteSettings) {
 
   // bottom group, like Instagram's "More" + "Also from Meta":
   //   更多       -> account menu (settings, activity, bookmarks, sign out)
-  //   社区与工具 -> every link from the native Discourse sidebar
+  //   社区与工具 -> 活动 / 资源 categories, then the sidebar's tools section
+  const site = api.container.lookup("service:site");
+  appCategories(site);
   const foot = document.createElement("div");
   foot.className = "ig-rail-foot";
   foot.append(
     menuButton("more", "menu", () => accountGroups(user, api)),
-    menuButton("apps", "apps", () => toolGroups())
+    menuButton("apps", "apps", () => toolGroups(site))
   );
   rail.append(foot);
 
@@ -405,20 +408,121 @@ function linkItems(anchors, seen) {
   return items;
 }
 
-// 社区与工具: the tools section; if the site has no such section, every
-// native sidebar link instead, so nothing becomes unreachable
-function toolGroups() {
+// 社区与工具: the 活动 / 资源 category entries first, then the tools
+// section; if the site has no such section, every native sidebar link
+// instead, so nothing becomes unreachable
+function toolGroups(site) {
+  const cats = appCategoryItems(site);
+  const seen = new Set(["/", ...cats.map((it) => it.href)]);
   const { links } = toolLinks();
-  if (links.length) {
-    return [links];
+  const rest = links.length
+    ? links.filter((it) => !seen.has(it.href))
+    : linkItems(
+        document.querySelectorAll(
+          ".sidebar-wrapper .sidebar-sections a.sidebar-section-link"
+        ),
+        seen
+      );
+  return [cats, rest].filter((group) => group.length);
+}
+
+// Category entries of the 社区与工具 menu: the IDs in
+// instagram_apps_categories (default 5|9 = /c/event/5, /c/resources/9). Empty: categories whose slug or
+// name is event(s) / resources / 活动 / 资源. A configured ID the browser has
+// not loaded yet (lazily loaded categories) is fetched once, when the rail
+// is built, so it is ready before the menu opens.
+const DEFAULT_APP_CATEGORY_KEYS = [
+  ["event", "events", "activities", "活动"],
+  ["resources", "资源"],
+];
+let appCategoriesPromise = null;
+let appCategoryList = [];
+
+function appCategoryIds() {
+  return String(settings.instagram_apps_categories || "")
+    .split("|")
+    .map((v) => parseInt(v, 10))
+    .filter((id) => id > 0);
+}
+
+function appCategories(site) {
+  appCategoriesPromise ||= resolveAppCategories(site)
+    .catch(() => [])
+    .then((list) => {
+      appCategoryList = list;
+      // nothing found (categories not loaded yet): try again next build
+      if (!list.length) {
+        appCategoriesPromise = null;
+      }
+      return list;
+    });
+  return appCategoriesPromise;
+}
+
+async function resolveAppCategories(site) {
+  const ids = appCategoryIds();
+  if (!ids.length) {
+    const categories = site?.categories || [];
+    return DEFAULT_APP_CATEGORY_KEYS.map((keys) =>
+      categories.find(
+        (c) =>
+          keys.includes(c.slug?.toLowerCase()) || keys.includes(c.name?.trim())
+      )
+    ).filter(Boolean);
   }
-  const all = linkItems(
-    document.querySelectorAll(
-      ".sidebar-wrapper .sidebar-sections a.sidebar-section-link"
-    ),
-    new Set(["/"])
+  const found = await Promise.all(
+    ids.map(async (id) => {
+      const known = findCategory(site, id);
+      if (known) {
+        return known;
+      }
+      try {
+        const result = await ajax(`/c/${id}/show.json`);
+        return result?.category || null;
+      } catch {
+        return null;
+      }
+    })
   );
-  return all.length ? [all] : [];
+  return found.filter(Boolean);
+}
+
+function appCategoryItems(site) {
+  // categories loaded since the rail was built: prefer the live record
+  return appCategoryList
+    .map((c) => findCategory(site, c.id) || c)
+    .filter((c) => c?.id)
+    .map((c) => {
+      const href = c.url || categoryUrl(c, null);
+      return {
+        href,
+        label: (c.name || "").trim() || `#${c.id}`,
+        nativeIcon: categoryIcon(c, href),
+      };
+    });
+}
+
+// the category's own sidebar icon when the sidebar lists it, else a square
+// in the category colour, as the native sidebar draws it
+function categoryIcon(category, href) {
+  const native = document.querySelector(
+    `.sidebar-wrapper a.sidebar-section-link[href="${CSS.escape(
+      href
+    )}"] .sidebar-section-link-prefix`
+  );
+  if (native) {
+    return native;
+  }
+  const prefix = document.createElement("span");
+  prefix.className = "sidebar-section-link-prefix";
+  const square = document.createElement("span");
+  square.className = "prefix-span";
+  const color = /^[0-9a-f]{3,6}$/i.test(category.color || "")
+    ? `#${category.color}`
+    : "var(--ig-muted)";
+  square.style.background = color;
+  prefix.append(square);
+  return prefix;
 }
 
 function openMorePanel(groups, anchor) {
@@ -1032,8 +1136,6 @@ function ensureRightSidebar(api, siteSettings) {
     ["/faq", t("right.faq")],
     ["/badges", t("right.badges")],
     ["/u", t("right.users")],
-    ["/tos", t("right.tos")],
-    ["/privacy", t("right.privacy")],
     ["/categories", t("right.categories")],
     ["/tags", t("right.tags")],
     qaLink(site),
