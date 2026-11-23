@@ -5,7 +5,9 @@ RSpec.describe "Instagram theme" do
 
   fab!(:user) { Fabricate(:user, trust_level: TrustLevel[1]) }
   fab!(:category)
-  fab!(:topics) { Fabricate.times(3, :post, category: category).map(&:topic) }
+  fab!(:topics) do
+    Fabricate.times(3, :topic, category: category).each { |topic| Fabricate(:post, topic: topic) }
+  end
 
   before { sign_in(user) }
 
