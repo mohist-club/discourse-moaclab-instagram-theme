@@ -1032,8 +1032,6 @@ function ensureRightSidebar(api, siteSettings) {
     ["/faq", t("right.faq")],
     ["/badges", t("right.badges")],
     ["/u", t("right.users")],
-    ["/tos", t("right.tos")],
-    ["/privacy", t("right.privacy")],
     ["/categories", t("right.categories")],
     ["/tags", t("right.tags")],
     qaLink(site),
