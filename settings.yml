@@ -169,3 +169,9 @@ instagram_custom_services:
   description:
     en: "The /custom-services page (its content comes from another component) in the theme's look: an Instagram profile header, the section links as profile tabs, works / DLC / re-anodizing as a 3-column grid, and each item's details as Instagram's post pop-up. Content, links and the DLC filter are unchanged. Off: the page's own styling."
     zh_CN: "/custom-services 定制服务页（内容由其他组件提供）使用主题样式：Instagram 主页式页头、分区导航改为主页标签栏、社区作品 / DLC / 重新阳极改为三列网格、详情改为 Instagram 帖子弹窗。内容、链接和 DLC 筛选不变。关闭则为页面自带样式。"
+
+instagram_cad_viewer:
+  default: true
+  description:
+    en: "The /viewer model preview (from the CAD viewer component) in the theme's look: the page spans from the rail to the right edge, a profile-style header with Instagram buttons, the canvas and settings column as one card like the post pop-up, profile-style tabs, chip and ink controls, and floating pill toolbars. Every control works as before. Off: the component's own styling."
+    zh_CN: "/viewer 模型预览页（由 CAD 查看器组件提供）使用主题样式：页面从左侧导航铺到右边缘，页头改为主页式标题和 Instagram 按钮，画布与设置栏合成一张卡片（类似帖子弹窗），设置栏用主页式标签、胶囊按钮和墨色开关，工具栏和视角按钮改为悬浮胶囊。所有功能不变。关闭则为组件自带样式。"

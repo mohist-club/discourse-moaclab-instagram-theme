@@ -28,6 +28,7 @@ en:
       new_topic_composer_height: "New-topic editor height, % of the screen (0: Discourse default)."
       instagram_mobile_layout: "Below 768px: Instagram mobile top bar and edge-to-edge posts."
       instagram_custom_services: "The /custom-services page in the theme's look: Instagram profile header, tabs, a 3-column grid and post pop-ups."
+      instagram_cad_viewer: "The /viewer model preview in the theme's look: canvas and settings as one card, Instagram buttons, tabs and floating toolbars."
   ig:
     profile:
       topics: "posts"

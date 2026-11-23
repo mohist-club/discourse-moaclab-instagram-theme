@@ -1,0 +1,522 @@
+// =========================================================
+// /viewer model preview in the theme's look
+// (instagram_cad_viewer → body.ig-cad-viewer).
+//
+// The page (header, canvas, toolbar, inspector) comes from the
+// discourse-moaclab-cad-viewer component and the tools plugin's
+// runtime; only its look changes here, every control keeps working.
+//   page: full width right of the rail, the theme's page colour
+//   header: breadcrumb, title and meta like a profile header,
+//           Instagram 32px buttons (secondary grey, primary blue)
+//   canvas + inspector: one bordered card, like the post pop-up —
+//           model left, settings column right
+//   inspector: profile-style tabs, chip segmented control, ink
+//           switches and slider
+//   toolbar / view buttons / zoom: floating elevated pills
+// Selectors carry body.ig-cad-viewer so they outrank the
+// component's own `.moaclab-cad-viewer-mount.mlcv-workbench .x` rules.
+// =========================================================
+
+$ig-cad-rail: 72px; // the collapsed rail ($ig-rail-collapsed)
+
+body.ig-cad-viewer:not(.admin-interface) {
+  .moaclab-cad-viewer-page:has(.mlcv-workbench) {
+    background: var(--ig-page);
+  }
+
+  .moaclab-cad-viewer-mount.mlcv-workbench {
+    --mlcv-bg: var(--ig-page);
+    --mlcv-panel: var(--ig-card);
+    --mlcv-ink: var(--ig-ink);
+    --mlcv-muted: var(--ig-muted);
+    --mlcv-line: var(--ig-border);
+    --mlcv-accent: var(--ig-ink);
+    --mlcv-accent-soft: var(--ig-hover);
+    padding: 20px 24px 24px;
+    font-family: var(--ig-font, inherit);
+    color: var(--ig-ink);
+
+    // ---- header ------------------------------------------------
+    .mlcv-header {
+      gap: 12px 16px;
+      align-items: end;
+      padding: 0 0 16px;
+    }
+
+    .mlcv-wb-breadcrumb {
+      gap: 6px;
+      font-size: 13px;
+
+      a {
+        color: var(--ig-muted);
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+          color: var(--ig-ink);
+        }
+      }
+    }
+
+    .mlcv-wb-crumb-title {
+      color: var(--ig-ink);
+    }
+
+    .mlcv-wb-title {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 25px;
+    }
+
+    .mlcv-wb-meta {
+      margin-top: 4px;
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    .mlcv-file {
+      gap: 8px;
+    }
+
+    .mlcv-open,
+    .mlcv-wb-topic,
+    .mlcv-post {
+      height: 32px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: var(--ig-radius, 8px);
+      background: var(--ig-btn-secondary);
+      color: var(--ig-ink);
+      font-size: 14px;
+      font-weight: 600;
+
+      &:hover {
+        background: var(--ig-btn-secondary-hover, var(--ig-pill-hover));
+      }
+    }
+
+    .mlcv-post {
+      background: var(--ig-btn-primary);
+      color: #fff;
+
+      &:hover {
+        background: var(--ig-btn-primary);
+        filter: brightness(0.92);
+      }
+    }
+
+    .mlcv-file > .mlcv-wb-button {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: var(--ig-radius, 8px);
+      background: transparent;
+      color: var(--ig-ink);
+
+      &:hover {
+        background: var(--ig-hover);
+      }
+    }
+
+    // ---- canvas + inspector: one card ---------------------------
+    .mlcv-shell {
+      background: var(--ig-page);
+    }
+
+    .mlcv-stage {
+      overflow: hidden;
+      border: 1px solid var(--ig-border);
+      border-radius: var(--ig-radius-lg, 12px);
+      background: var(--ig-field);
+    }
+
+    &.mlcv-wb-panel-open .mlcv-stage {
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    .mlcv-wb-inspector {
+      padding: 0 20px;
+      border: 1px solid var(--ig-border);
+      border-inline-start: 0;
+      border-start-end-radius: var(--ig-radius-lg, 12px);
+      border-end-end-radius: var(--ig-radius-lg, 12px);
+      background: var(--ig-card);
+    }
+
+    &.mlcv-wb-panel-open .mlcv-shell {
+      grid-template-columns: minmax(0, 1fr) 300px;
+    }
+
+    // file name, status and zoom: quiet captions on the canvas
+    .mlcv-wb-canvas-file,
+    .mlcv-status,
+    .mlcv-wb-zoom output {
+      color: var(--ig-muted);
+      font-size: 12px;
+    }
+
+    .mlcv-wb-canvas-file {
+      top: 16px;
+      left: 16px;
+      font-weight: 600;
+    }
+
+    // ---- floating controls -------------------------------------
+    .mlcv-viewcube,
+    .mlcv-toolbar,
+    .mlcv-wb-zoom {
+      border: 1px solid var(--ig-border);
+      background: var(--ig-elevated);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+    }
+
+    .mlcv-viewcube {
+      top: 12px;
+      right: 12px;
+      height: 36px;
+      padding: 3px;
+      border-radius: 999px;
+
+      button {
+        height: 28px;
+        min-width: 28px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--ig-ink);
+        font-size: 12px;
+        font-weight: 600;
+
+        &:hover {
+          background: var(--ig-hover);
+        }
+      }
+    }
+
+    .mlcv-toolbar {
+      bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px));
+      padding: 6px;
+      gap: 2px;
+      border-radius: 999px;
+    }
+
+    .mlcv-tool {
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ig-ink);
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover {
+        background: var(--ig-hover);
+      }
+
+      &.is-active {
+        background: var(--ig-ink);
+        color: var(--ig-page);
+      }
+    }
+
+    .mlcv-wb-zoom {
+      right: 12px;
+      bottom: 12px;
+      padding: 2px;
+      border-radius: 999px;
+
+      button {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        color: var(--ig-ink);
+
+        &:hover {
+          background: var(--ig-hover);
+        }
+      }
+    }
+
+    .mlcv-status {
+      left: 16px;
+      bottom: 16px;
+    }
+
+    .mlcv-measure-label {
+      border-color: var(--ig-border);
+      border-radius: var(--ig-radius, 8px);
+      background: var(--ig-elevated);
+      color: var(--ig-ink);
+      font-weight: 600;
+    }
+
+    // ---- inspector ---------------------------------------------
+    // profile tabs: label, ink line on the active one
+    .mlcv-wb-tabs {
+      gap: 24px;
+      height: 48px;
+      border-bottom-color: var(--ig-border);
+
+      > button {
+        color: var(--ig-muted);
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid transparent;
+        margin-bottom: -1px;
+
+        &:hover {
+          color: var(--ig-ink);
+        }
+
+        &.is-active {
+          border-bottom: 1px solid var(--ig-ink);
+          color: var(--ig-ink);
+        }
+
+        &:last-child {
+          color: var(--ig-ink);
+        }
+      }
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .mlcv-wb-section {
+      padding: 20px 0;
+      border-bottom-color: var(--ig-border);
+
+      h3 {
+        margin-bottom: 12px;
+        color: var(--ig-ink);
+        font-size: 16px;
+        font-weight: 600;
+      }
+    }
+
+    .mlcv-wb-row {
+      min-height: 36px;
+      color: var(--ig-ink);
+      font-size: 14px;
+
+      select {
+        height: 32px;
+        min-height: 32px;
+        max-width: 150px;
+        padding: 0 8px;
+        border: 1px solid var(--ig-border);
+        border-radius: var(--ig-radius, 8px);
+        background: var(--ig-field);
+        color: var(--ig-ink);
+        font-size: 14px;
+      }
+    }
+
+    // segmented control as chips
+    .mlcv-wb-segmented {
+      gap: 8px;
+
+      button {
+        height: 32px;
+        border: 0;
+        border-radius: var(--ig-radius, 8px);
+        background: var(--ig-pill);
+        color: var(--ig-ink);
+        font-size: 14px;
+        font-weight: 600;
+
+        &:hover {
+          background: var(--ig-pill-hover);
+        }
+
+        &.is-active {
+          background: var(--ig-ink);
+          color: var(--ig-page);
+        }
+      }
+    }
+
+    .mlcv-wb-swatches {
+      gap: 12px;
+
+      button {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        border: 1px solid var(--ig-border-strong, var(--ig-border));
+
+        &.is-active {
+          outline: 2px solid var(--ig-ink);
+          outline-offset: 2px;
+        }
+      }
+    }
+
+    input[role="switch"] {
+      width: 40px;
+      height: 24px;
+      border-radius: 12px;
+      background: var(--ig-pill-hover);
+
+      &::after {
+        width: 20px;
+        height: 20px;
+        top: 2px;
+        left: 2px;
+        box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+      }
+
+      &:checked {
+        background: var(--ig-ink);
+
+        &::after {
+          left: 18px;
+          background: var(--ig-page);
+        }
+      }
+    }
+
+    input[type="range"] {
+      accent-color: var(--ig-ink);
+    }
+
+    .mlcv-wb-reset {
+      padding: 16px 0;
+      color: var(--ig-link, var(--ig-btn-primary));
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .mlcv-info {
+      font-size: 14px;
+
+      dt {
+        color: var(--ig-muted);
+      }
+    }
+
+    .mlcv-wb-note,
+    .mlcv-wb-foot {
+      color: var(--ig-muted);
+      font-size: 12px;
+    }
+
+    .mlcv-wb-foot {
+      border-top-color: var(--ig-border);
+    }
+
+    .mlcv-wb-part-actions button {
+      height: 32px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: var(--ig-radius, 8px);
+      background: var(--ig-btn-secondary);
+      color: var(--ig-ink);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .mlcv-swatch.is-active {
+      border-radius: var(--ig-radius, 8px);
+      background: var(--ig-hover);
+    }
+
+    .mlcv-wb-state {
+      background: color-mix(in srgb, var(--ig-card) 96%, transparent);
+      color: var(--ig-ink);
+    }
+
+    .mlcv-wb-state.is-loading::before {
+      border-color: var(--ig-border);
+      border-top-color: var(--ig-ink);
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline-color: var(--ig-ink);
+    }
+
+    // full screen and post embeds: the canvas alone, no card frame
+    .mlcv-shell.mlcv-wb-fullscreen .mlcv-stage,
+    &.mlcv-workbench--embedded .mlcv-stage {
+      border: 0;
+      border-radius: 0;
+    }
+
+    &.mlcv-workbench--embedded {
+      padding: 0;
+    }
+
+    // narrow: the inspector floats over the canvas (component layout)
+    @media (width <= 900px) {
+      &.mlcv-wb-panel-open .mlcv-shell {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .mlcv-wb-inspector {
+        border-inline-start: 1px solid var(--ig-border);
+        border-radius: 0 var(--ig-radius-lg, 12px) var(--ig-radius-lg, 12px) 0;
+        box-shadow: -8px 0 24px rgb(0 0 0 / 8%);
+      }
+
+      &.mlcv-wb-panel-open .mlcv-stage {
+        border-radius: var(--ig-radius-lg, 12px);
+      }
+    }
+
+    @media (width <= 700px) {
+      padding: 12px 12px 8px;
+
+      .mlcv-wb-title {
+        font-size: 16px;
+        line-height: 20px;
+      }
+
+      .mlcv-wb-meta {
+        font-size: 12px;
+      }
+
+      .mlcv-open,
+      .mlcv-wb-topic,
+      .mlcv-post {
+        padding: 0 10px;
+        font-size: 13px;
+      }
+
+      .mlcv-open {
+        width: 32px;
+        padding: 0;
+      }
+
+      .mlcv-tool {
+        width: 32px;
+        min-width: 32px;
+        height: 32px;
+      }
+    }
+  }
+}
+
+// Desktop shell: the page runs from the rail to the right edge instead of
+// starting at the centred content column.
+@media (width >= 768px) {
+  body.ig-cad-viewer.ig-desktop-shell.has-sidebar-page:not(
+      .admin-interface,
+      .moaclab-cad-viewer-embed
+    )
+    .moaclab-cad-viewer-page:has(.mlcv-workbench) {
+    left: $ig-cad-rail;
+  }
+}

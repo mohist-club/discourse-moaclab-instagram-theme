@@ -33,6 +33,7 @@ export default apiInitializer((api) => {
     "ig-auth-modal": settings.instagram_auth_modal,
     "ig-mobile-shell": settings.instagram_mobile_layout,
     "ig-custom-services": settings.instagram_custom_services,
+    "ig-cad-viewer": settings.instagram_cad_viewer,
   };
   const applyFlags = () => {
     const admin = isAdminPage();
