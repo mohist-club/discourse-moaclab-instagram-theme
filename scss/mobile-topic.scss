@@ -80,6 +80,16 @@
       padding-inline: 0;
     }
 
+    // core caps the posts at the screen minus its 10px gutters; the
+    // gutters are gone here, so posts span the screen
+    .container.posts {
+      grid-template-columns: minmax(0, 1fr) auto;
+
+      > .row {
+        max-width: 100%;
+      }
+    }
+
     // post styling for topics; conversations are styled as chat in
     // messages-chat.scss
     &:not(.archetype-private_message) {
