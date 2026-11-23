@@ -6,7 +6,7 @@ RSpec.describe "Instagram theme on phones", mobile: true do
   let!(:theme) { upload_theme }
 
   fab!(:user) { Fabricate(:user, username: "phoneuser", trust_level: TrustLevel[1]) }
-  fab!(:friend) { Fabricate(:user, username: "friend_with_a_rather_long_name") }
+  fab!(:friend) { Fabricate(:user, username: "keyboard_friend_99") }
   fab!(:parent) { Fabricate(:category, name: "Keyboards") }
   fab!(:studio) { Fabricate(:category, name: "Koi Lab Studio", parent_category: parent) }
   fab!(:upload) { Fabricate(:image_upload, width: 1080, height: 1350) }
