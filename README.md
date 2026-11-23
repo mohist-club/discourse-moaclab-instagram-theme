@@ -51,6 +51,7 @@ https://github.com/mohist-club/discourse-moaclab-instagram-theme.git
 | `instagram_right_sidebar` | 开 | 桌面端（≥1160px）右侧栏 |
 | `instagram_messages_dock` | 开 | 桌面端右下角消息浮窗 |
 | `instagram_suggested_categories` | `13` | 右栏「为你推荐」读取的父类别 ID |
+| `instagram_apps_categories` | `5\|9` | 左侧「社区与工具」菜单顶部的类别入口（活动、资源） |
 | `instagram_tools_section` | `服务` | 右栏「服务」模块读取的侧边栏分区 |
 | `instagram_qa_category` | `4` | 页脚「问答与求助」类别 ID |
 | `instagram_topic_style` | 开 | 帖子详情页的 Instagram 样式 |
