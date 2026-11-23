@@ -120,8 +120,8 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
       animation: ig-services-spin 8s linear infinite;
     }
 
-    // glyph: a keycap with sparkles, in the brand gradient with a
-    // light sweeping across it
+    // glyph when the site has no icon: a keycap with sparkles, in the
+    // brand gradient with a light sweeping across it
     &::after {
       width: 64px;
       height: 64px;
@@ -763,6 +763,36 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
   }
 }
 
+// with a site icon (logo_small): the icon fills the ring, and the light
+// sweeps across the whole picture
+body.ig-custom-services.ig-has-site-icon:not(.admin-interface)
+  .mlp-v2
+  .mlp-intro::after {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+        110deg,
+        transparent 35%,
+        rgb(255 255 255 / 45%) 50%,
+        transparent 65%
+      )
+      0 0 / 250% 100% no-repeat,
+    var(--ig-site-icon) center / 72% no-repeat;
+
+  // above the turning ring (its rotation paints it over plain boxes)
+  position: relative;
+  z-index: 1;
+  mask: none;
+  animation-name: ig-services-shine-icon;
+
+  @media (width < 768px) {
+    width: 63px;
+    height: 63px;
+  }
+}
+
 @keyframes ig-services-spin {
   to {
     rotate: 1turn;
@@ -781,6 +811,21 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
     background-position:
       -50% 0,
       0 0;
+  }
+}
+
+@keyframes ig-services-shine-icon {
+  0%,
+  35% {
+    background-position:
+      150% 0,
+      center;
+  }
+
+  100% {
+    background-position:
+      -50% 0,
+      center;
   }
 }
 
