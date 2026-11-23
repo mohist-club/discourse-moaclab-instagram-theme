@@ -38,7 +38,8 @@
     "ig-link": "assets/ig-link.svg",
     "ig-chevron": "assets/ig-chevron.svg",
     "ig-compose": "assets/ig-compose.svg",
-    "ig-refresh": "assets/ig-refresh.svg"
+    "ig-refresh": "assets/ig-refresh.svg",
+    "ig-customize": "assets/ig-customize.svg"
   },
   "name": "Moaclab Instagram",
   "theme_version": "1.33.0",

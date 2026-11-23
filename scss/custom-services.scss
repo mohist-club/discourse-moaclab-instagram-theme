@@ -87,7 +87,7 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
     align-items: start;
     padding: 30px 0 44px;
 
-    // the "avatar": a story ring (::before) with the create glyph
+    // the "avatar": a story ring (::before) with the customize glyph
     // (::after) on top, both in the first column
     &::before,
     &::after {
@@ -98,6 +98,7 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
       box-sizing: border-box;
     }
 
+    // ring: a conic story ring that turns slowly
     &::before {
       width: 150px;
       height: 150px;
@@ -105,15 +106,40 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
       border-radius: 50%;
       background:
         linear-gradient(var(--ig-field), var(--ig-field)) content-box,
-        var(--ig-story-ring) border-box;
+        conic-gradient(
+            #f7c50d,
+            #ffa40f,
+            #ea3748,
+            #d1099f,
+            #ca05be,
+            #4f5bd5,
+            #f7c50d
+          )
+          border-box;
       box-shadow: inset 0 0 0 4px var(--ig-page);
+      animation: ig-services-spin 8s linear infinite;
     }
 
+    // glyph: a keycap with sparkles, in the brand gradient with a
+    // light sweeping across it
     &::after {
-      width: 56px;
-      height: 56px;
-      background: var(--ig-ink);
-      mask: url($ig-create) center / contain no-repeat;
+      width: 64px;
+      height: 64px;
+      background:
+        linear-gradient(
+            110deg,
+            transparent 35%,
+            rgb(255 255 255 / 75%) 50%,
+            transparent 65%
+          )
+          0 0 / 250% 100% no-repeat,
+        var(--ig-story-ring);
+      mask: url($ig-customize) center / contain no-repeat;
+      animation: ig-services-shine 3.2s ease-in-out infinite;
+    }
+
+    &:hover::before {
+      animation-duration: 2.5s;
     }
 
     > div:first-child {
@@ -221,9 +247,9 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
     line-height: 18px;
   }
 
-  .mlp-text-link {
-    color: var(--ig-link);
-    font-size: 14px;
+  // "查看服务与登记": not shown on this layout
+  .mlp-heading .mlp-text-link {
+    display: none;
   }
 
   .mlp-context {
@@ -544,8 +570,8 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
       }
 
       &::after {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
       }
 
       > div:first-child {
@@ -621,10 +647,6 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
     .mlp-heading h2,
     .mlp-heading p {
       font-size: 14px;
-    }
-
-    .mlp-text-link {
-      font-size: 12px;
     }
 
     .mlp-context {
@@ -738,5 +760,33 @@ body.ig-custom-services:not(.admin-interface) .mlp-v2 {
       grid-row: 2;
       border-left: 0;
     }
+  }
+}
+
+@keyframes ig-services-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@keyframes ig-services-shine {
+  0%,
+  35% {
+    background-position:
+      150% 0,
+      0 0;
+  }
+
+  100% {
+    background-position:
+      -50% 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ig-custom-services .mlp-v2 .mlp-intro::before,
+  body.ig-custom-services .mlp-v2 .mlp-intro::after {
+    animation: none;
   }
 }
