@@ -427,11 +427,11 @@ function toolGroups(site) {
 
 // Category entries of the 社区与工具 menu: the IDs in
 // instagram_apps_categories (default empty). Empty: categories whose slug or
-// name is events / resources / 活动 / 资源. A configured ID the browser has
+// name is event(s) / resources / 活动 / 资源. A configured ID the browser has
 // not loaded yet (lazily loaded categories) is fetched once, when the rail
 // is built, so it is ready before the menu opens.
 const DEFAULT_APP_CATEGORY_KEYS = [
-  ["events", "activities", "活动"],
+  ["event", "events", "activities", "活动"],
   ["resources", "资源"],
 ];
 let appCategoriesPromise = null;
