@@ -38,6 +38,7 @@ body:not(.admin-interface) {
 @import "mobile-search";
 @import "mobile-preferences";
 @import "custom-services";
+@import "cad-viewer";
 
 html:not(:has(> body.admin-interface)) {
   background: var(--ig-page);
