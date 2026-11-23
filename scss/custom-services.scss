@@ -1,0 +1,742 @@
+// =========================================================
+// /custom-services as an Instagram profile
+// (instagram_custom_services → body.ig-custom-services).
+//
+// The page's markup and its own inline <style> come from another
+// component (.mlp-v2); only its look is changed here, so the
+// content, links, DLC filter and popovers keep working as they are.
+//   intro: profile header — story ring, title, bio, 32px buttons
+//          (QQ grey, Discord blue)
+//   anchors: the profile tab row, icon + label, sticky
+//   grids: 3 across, 4px apart, 4:5 tiles, caption under each
+//   DLC filter: Instagram chips
+//   contact: a bordered card
+//   details: the post pop-up — media left, text right, × on the
+//            dimmed page (one column on phones)
+// Selectors carry body.ig-custom-services so they outrank the
+// page's own `.mlp-v2 .x` rules.
+// =========================================================
+
+$ig-services-tabs: (
+  "mlp-works": $ig-grid,
+  "mlp-dlc": $ig-carousel,
+  "mlp-anodize": $ig-refresh,
+  "mlp-contact": $ig-messages,
+);
+
+body.ig-custom-services:not(.admin-interface) .mlp-v2 {
+  // the page's own palette, mapped to the theme's
+  --mlp-ink: var(--ig-ink);
+  --mlp-bg: var(--ig-page);
+  --mlp-muted: var(--ig-muted);
+  --mlp-line: var(--ig-border);
+  --mlp-soft: var(--ig-field);
+  --ig-services-tabs-top: var(--header-offset, 0px);
+  max-width: 935px;
+  padding-inline: 20px;
+  font-family: var(--ig-font);
+  font-size: 14px;
+  line-height: 18px;
+
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--ig-accent);
+    outline-offset: 2px;
+  }
+
+  // ---- buttons: Instagram's 32px profile buttons ----
+  .mlp-pill {
+    min-height: 32px;
+    padding: 7px 16px;
+    border: 0;
+    border-radius: var(--ig-radius);
+    background: var(--ig-btn-secondary);
+    color: var(--ig-ink);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+
+    &:hover {
+      background: var(--ig-btn-secondary-hover);
+    }
+  }
+
+  .mlp-dark,
+  .mlp-dark:hover {
+    background: var(--ig-btn-primary);
+    color: #fff;
+    opacity: 1;
+  }
+
+  .mlp-dark:hover {
+    filter: brightness(0.92);
+  }
+
+  .mlp-contact-links {
+    gap: 8px;
+  }
+
+  // ---- intro: the profile header ----
+  .mlp-intro {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 60px;
+    row-gap: 16px;
+    align-items: start;
+    padding: 30px 0 44px;
+
+    // the "avatar": a story ring (::before) with the create glyph
+    // (::after) on top, both in the first column
+    &::before,
+    &::after {
+      content: "";
+      grid-row: 1 / span 2;
+      grid-column: 1;
+      place-self: center;
+      box-sizing: border-box;
+    }
+
+    &::before {
+      width: 150px;
+      height: 150px;
+      padding: 7px;
+      border-radius: 50%;
+      background:
+        linear-gradient(var(--ig-field), var(--ig-field)) content-box,
+        var(--ig-story-ring) border-box;
+      box-shadow: inset 0 0 0 4px var(--ig-page);
+    }
+
+    &::after {
+      width: 56px;
+      height: 56px;
+      background: var(--ig-ink);
+      mask: url($ig-create) center / contain no-repeat;
+    }
+
+    > div:first-child {
+      grid-column: 2;
+      align-self: end;
+    }
+
+    .mlp-contact-links {
+      grid-column: 2;
+      align-self: start;
+    }
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 25px;
+  }
+
+  .mlp-intro p {
+    max-width: 46ch;
+    margin-top: 8px;
+    color: var(--ig-ink);
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  // ---- anchors: the profile tab row ----
+  .mlp-anchors {
+    top: var(--ig-services-tabs-top);
+    justify-content: center;
+    gap: 60px;
+    height: 53px;
+    border-top: 1px solid var(--ig-border);
+    border-bottom: 0;
+    background: var(--ig-page);
+
+    a {
+      gap: 6px;
+      margin-top: -1px;
+      border-top: 1px solid transparent;
+      border-bottom: 0;
+      color: var(--ig-muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+
+      &::before {
+        content: "";
+        flex: none;
+        width: 12px;
+        height: 12px;
+        background: currentcolor;
+        mask: center / contain no-repeat;
+      }
+
+      &:hover {
+        color: var(--ig-ink);
+      }
+    }
+
+    @each $id, $icon in $ig-services-tabs {
+      a[href="##{$id}"]::before {
+        mask-image: url($icon);
+      }
+    }
+  }
+
+  // active tab: the section in the URL, else the first one
+  &:not(:has(section:target)) .mlp-anchors a:first-child {
+    border-top-color: var(--ig-ink);
+    color: var(--ig-ink);
+    font-weight: 600;
+  }
+
+  @each $id, $icon in $ig-services-tabs {
+    &:has(##{$id}:target) .mlp-anchors a[href="##{$id}"] {
+      border-top-color: var(--ig-ink);
+      color: var(--ig-ink);
+      font-weight: 600;
+    }
+  }
+
+  // ---- sections ----
+  section {
+    padding: 28px 0 36px;
+    border-bottom: 0;
+    scroll-margin-top: calc(var(--ig-services-tabs-top) + 60px);
+  }
+
+  .mlp-heading {
+    align-items: flex-end;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .mlp-heading p {
+    margin-top: 2px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  .mlp-text-link {
+    color: var(--ig-link);
+    font-size: 14px;
+  }
+
+  .mlp-context {
+    margin: -8px 0 16px;
+    font-size: 14px;
+  }
+
+  .mlp-note {
+    margin-top: 16px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  // ---- grids: Instagram's profile grid with captions ----
+  .mlp-grid,
+  .mlp-works-grid,
+  .mlp-dlc-grid,
+  .mlp-anodize-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 4px;
+  }
+
+  .mlp-dlc-grid {
+    margin-top: 16px;
+  }
+
+  .mlp-card-button {
+    position: relative;
+  }
+
+  .mlp-card img,
+  .mlp-card .mlp-image-pending {
+    aspect-ratio: 4 / 5;
+    border: 0;
+    background: var(--ig-field);
+  }
+
+  // hover: Instagram's dimmed tile
+  .mlp-card-button::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    aspect-ratio: 4 / 5;
+    background: rgb(0 0 0 / 30%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+
+  .mlp-card-button:hover::after {
+    opacity: 1;
+  }
+
+  .mlp-card-button:hover img {
+    opacity: 1;
+  }
+
+  .mlp-image-pending {
+    flex-direction: column;
+    gap: 12px;
+    color: var(--ig-muted);
+    font-size: 12px;
+
+    &::before {
+      content: "";
+      width: 44px;
+      height: 44px;
+      background: currentcolor;
+      mask: url($ig-create) center / contain no-repeat;
+      opacity: 0.6;
+    }
+  }
+
+  .mlp-card-title {
+    margin-top: 8px;
+    padding-inline: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+  }
+
+  .mlp-card p,
+  .mlp-pending-link,
+  .mlp-topic-link {
+    margin-top: 2px;
+    padding-inline: 2px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .mlp-topic-link {
+    color: var(--ig-link);
+  }
+
+  // ---- DLC filter: chips ----
+  .mlp-filter > label {
+    min-width: 0;
+    margin-right: 8px;
+    padding-inline: 16px;
+    background: var(--ig-pill);
+  }
+
+  .mlp-filter > label:hover {
+    background: var(--ig-pill-hover);
+  }
+
+  .mlp-filter-input:checked + label {
+    background: var(--ig-ink);
+    color: var(--ig-page);
+  }
+
+  .mlp-filter-input:focus-visible + label {
+    outline: 2px solid var(--ig-accent);
+    outline-offset: 2px;
+  }
+
+  // ---- contact: a bordered card ----
+  .mlp-contact {
+    margin: 8px 0 40px;
+    padding: 24px;
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-lg);
+    background: var(--ig-card);
+
+    h2 {
+      margin-bottom: 8px;
+      font-size: 20px;
+      line-height: 25px;
+    }
+
+    h3 {
+      margin-bottom: 4px;
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 18px;
+    }
+  }
+
+  .mlp-contact-options {
+    gap: 24px;
+
+    > div + div {
+      padding-left: 24px;
+      border-left-color: var(--ig-border);
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      color: var(--ig-muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  // ---- detail: the post pop-up ----
+  .mlp-detail:popover-open {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 335px;
+    grid-auto-rows: min-content;
+  }
+
+  .mlp-detail {
+    width: min(1100px, calc(100% - 128px));
+    max-height: min(90dvh, 900px);
+    border: 0;
+    border-radius: var(--ig-radius);
+    background: var(--ig-modal);
+    color: var(--ig-ink);
+    box-shadow: none;
+
+    &::backdrop {
+      background: rgb(0 0 0 / 65%);
+    }
+
+    // media: left column, on black
+    > img,
+    > .mlp-image-pending,
+    > .mlp-jane-gallery {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      max-height: min(90dvh, 900px);
+      margin: 0;
+      background: #000;
+      object-fit: contain;
+    }
+
+    > .mlp-image-pending {
+      aspect-ratio: auto;
+      background: var(--ig-field);
+    }
+
+    > .mlp-jane-gallery {
+      align-content: start;
+      gap: 4px;
+      padding: 0;
+      overflow: auto;
+
+      img {
+        max-height: none;
+        background: #000;
+      }
+    }
+  }
+
+  // × on the dimmed page, top right, as on instagram.com
+  .mlp-close,
+  .mlp-close:hover {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    font-size: 0;
+
+    &::before {
+      content: "";
+      width: 24px;
+      height: 24px;
+      background: currentcolor;
+      mask: url($ig-close) center / contain no-repeat;
+    }
+  }
+
+  .mlp-detail-copy {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 16px;
+    border-left: 1px solid var(--ig-modal-border);
+
+    // kind, as the caption's header line
+    > p:first-child {
+      margin: 0;
+      color: var(--ig-muted);
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    h2 {
+      margin: 4px 0 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--ig-modal-border);
+      font-size: 16px;
+      line-height: 20px;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--ig-ink);
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    .mlp-contact-links {
+      flex-direction: column;
+
+      .mlp-pill {
+        width: 100%;
+      }
+    }
+  }
+
+  // detail with nothing on the left (text only): one column
+  .mlp-detail:not(:has(> img, > .mlp-image-pending, > .mlp-jane-gallery)) {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(400px, calc(100% - 32px));
+
+    .mlp-detail-copy {
+      grid-column: 1;
+      border-left: 0;
+    }
+  }
+}
+
+// desktop with the top header hidden: tabs stick to the very top
+@media (width >= 768px) {
+  body.ig-custom-services.ig-hide-header.ig-desktop-shell.has-sidebar-page:not(
+      .admin-interface
+    )
+    .mlp-v2 {
+    --ig-services-tabs-top: 0px;
+  }
+}
+
+// ---- phones and narrow windows ----
+@media (width < 768px) {
+  body.ig-custom-services:not(.admin-interface) .mlp-v2 {
+    padding-inline: 0;
+
+    .mlp-intro {
+      grid-template-columns: 77px minmax(0, 1fr);
+      column-gap: 28px;
+      row-gap: 12px;
+      padding: 16px 16px 20px;
+
+      &::before,
+      &::after {
+        grid-row: 1;
+      }
+
+      &::before {
+        width: 77px;
+        height: 77px;
+        padding: 4px;
+        box-shadow: inset 0 0 0 3px var(--ig-page);
+      }
+
+      &::after {
+        width: 30px;
+        height: 30px;
+      }
+
+      > div:first-child {
+        align-self: center;
+      }
+
+      .mlp-contact-links {
+        grid-column: 1 / -1;
+        flex-wrap: nowrap;
+
+        .mlp-pill {
+          flex: 1 1 0;
+          min-width: 0;
+          padding-inline: 8px;
+        }
+      }
+    }
+
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 20px;
+    }
+
+    .mlp-intro p {
+      max-width: none;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+
+    .mlp-anchors {
+      justify-content: space-around;
+      gap: 0;
+      height: 44px;
+
+      a {
+        flex: 1 1 0;
+        justify-content: center;
+        font-size: 12px;
+        letter-spacing: 0;
+
+        &::before {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+
+    section {
+      padding: 20px 0 28px;
+      scroll-margin-top: calc(var(--ig-services-tabs-top) + 48px);
+    }
+
+    .mlp-heading,
+    .mlp-context,
+    .mlp-note {
+      margin-inline: 16px;
+    }
+
+    // chips inset like the text, grid edge to edge
+    .mlp-filter {
+      padding-inline: 16px;
+    }
+
+    .mlp-dlc-grid {
+      margin-inline: -16px;
+    }
+
+    .mlp-heading {
+      margin-bottom: 12px;
+    }
+
+    .mlp-heading h2,
+    .mlp-heading p {
+      font-size: 14px;
+    }
+
+    .mlp-text-link {
+      font-size: 12px;
+    }
+
+    .mlp-context {
+      margin-top: -4px;
+      font-size: 12px;
+    }
+
+    .mlp-filter {
+      > label {
+        min-width: 0;
+        margin-right: 6px;
+        padding-inline: 14px;
+        font-size: 13px;
+      }
+    }
+
+    .mlp-grid,
+    .mlp-works-grid,
+    .mlp-dlc-grid,
+    .mlp-anodize-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px 2px;
+    }
+
+    .mlp-anodize-grid {
+      .mlp-card p,
+      .mlp-topic-link {
+        display: none;
+      }
+    }
+
+    .mlp-card img,
+    .mlp-card .mlp-image-pending {
+      aspect-ratio: 3 / 4;
+    }
+
+    .mlp-card-button::after {
+      aspect-ratio: 3 / 4;
+    }
+
+    .mlp-card-title {
+      margin-top: 6px;
+      padding-inline: 6px;
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .mlp-card p,
+    .mlp-pending-link,
+    .mlp-topic-link {
+      padding-inline: 6px;
+      font-size: 11px;
+      line-height: 14px;
+    }
+
+    .mlp-contact {
+      margin: 8px 16px 32px;
+      padding: 20px 16px;
+      gap: 20px;
+
+      h2 {
+        font-size: 16px;
+        line-height: 20px;
+      }
+    }
+
+    .mlp-contact-options {
+      gap: 16px;
+      width: 100%;
+
+      > div {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      > div + div {
+        padding-left: 16px;
+      }
+
+      .mlp-pill {
+        width: 100%;
+        padding-inline: 8px;
+      }
+    }
+
+    // pop-up: one column, media on top
+    .mlp-detail:popover-open {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mlp-detail {
+      width: calc(100% - 24px);
+      max-height: calc(100dvh - 128px);
+
+      > img,
+      > .mlp-image-pending,
+      > .mlp-jane-gallery {
+        grid-row: 1;
+        height: auto;
+        min-height: 0;
+        max-height: 50dvh;
+      }
+
+      > .mlp-image-pending {
+        aspect-ratio: 4 / 3;
+      }
+    }
+
+    .mlp-detail-copy {
+      grid-column: 1;
+      grid-row: 2;
+      border-left: 0;
+    }
+  }
+}
