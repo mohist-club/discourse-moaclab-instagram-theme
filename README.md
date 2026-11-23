@@ -65,6 +65,7 @@ https://github.com/mohist-club/discourse-moaclab-instagram-theme.git
 | `mobile_bottom_nav` | 开 | 手机端底部标签栏 |
 | `instagram_mobile_layout` | 开 | 手机端 Instagram 顶栏与各页面排版 |
 | `instagram_custom_services` | 开 | /custom-services 页使用主题样式 |
+| `instagram_cad_viewer` | 开 | /viewer 模型预览页使用主题样式 |
 
 ## 结构
 
