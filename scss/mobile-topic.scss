@@ -191,6 +191,12 @@
           color: var(--ig-muted);
           font-size: 12px;
         }
+
+        // core's unread dot sits past the post's right edge (off screen
+        // once posts span the screen); Instagram has none
+        .read-state {
+          display: none;
+        }
       }
 
       .topic-post .cooked {

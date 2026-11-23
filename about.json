@@ -42,7 +42,7 @@
     "ig-customize": "assets/ig-customize.svg"
   },
   "name": "Moaclab Instagram",
-  "theme_version": "1.36.0",
+  "theme_version": "1.37.0",
   "modifiers": {
     "serialize_topic_excerpts": true,
     "serialize_topic_op_likes_data": true,
