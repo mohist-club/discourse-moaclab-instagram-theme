@@ -1,5 +1,29 @@
 // Shared mixins for the Instagram theme.
 
+// Hides a block of Discourse's list controls but keeps the page's <h1>
+// inside it (core's screen-reader-only topic-list heading): search engines
+// and screen readers still get the heading, nobody can tab into the hidden
+// controls (visibility: hidden removes them from focus)
+@mixin ig-hide-keep-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  * {
+    visibility: hidden;
+  }
+
+  #topic-list-heading {
+    visibility: visible;
+  }
+}
+
 @mixin ig-card {
   box-sizing: border-box;
   background: var(--ig-card);

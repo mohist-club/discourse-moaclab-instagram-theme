@@ -8,9 +8,12 @@
 // Markup: components/ig-explore-search.gjs
 // =========================================================
 body.ig-explore-search-page #main-outlet {
-  .category-heading,
-  .list-controls {
+  .category-heading {
     display: none;
+  }
+
+  .list-controls {
+    @include ig-hide-keep-heading;
   }
 }
 

@@ -283,7 +283,7 @@
     // category breadcrumbs (their own header replaces them)
     &.navigation-topics .list-controls,
     &:is(.ig-studio-page, .ig-explore-search-page) .list-controls {
-      display: none;
+      @include ig-hide-keep-heading;
     }
 
     // no "Powered by Discourse" footer in the app

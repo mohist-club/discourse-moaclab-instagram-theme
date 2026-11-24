@@ -105,8 +105,21 @@ export default class Item extends Component {
     return topics ? topics.indexOf(this.topic) : -1;
   }
 
+  // Explore's grid shows about two rows at once (its large tile is the
+  // third); known from the category, since the grid's body class is set
+  // only after the cards render
+  get inExploreGrid() {
+    const id = parseInt(settings.instagram_explore_category, 10);
+    const category = this.discovery?.category;
+    return (
+      !!settings.card_feed &&
+      id > 0 &&
+      (category?.id === id || category?.parent_category_id === id)
+    );
+  }
+
   get eagerMedia() {
-    const onScreen = document.body.classList.contains("ig-explore") ? 6 : 2;
+    const onScreen = this.inExploreGrid ? 6 : 2;
     return this.listPosition >= 0 && this.listPosition < onScreen;
   }
 

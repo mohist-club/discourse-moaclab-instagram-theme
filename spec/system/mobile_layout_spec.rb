@@ -5,7 +5,7 @@
 # screenshot to the CI log (IGREPORT / IGSHOT lines) for visual review.
 RSpec.describe "Instagram theme on phones", mobile: true do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
-  fab!(:theme) { upload_theme }
+  fab!(:theme) { upload_theme(set_theme_as_default: false) }
 
   fab!(:user) { Fabricate(:user, username: "phoneuser", trust_level: TrustLevel[1]) }
   fab!(:friend) { Fabricate(:user, username: "keyboard_friend_99", trust_level: TrustLevel[2]) }
@@ -39,6 +39,8 @@ RSpec.describe "Instagram theme on phones", mobile: true do
   fab!(:pm) { Fabricate(:private_message_post, user: friend, recipient: user).topic }
 
   before do
+    # site settings are reset for every example: make it the default here
+    theme.set_default!
     theme.update_setting(:instagram_explore_category, parent.id.to_s)
     theme.update_setting(:instagram_suggested_categories, parent.id.to_s)
     theme.save!
