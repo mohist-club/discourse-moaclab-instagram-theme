@@ -24,7 +24,7 @@ https://github.com/mohist-club/discourse-moaclab-instagram-theme.git
 ## 功能概览
 
 - **信息流**：话题列表渲染为 Instagram 帖子卡片，首帖多图轮播（接近视口才加载），原生点赞 / 收藏，双击图片点赞；加载更多失败会自动重试。
-- **桌面端外壳**：左侧导航竖栏（由原生侧边栏改造，含「更多」菜单和「服务」分区）、首页 Stories 横条、≥1160px 的右侧栏、右下角消息浮窗。
+- **桌面端外壳**：左侧导航竖栏（由原生侧边栏改造，含「更多」菜单和「服务」分区）、首页快拍横条（最近有更新的工作室，7～10 个）、≥1160px 的右侧栏（推荐用户）、右下角消息浮窗。
 - **探索**：指定类别显示为 Instagram 探索网格，悬停显示标题，顶部为 Instagram 搜索（原生搜索与搜索历史）。
 - **工作室主页**：键盘 / 键帽下的二级类别显示为 Instagram 主页头（封面背景图、精选、关注 = 类别通知）。
 - **工作室页**：左栏「工作室」（代替「搜索」）打开键盘 / 键帽的子类别页，按 Instagram 博客版式排列：大标题、三个精选，其余为方形卡片（最新帖子图片、#帖子数 / #已关注 标签、更新时间），悬停卡片衬米白底板。/categories 保持 Discourse 原生。
@@ -45,12 +45,12 @@ https://github.com/mohist-club/discourse-moaclab-instagram-theme.git
 | `brand_gradient_buttons` | 关 | 主按钮用渐变（关=经典蓝） |
 | `accent_color` | `#0095f6` | 强调色/链接色 |
 | `instagram_desktop_shell` | 开 | 桌面端左侧导航竖栏 |
-| `instagram_stories` | 开 | 首页 Stories 横条 |
+| `instagram_stories` | 开 | 首页快拍横条：最近有更新的工作室，点击进入工作室主页 |
 | `instagram_clean_feed` | 开 | 桌面端隐藏欢迎横幅、搜索框和列表筛选 |
 | `instagram_hide_header` | 开 | 桌面端隐藏 Discourse 顶部头部 |
-| `instagram_right_sidebar` | 开 | 桌面端（≥1160px）右侧栏 |
+| `instagram_right_sidebar` | 开 | 桌面端（≥1160px）右侧栏，「为你推荐」为最近活跃的用户 |
 | `instagram_messages_dock` | 开 | 桌面端右下角消息浮窗 |
-| `instagram_suggested_categories` | `13` | 右栏「为你推荐」读取的父类别 ID |
+| `instagram_suggested_categories` | `13` | 工作室的父类别 ID（首页快拍、工作室页） |
 | `instagram_apps_categories` | `5\|9` | 左侧「社区与工具」菜单顶部的类别入口（活动、资源） |
 | `instagram_tools_section` | `服务` | 右栏「服务」模块读取的侧边栏分区 |
 | `instagram_qa_category` | `4` | 页脚「问答与求助」类别 ID |
@@ -103,6 +103,6 @@ pnpm lint
 
 系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行。
 
-当前版本：1.41.0（`about.json` 的 `theme_version`）。
+当前版本：1.42.0（`about.json` 的 `theme_version`）。
 
 最低 Discourse 版本随官方 CI 的 `.discourse-compatibility` 跟踪。

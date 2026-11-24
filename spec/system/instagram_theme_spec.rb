@@ -98,4 +98,46 @@ RSpec.describe "Instagram theme" do
       expect(page).to have_no_css(".ig-sp")
     end
   end
+
+  describe "home stories tray" do
+    fab!(:parent) { Fabricate(:category, name: "Keyboards") }
+    fab!(:studios) { Fabricate.times(12, :category, parent_category: parent) }
+    fab!(:studio_topics) do
+      studios
+        .first(3)
+        .each_with_index
+        .map do |studio, i|
+          Fabricate(:topic, category: studio, bumped_at: (i + 1).days.ago).tap do |topic|
+            Fabricate(:post, topic: topic)
+          end
+        end
+    end
+
+    before do
+      update_setting(:instagram_suggested_categories, parent.id.to_s)
+      # topic counts and featured topics are kept by background jobs
+      Category.update_stats
+      CategoryFeaturedTopic.feature_topics
+    end
+
+    it "shows the studios updated most recently, topped up to seven, each opening its page" do
+      visit("/")
+
+      expect(page).to have_css(".ig-stories a.ig-story--studio", count: 7)
+      first_ring = find(".ig-stories a.ig-story--studio", match: :first)
+      expect(first_ring[:href]).to end_with(studios.first.url)
+      studios.first(3).each do |studio|
+        expect(page).to have_css(".ig-stories a.ig-story[href$='#{studio.url}']")
+      end
+    end
+  end
+
+  describe "right column" do
+    it "suggests people, each linking to their profile" do
+      visit("/latest")
+
+      expect(page).to have_css(".ig-right__sugg a.ig-right__user[href^='/u/']")
+      expect(page).to have_no_css(".ig-right__sugg .ig-right__follow")
+    end
+  end
 end

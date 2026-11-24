@@ -127,15 +127,6 @@
     cursor: default;
     opacity: 0.5;
   }
-
-  // Instagram: once followed the action reads "Following" in ink
-  &.is-following {
-    color: var(--ig-ink);
-
-    &:hover {
-      color: var(--ig-muted);
-    }
-  }
 }
 
 .ig-right__sugg {
@@ -181,20 +172,6 @@
 .ig-right__copy {
   margin: 18px 0 0;
   text-transform: uppercase;
-}
-
-// studios without a logo: first letter on the category colour
-.ig-right__letter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
 }
 
 // ---- "换一批" refresh, next to "See all" ----
