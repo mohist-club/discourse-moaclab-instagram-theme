@@ -149,7 +149,7 @@ RSpec.describe "Instagram theme in Lighthouse",
       "--only-categories=performance,accessibility,best-practices,seo",
       # Discourse's message bus keeps a long-poll request open, so the
       # network never goes quiet: cap the wait (the CI allows 45s a test)
-      "--max-wait-for-load=8000",
+      "--max-wait-for-load=12000",
       # screenshots, and audits that read every byte of the scripts and
       # styles: slow on the test build (16MB, uncompressed, unminified) and
       # only about that build, not the site
@@ -180,7 +180,7 @@ RSpec.describe "Instagram theme in Lighthouse",
       Process.wait(pid)
     end
     unless $?&.success? && File.exist?(out)
-      tail = File.exist?(log) ? File.readlines(log).last(8).join.to_s[-1500..] || "" : ""
+      tail = File.exist?(log) ? File.read(log).then { |text| text[-1500..] || text } : ""
       elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started).round
       puts "IGLH #{label} #{{ error: "lighthouse failed (#{$?.inspect})", budget: budget.round, elapsed:, log: tail }.to_json}"
       return
