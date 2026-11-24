@@ -1,8 +1,5 @@
-import { apiInitializer } from "discourse/lib/api";
 import { ajax } from "discourse/lib/ajax";
-import { popupAjaxError } from "discourse/lib/ajax-error";
-import { NotificationLevels } from "discourse/lib/notification-levels";
-import DiscourseURL from "discourse/lib/url";
+import { apiInitializer } from "discourse/lib/api";
 import Category from "discourse/models/category";
 import { i18n } from "discourse-i18n";
 import { isStudiosPath, studiosPath } from "../lib/ig-studios";
@@ -781,19 +778,18 @@ function loadLatest() {
   return latestPromise;
 }
 
-// ---- Stories: the people active most recently (Instagram's tray) ----
-// Newest activity first, one ring per person (not you, not system accounts):
-//  1. authors of Discourse's latest public posts;
-//  2. everyone taking part in the latest topics;
-//  3. topped up from the user directory (most days visited this week, then
-//     this month, this year, all time) until the tray holds STORY_MAX.
-// A ring opens that person's newest post or topic (directory people: their
-// profile); opened rings turn grey like Instagram's "seen" (remembered only
-// in this browser) and light up again when that person has something newer.
-const STORY_MAX = 20;
+// ---- Stories: the studios updated most recently (Instagram's tray) ----
+// One ring per studio (a subcategory of the categories in
+// instagram_suggested_categories), newest update first: the time of its
+// newest topic, from one request for the parents' category lists (each
+// studio comes with its latest topics). At least STORY_MIN rings — studios
+// without posts top the tray up, most posts first — and at most STORY_MAX.
+// A ring opens the studio's page; opened rings turn grey like Instagram's
+// "seen" (remembered only in this browser) and light up again when the
+// studio has something newer.
+const STORY_MIN = 7;
+const STORY_MAX = 10;
 const SEEN_KEY = "ig-stories-seen";
-// "yearly" / "all" are the directory's most expensive queries: stop before
-const DIRECTORY_PERIODS = ["weekly", "monthly"];
 
 function ensureStories(api) {
   const existing = document.querySelector(".ig-stories");
@@ -832,6 +828,7 @@ function ensureStories(api) {
 
   list.parentElement.insertBefore(tray, list);
 
+  const site = api.container.lookup("service:site");
   const me = api.getCurrentUser()?.username || null;
   let shown = "";
 
@@ -866,16 +863,19 @@ function ensureStories(api) {
   } else {
     track.replaceChildren(...storySkeleton());
   }
-  if (cached?.complete && Date.now() - cached.at < FEED_TTL) {
+  if (cached && Date.now() - cached.at < STUDIOS_TTL) {
     return;
   }
 
-  // 2. then fresh data, drawn as soon as each part arrives
-  loadStoryItems(api, me, render)
+  // 2. then fresh data
+  loadStudioStories(site)
     .then((items) => {
-      if (!items.length && tray.isConnected) {
+      if (!items.length) {
         tray.remove();
+        return;
       }
+      render(items);
+      writeStoryCache(me, items);
     })
     .catch(() => {
       if (!shown) {
@@ -886,8 +886,10 @@ function ensureStories(api) {
 
 // This tab's last tray (sessionStorage), shown instantly on the next page
 // load while fresh data is fetched; per user, 30 minutes at most.
-const STORY_CACHE_KEY = "ig-stories-cache";
+const STORY_CACHE_KEY = "ig-stories-studios";
 const STORY_CACHE_MAX_AGE = 30 * 60 * 1000;
+// the studio lists are re-read after this long
+const STUDIOS_TTL = 10 * 60 * 1000;
 
 function readStoryCache(me) {
   try {
@@ -905,11 +907,11 @@ function readStoryCache(me) {
   return null;
 }
 
-function writeStoryCache(me, items, complete) {
+function writeStoryCache(me, items) {
   try {
     sessionStorage.setItem(
       STORY_CACHE_KEY,
-      JSON.stringify({ at: Date.now(), user: me, items, complete })
+      JSON.stringify({ at: Date.now(), user: me, items })
     );
   } catch {
     // storage full or blocked: the tray just loads normally next time
@@ -927,12 +929,70 @@ function storySkeleton() {
   });
 }
 
-// Collects people, newest activity first, one entry per person.
-function storyCollector(me) {
+async function loadStudioStories(site) {
+  const parents = await suggestedParents(site);
+  const lists = await Promise.all(
+    parents.map(async (parent) => {
+      try {
+        // include_topics: each studio's latest topics, whatever the site's
+        // category page style
+        const result = await ajax("/categories.json", {
+          data: { parent_category_id: parent.id, include_topics: true },
+        });
+        return (result?.category_list?.categories || [])
+          .filter((c) => c.parent_category_id === parent.id)
+          .map((category) => ({ category, parent }));
+      } catch {
+        return [];
+      }
+    })
+  );
+
+  const studios = lists.flat().map(({ category: c, parent }) => {
+    const times = (c.topics || [])
+      .map((topic) =>
+        Date.parse(topic.bumped_at || topic.last_posted_at || topic.created_at)
+      )
+      .filter((time) => !isNaN(time));
+    const updated = times.length ? Math.max(...times) : 0;
+    return {
+      href: categoryUrl(c, parent),
+      label: c.name || "",
+      imageUrl: c.uploaded_logo?.url || c.uploaded_logo_dark?.url || null,
+      color: c.color || "8e8e8e",
+      updated,
+      topics: c.topic_count || 0,
+      // seen until the studio has something newer
+      postId: `c${c.id}-${updated}`,
+    };
+  });
+
+  const updated = studios
+    .filter((s) => s.updated)
+    .sort((a, b) => b.updated - a.updated);
+  const quiet = studios
+    .filter((s) => !s.updated)
+    .sort((a, b) => b.topics - a.topics);
+  const count = Math.min(STORY_MAX, Math.max(STORY_MIN, updated.length));
+  return [...updated, ...quiet].slice(0, count);
+}
+
+// ---- people active most recently (the right column's suggestions) ----
+// Newest activity first, one entry per person (not you, not system
+// accounts):
+//  1. everyone taking part in the page's topics (or /latest.json);
+//  2. authors of Discourse's latest public posts;
+//  3. topped up from the user directory (most days visited this week, then
+//     this month) until PEOPLE_MAX.
+const PEOPLE_MAX = 20;
+// "yearly" / "all" are the directory's most expensive queries: stop before
+const DIRECTORY_PERIODS = ["weekly", "monthly"];
+
+function peopleCollector(me) {
   const people = new Map();
   // `when` is the activity time; directory people have none (0) and keep
   // the directory's order after everyone with a known time
-  const consider = (username, userId, when, href, avatarTemplate, postId) => {
+  const consider = (username, userId, when, avatarTemplate) => {
     if (!username || username === me || !(userId > 0) || !avatarTemplate) {
       return;
     }
@@ -941,16 +1001,14 @@ function storyCollector(me) {
       return;
     }
     people.set(username, {
-      label: username,
+      username,
       when,
-      href,
-      postId,
-      imageUrl: avatarTemplate.replace("{size}", "144"),
+      imageUrl: avatarTemplate.replace("{size}", "96"),
     });
   };
   // stable sort: people with the same time keep their directory order
   const items = () =>
-    [...people.values()].sort((x, y) => y.when - x.when).slice(0, STORY_MAX);
+    [...people.values()].sort((x, y) => y.when - x.when).slice(0, PEOPLE_MAX);
   return { people, consider, items };
 }
 
@@ -963,9 +1021,7 @@ function addPosts(collector, posts) {
       post.username,
       post.user_id,
       Date.parse(post.created_at) || 1,
-      `/t/${post.topic_slug}/${post.topic_id}/${post.post_number}`,
-      post.avatar_template,
-      `p${post.id}`
+      post.avatar_template
     );
   }
 }
@@ -976,43 +1032,30 @@ function addTopics(collector, topics, usersById) {
   for (const topic of topics || []) {
     const bumped = Date.parse(topic.bumped_at || topic.last_posted_at) || 1;
     const created = Date.parse(topic.created_at) || 1;
-    (topic.posters || []).forEach((poster, index) => {
+    for (const poster of topic.posters || []) {
       const user = poster.user || usersById?.get(poster.user_id);
       if (!user) {
-        return;
+        continue;
       }
       const isLast =
         /latest/.test(poster.extras || "") ||
         user.username === topic.last_poster_username;
-      if (isLast) {
-        collector.consider(
-          user.username,
-          user.id,
-          bumped,
-          `/t/${topic.slug}/${topic.id}/last`,
-          user.avatar_template,
-          `t${topic.id}-${topic.highest_post_number}`
-        );
-      } else {
-        // the original poster (first) or a frequent / recent replier: the
-        // exact time is unknown, but they were active since it was created
-        collector.consider(
-          user.username,
-          user.id,
-          created,
-          `/t/${topic.slug}/${topic.id}`,
-          user.avatar_template,
-          index === 0 ? `t${topic.id}-op` : `t${topic.id}-u${user.id}`
-        );
-      }
-    });
+      // the last poster at the topic's last activity; the others (original
+      // poster, frequent repliers) at least since it was created
+      collector.consider(
+        user.username,
+        user.id,
+        isLast ? bumped : created,
+        user.avatar_template
+      );
+    }
   }
 }
 
-async function loadStoryItems(api, me, onUpdate) {
-  const collector = storyCollector(me);
+async function loadPeople(api, me) {
+  const collector = peopleCollector(me);
 
-  // the home page's own topic list, already in memory: no second request
+  // the page's own topic list, already in memory: no second request
   const pageList = api.container.lookup("service:session")?.topicList;
   const pageTopics = pageList?.topics?.length ? pageList.topics : null;
   if (pageTopics) {
@@ -1020,8 +1063,8 @@ async function loadStoryItems(api, me, onUpdate) {
   }
 
   // the latest posts (a large payload: every post's HTML) only when the
-  // page's topics don't already fill the tray
-  const needPosts = collector.people.size < STORY_MAX;
+  // page's topics don't already give enough people
+  const needPosts = collector.people.size < PEOPLE_MAX;
   const [posts, latest] = await Promise.all([
     needPosts ? ajax("/posts.json").catch(() => null) : null,
     pageTopics ? null : loadLatest(),
@@ -1035,13 +1078,8 @@ async function loadStoryItems(api, me, onUpdate) {
     );
   }
 
-  let items = collector.items();
-  onUpdate(items);
-  writeStoryCache(me, items, items.length >= STORY_MAX);
-
-  // top up from the user directory in the background, appended at the end
   for (const period of DIRECTORY_PERIODS) {
-    if (collector.people.size >= STORY_MAX) {
+    if (collector.people.size >= PEOPLE_MAX) {
       break;
     }
     let result = null;
@@ -1055,22 +1093,11 @@ async function loadStoryItems(api, me, onUpdate) {
     for (const item of result?.directory_items || []) {
       const user = item.user;
       if (user && !collector.people.has(user.username)) {
-        collector.consider(
-          user.username,
-          user.id,
-          0,
-          `/u/${user.username}/activity`,
-          user.avatar_template,
-          `u-${user.username}`
-        );
+        collector.consider(user.username, user.id, 0, user.avatar_template);
       }
     }
-    items = collector.items();
-    onUpdate(items);
   }
-
-  writeStoryCache(me, items, true);
-  return items;
+  return collector.items();
 }
 
 function readSeen() {
@@ -1102,9 +1129,9 @@ function storyNav(direction, sign, track) {
   return btn;
 }
 
-function storyNode({ href, label, imageUrl, postId, seen }, index = 0) {
+function storyNode({ href, label, imageUrl, color, postId, seen }, index = 0) {
   const a = document.createElement("a");
-  a.className = `ig-story${seen ? " is-seen" : ""}`;
+  a.className = `ig-story ig-story--studio${seen ? " is-seen" : ""}`;
   a.href = href;
   a.addEventListener("click", () => {
     markSeen(postId);
@@ -1129,6 +1156,9 @@ function storyNode({ href, label, imageUrl, postId, seen }, index = 0) {
     img.alt = "";
     av.append(img);
   } else {
+    // no logo: the studio's first letter on its colour
+    av.classList.add("is-letter");
+    av.style.backgroundColor = `#${String(color || "8e8e8e").replace(/[^0-9a-f]/gi, "")}`;
     av.textContent = (label || "·").trim().charAt(0);
   }
 
@@ -1177,7 +1207,7 @@ function ensureRightSidebar(api, siteSettings) {
     aside.append(meBlock(user));
   }
 
-  // 2. suggested studios
+  // 2. suggested people
   const sugg = document.createElement("section");
   sugg.className = "ig-right__sugg";
   sugg.innerHTML = `
@@ -1221,24 +1251,11 @@ function ensureRightSidebar(api, siteSettings) {
 
   wrap.append(aside);
 
-  const listEl = sugg.querySelector(".ig-right__list");
-  suggestedParents(site).then((parents) => {
-    if (!listEl.isConnected) {
-      return;
-    }
-    if (!parents.length) {
-      fillSuggestions(listEl);
-      return;
-    }
-    fillStudios(
-      listEl,
-      parents,
-      site,
-      user,
-      sugg.querySelector(".ig-right__refresh"),
-      api.container.lookup("service:session")?.topicList?.topics
-    );
-  });
+  fillPeople(
+    sugg.querySelector(".ig-right__list"),
+    api,
+    sugg.querySelector(".ig-right__refresh")
+  );
 }
 
 // the 问答与求助 category (instagram_qa_category, default 4 = /c/faq/4):
@@ -1317,14 +1334,13 @@ function toolsBlock() {
   return block;
 }
 
-// "Suggested for you" = the studios: subcategories of the keyboard / keycap
-// categories. Parents are the category IDs in instagram_suggested_categories
-// (default 13 = /c/keyboards/13). With the setting empty, top-level
-// categories are matched by slug or name instead; with none, active users.
+// The studios: subcategories of the keyboard / keycap categories (the home
+// page's stories tray). Parents are the category IDs in
+// instagram_suggested_categories (default 13 = /c/keyboards/13). With the
+// setting empty, top-level categories are matched by slug or name instead.
 // A configured ID is resolved even when the browser has not loaded that
 // category yet (sites with lazily loaded categories).
 const DEFAULT_PARENT_KEYS = ["keyboards", "keycaps", "键盘", "键帽库", "键帽"];
-const STUDIO_MAX = 5;
 let parentsPromise = null;
 
 function suggestedParents(site) {
@@ -1385,236 +1401,71 @@ function shuffled(list) {
   return out;
 }
 
-// subcategories of the suggested parents, kept for STUDIOS_TTL: the right
-// column is rebuilt on every return to a feed page
-const STUDIOS_TTL = 10 * 60 * 1000;
-let studiosCache = null;
+// "Suggested for you": people active most recently (loadPeople), five at a
+// time; "换一批" shows others from the same list. Kept for FEED_TTL: the
+// right column is rebuilt on every return to a feed page.
+const PEOPLE_SHOWN = 5;
+let peopleCache = null;
 
-function loadStudios(parents, site) {
-  const key = parents.map((p) => p.id).join("|");
-  if (studiosCache?.key === key && Date.now() - studiosCache.at < STUDIOS_TTL) {
-    return studiosCache.promise;
+async function fillPeople(listEl, api, refreshBtn) {
+  const me = api.getCurrentUser()?.username || null;
+  if (
+    !peopleCache ||
+    peopleCache.user !== me ||
+    Date.now() - peopleCache.at > FEED_TTL
+  ) {
+    peopleCache = {
+      user: me,
+      at: Date.now(),
+      promise: loadPeople(api, me).catch(() => []),
+    };
   }
-  const loaded = (parent) =>
-    (site?.categories || []).filter((c) => c.parent_category_id === parent.id);
-  const promise = Promise.all(
-    parents.map(async (parent) => {
-      // every category is in the browser already unless the site loads
-      // categories lazily; then ask for the parent's full list
-      let subs = site?.lazy_load_categories ? [] : loaded(parent);
-      if (!subs.length) {
-        try {
-          const result = await ajax("/categories.json", {
-            data: { parent_category_id: parent.id },
-          });
-          subs = (result?.category_list?.categories || []).filter(
-            (c) => c.id !== parent.id
-          );
-        } catch {
-          subs = loaded(parent);
-        }
-      }
-      return subs.map((category) => ({ category, parent }));
-    })
-  ).then((lists) => lists.flat());
-  studiosCache = { key, at: Date.now(), promise };
-  return promise;
-}
-
-async function fillStudios(
-  listEl,
-  parents,
-  site,
-  user,
-  refreshBtn,
-  pageTopics
-) {
-  const studios = await loadStudios(parents, site);
-
-  // newest activity first: when a studio last appeared in the latest
-  // topics — the page's own list when it has one, no second request
-  const pageList = pageTopics?.length ? pageTopics : null;
-  const latest = pageList ? null : await loadLatest();
-  const lastActive = new Map();
-  for (const topic of pageList || latest?.topic_list?.topics || []) {
-    const when = Date.parse(topic.bumped_at || topic.last_posted_at) || 0;
-    if (when > (lastActive.get(topic.category_id) || 0)) {
-      lastActive.set(topic.category_id, when);
-    }
-  }
+  const people = await peopleCache.promise;
 
   if (!listEl.isConnected) {
     return;
   }
-  if (!studios.length) {
+  if (!people.length) {
     listEl.closest(".ig-right__sugg")?.remove();
     return;
   }
 
-  const active = studios
-    .filter((s) => lastActive.has(s.category.id))
-    .sort(
-      (x, y) => lastActive.get(y.category.id) - lastActive.get(x.category.id)
-    );
-  const quiet = shuffled(studios.filter((s) => !lastActive.has(s.category.id)));
-  let shown = [...active, ...quiet].slice(0, STUDIO_MAX);
-
+  let shown = people.slice(0, PEOPLE_SHOWN);
   const render = () => {
-    listEl.innerHTML = shown
-      .map((s) => studioRow(s.category, s.parent))
-      .join("");
+    listEl.innerHTML = shown.map(personRow).join("");
   };
   render();
 
-  listEl.addEventListener("click", (event) => {
-    const btn = event.target.closest(".ig-right__follow");
-    if (btn) {
-      toggleFollow(btn, user);
-    }
-  });
-
-  // "换一批": a random handful, preferring studios not on screen
-  if (refreshBtn && studios.length > STUDIO_MAX) {
+  // "换一批": a random handful, preferring people not on screen
+  if (refreshBtn && people.length > PEOPLE_SHOWN) {
     refreshBtn.hidden = false;
     refreshBtn.addEventListener("click", () => {
-      const current = new Set(shown.map((s) => s.category.id));
-      const fresh = shuffled(
-        studios.filter((s) => !current.has(s.category.id))
-      );
-      const rest = shuffled(studios.filter((s) => current.has(s.category.id)));
-      shown = [...fresh, ...rest].slice(0, STUDIO_MAX);
+      const current = new Set(shown.map((p) => p.username));
+      shown = [
+        ...shuffled(people.filter((p) => !current.has(p.username))),
+        ...shuffled(people.filter((p) => current.has(p.username))),
+      ].slice(0, PEOPLE_SHOWN);
       render();
     });
   }
 }
 
-function studioRow(c, parent) {
-  const url = categoryUrl(c, parent);
-  const logo = c.uploaded_logo?.url;
-  const avatar = logo
-    ? `<img src="${escapeHtml(logo)}" alt="">`
-    : `<span class="ig-right__letter" style="background:#${escapeHtml(
-        c.color || "8e8e8e"
-      )}">${escapeHtml((c.name || "·").trim().charAt(0))}</span>`;
-  const subtitle =
-    (c.description_text || "").trim() ||
-    t("right.topics", { count: c.topic_count || 0 });
+function personRow(person) {
+  const url = `/u/${encodeURIComponent(person.username)}`;
+  const sub = t(
+    person.when ? "right.recently_posted" : "right.fallback_subtitle"
+  );
   return `
       <div class="ig-right__row">
-        <a class="ig-right__avatar" href="${url}">${avatar}</a>
-        <div class="ig-right__text">
-          <a class="ig-right__user" href="${url}">${escapeHtml(c.name)}</a>
-          <span class="ig-right__sub">${escapeHtml(subtitle)}</span>
-        </div>
-        ${followButton(c.id, isFollowing(c.notification_level))}
-      </div>`;
-}
-
-// Instagram's "Follow" = Discourse's native category notification level:
-// following a studio sets "watching first post" (a notification for each new
-// topic, not every reply); unfollowing returns it to normal.
-function isFollowing(level) {
-  return (
-    level === NotificationLevels.WATCHING ||
-    level === NotificationLevels.WATCHING_FIRST_POST
-  );
-}
-
-function followButton(categoryId, following) {
-  return `<button type="button" class="ig-right__action ig-right__follow${
-    following ? " is-following" : ""
-  }" data-category-id="${categoryId}" aria-pressed="${following}">${escapeHtml(
-    t(following ? "right.following" : "right.follow")
-  )}</button>`;
-}
-
-async function toggleFollow(btn, user) {
-  if (!user) {
-    DiscourseURL.routeTo("/login");
-    return;
-  }
-  if (btn.disabled) {
-    return;
-  }
-
-  const id = parseInt(btn.dataset.categoryId, 10);
-  const following = btn.classList.contains("is-following");
-  const level = following
-    ? NotificationLevels.REGULAR
-    : NotificationLevels.WATCHING_FIRST_POST;
-
-  btn.disabled = true;
-  try {
-    const category = Category.findById(id);
-    if (category) {
-      await category.setNotification(level);
-    } else {
-      await ajax(`/category/${id}/notifications`, {
-        type: "POST",
-        data: { notification_level: level },
-      });
-    }
-    btn.classList.toggle("is-following", !following);
-    btn.setAttribute("aria-pressed", String(!following));
-    btn.textContent = t(following ? "right.follow" : "right.following");
-  } catch (error) {
-    popupAjaxError(error);
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-let suggestionCache = null;
-
-function fillSuggestions(listEl) {
-  if (!listEl) {
-    return;
-  }
-
-  const render = (users) => {
-    if (!users?.length) {
-      listEl.closest(".ig-right__sugg")?.remove();
-      return;
-    }
-    listEl.innerHTML = users
-      .slice(0, 5)
-      .map(
-        (u) => `
-      <div class="ig-right__row">
-        <a class="ig-right__avatar" href="/u/${u.username}">
-          <img src="${u.avatar_template.replace("{size}", "96")}" alt="">
+        <a class="ig-right__avatar" href="${url}">
+          <img src="${escapeHtml(person.imageUrl)}" alt="" loading="lazy">
         </a>
         <div class="ig-right__text">
-          <a class="ig-right__user" href="/u/${u.username}">${escapeHtml(
-            u.username
-          )}</a>
-          <span class="ig-right__sub">${escapeHtml(
-            u.name || t("right.fallback_subtitle")
-          )}</span>
+          <a class="ig-right__user" href="${url}">${escapeHtml(person.username)}</a>
+          <span class="ig-right__sub">${escapeHtml(sub)}</span>
         </div>
-        <a class="ig-right__action" href="/u/${u.username}">${escapeHtml(
-          t("right.view")
-        )}</a>
-      </div>`
-      )
-      .join("");
-  };
-
-  if (suggestionCache) {
-    render(suggestionCache);
-    return;
-  }
-
-  ajax("/directory_items.json", {
-    data: { period: "weekly", order: "likes_received", page: 0 },
-  })
-    .then((r) => {
-      suggestionCache = (r?.directory_items || [])
-        .map((d) => d.user)
-        .filter(Boolean);
-      render(suggestionCache);
-    })
-    .catch(() => render([]));
+        <a class="ig-right__action" href="${url}">${escapeHtml(t("right.view"))}</a>
+      </div>`;
 }
 
 function escapeHtml(str) {

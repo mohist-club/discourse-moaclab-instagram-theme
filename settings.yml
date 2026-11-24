@@ -50,8 +50,8 @@ instagram_desktop_shell:
 instagram_stories:
   default: true
   description:
-    en: "Home page only: an Instagram-style stories tray of the most recently active people (latest posts and topics, topped up from the user directory, up to 20)."
-    zh_CN: "仅首页：顶部显示 Instagram 风格的 Stories 横条，列出最近活跃的用户（最新帖子和话题的参与者，不足时从用户目录补足，最多 20 人）。"
+    en: "Home page only: an Instagram-style stories tray of the studios updated most recently (subcategories of the categories in instagram_suggested_categories, newest topic first): at least 7 and at most 10, studios without posts topping it up, most posts first. A ring shows the studio's logo and opens its studio page; opened rings turn grey until the studio has something new."
+    zh_CN: "仅首页：顶部显示 Instagram 风格的快拍横条，列出最近有更新的工作室（instagram_suggested_categories 中类别的二级类别，按最新话题时间排序），至少 7 个、最多 10 个，不足时用其余工作室按帖子数补足。圆圈显示工作室 Logo，点击进入工作室主页；看过的变灰，直到该工作室有新内容。"
 
 instagram_clean_feed:
   default: true
@@ -68,8 +68,8 @@ instagram_hide_header:
 instagram_right_sidebar:
   default: true
   description:
-    en: "Desktop (>=1160px): show an Instagram-style right column with the current user, suggested users and footer links."
-    zh_CN: "桌面端（≥1160px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、页脚链接）。"
+    en: "Desktop (>=1160px): show an Instagram-style right column with the current user, suggested people (the most recently active, five at a time, with a refresh button), tools and footer links."
+    zh_CN: "桌面端（≥1160px）：显示 Instagram 风格的右侧栏（当前用户、推荐用户、服务和页脚链接）。推荐用户为最近活跃的用户，每次 5 位，可「换一批」。"
 
 instagram_messages_dock:
   default: true
@@ -81,8 +81,8 @@ instagram_suggested_categories:
   type: list
   default: "13"
   description:
-    en: "IDs of the categories whose subcategories (studios) fill \"Suggested for you\" — the number at the end of a category URL (/c/keyboards/13 → 13). Add more IDs (e.g. the keycap category) to mix their studios in. Empty: top-level categories with the slug keyboards / keycaps or the name 键盘 / 键帽库; with none, active users are shown."
-    zh_CN: "右栏「为你推荐」列出这些类别下的二级类别（工作室），填类别 ID，即类别网址最后的数字（/c/keyboards/13 填 13）。可再加键帽类别等的 ID 一起列出。留空时按别名 keyboards / keycaps 或名称「键盘」「键帽库」查找一级类别；都没有则显示活跃用户。"
+    en: "IDs of the categories whose subcategories are the studios, the number at the end of a category URL (/c/keyboards/13 → 13). Their studios fill the home page's stories tray, and the first one's subcategories page is the studios page. Add more IDs (e.g. the keycap category) to mix their studios in. Empty: top-level categories with the slug keyboards / keycaps or the name 键盘 / 键帽库."
+    zh_CN: "二级类别即工作室的父类别 ID，即类别网址最后的数字（/c/keyboards/13 填 13）。首页快拍横条列出这些类别下的工作室，第一个类别的子类别页即工作室页。可再加键帽类别等的 ID 一起列出。留空时按别名 keyboards / keycaps 或名称「键盘」「键帽库」查找一级类别。"
 
 instagram_apps_categories:
   type: list
