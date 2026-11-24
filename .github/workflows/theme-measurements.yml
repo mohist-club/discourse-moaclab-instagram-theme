@@ -13,10 +13,12 @@ on:
     - cron: "17 3 * * 1" # Mondays 03:17 UTC
 
 jobs:
-  # not "ci": Discourse's workflow names its concurrency group after the
-  # job, and a shared group would let this run and a push's run cancel
-  # each other
   measure:
     uses: discourse/.github/.github/workflows/discourse-theme.yml@v1
     with:
       skip_linting: true
+      # the same Discourse as the push workflow ("latest", a branch), spelled
+      # out: Discourse's workflow names its concurrency group after branch
+      # and core_ref, so with the same spelling this run and a push's run
+      # would cancel each other
+      core_ref: refs/heads/latest
