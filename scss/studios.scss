@@ -1,7 +1,8 @@
 // =========================================================
 // The studios page (instagram_studios_page) in the layout of
 // about.instagram.com/blog, without its filters:
-//   960px column · 44px light title centred, one line under it
+//   the studio pages' column (975px, 20px padding, as explore.scss)
+//   44px light title centred, one line under it
 //   featured: a large square card | two rows (180px image + text)
 //   grid: 3 columns, 48px / 24px apart
 //   card: square image, 18px radius (newest post, else the logo on
@@ -14,8 +15,10 @@
 // =========================================================
 body.ig-studios-page #main-outlet {
   box-sizing: border-box;
-  max-width: 1008px;
-  padding-inline: 24px;
+  width: 100%;
+  max-width: 975px;
+  margin: 0 auto;
+  padding-inline: 20px;
 
   .category-heading,
   .list-controls,
@@ -30,8 +33,10 @@ body.ig-studios-page #main-outlet {
 // beat the feed's 630px, unpadded discovery column (same specificity,
 // imported later)
 body.ig-studios-page[class*="navigation-"] #main-outlet {
-  max-width: 1008px;
-  padding-inline: 24px;
+  width: 100%;
+  max-width: 975px;
+  margin: 0 auto;
+  padding-inline: 20px;
 }
 
 .ig-sp {
