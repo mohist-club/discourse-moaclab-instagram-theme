@@ -65,7 +65,9 @@ RSpec.describe "Instagram theme" do
     it "puts 工作室 in the rail in place of Search" do
       visit("/latest")
 
-      expect(page).to have_css("#ig-rail a.ig-rail-link[data-key='studios'][href='#{studios_path}']")
+      expect(page).to have_css(
+        "#ig-rail a.ig-rail-link[data-key='studios'][href='#{studios_path}']",
+      )
       expect(page).to have_no_css("#ig-rail a.ig-rail-link[data-key='search']")
     end
 

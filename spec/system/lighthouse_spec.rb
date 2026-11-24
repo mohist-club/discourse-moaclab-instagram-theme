@@ -82,6 +82,10 @@ RSpec.describe "Instagram theme in Lighthouse" do
       return
     end
 
+    # once in the test browser first: the first request after a theme
+    # change compiles its assets (seconds, not what a visitor waits for)
+    visit(path)
+
     url = URI.join(Capybara.current_session.server.base_url, path).to_s
     out = Rails.root.join("tmp", "lighthouse", "#{label}.json").to_s
     args = [

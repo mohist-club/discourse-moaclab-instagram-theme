@@ -42,6 +42,9 @@ body:not(.admin-interface) {
 
 html:not(:has(> body.admin-interface)) {
   background: var(--ig-page);
+
+  // core's secondary-text grey at WCAG AA contrast (color_definitions.scss)
+  --primary-medium: var(--ig-primary-medium);
 }
 
 body:not(.admin-interface) {
