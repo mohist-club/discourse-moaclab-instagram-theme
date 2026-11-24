@@ -497,8 +497,10 @@ async function resolveAppCategories(site) {
   const found = await Promise.all(
     ids.map(async (id) => {
       const known = findCategory(site, id);
-      if (known) {
-        return known;
+      // every visible category is in the browser unless the site loads
+      // them lazily: an unknown id then needs no request
+      if (known || !site?.lazy_load_categories) {
+        return known || null;
       }
       try {
         const result = await ajax(`/c/${id}/show.json`);
@@ -1314,8 +1316,9 @@ async function resolveParents(site) {
     ids.map(async (id) => {
       const known =
         categories.find((c) => c.id === id) || Category.findById?.(id);
-      if (known) {
-        return known;
+      // all visible categories are loaded unless the site loads them lazily
+      if (known || !site?.lazy_load_categories) {
+        return known || null;
       }
       try {
         const result = await ajax(`/c/${id}/show.json`);

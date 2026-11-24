@@ -90,7 +90,7 @@ javascripts/discourse/
                                    手机顶栏、评论栏、主页统计与网格等
   lib/                             首帖加载队列、来源页记录
 locales/en.yml, zh_CN.yml          文案
-spec/system/                       系统测试（信息流卡片、桌面端外壳开关、手机端无横向溢出与通栏图片）
+spec/system/                       系统测试（信息流卡片、桌面端外壳开关、手机端无横向溢出与通栏图片；performance_spec 与默认主题对比性能，结果在 CI 日志的 IGPERF 行）
 assets/*.svg                       图标
 ```
 
@@ -103,6 +103,6 @@ pnpm lint
 
 系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行。
 
-当前版本：1.37.0（`about.json` 的 `theme_version`）。
+当前版本：1.38.0（`about.json` 的 `theme_version`）。
 
 最低 Discourse 版本随官方 CI 的 `.discourse-compatibility` 跟踪。
