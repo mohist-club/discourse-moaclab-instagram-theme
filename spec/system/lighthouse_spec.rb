@@ -94,18 +94,25 @@ RSpec.describe "Instagram theme in Lighthouse" do
       "--output-path=#{out}",
       "--quiet",
       "--only-categories=performance,accessibility,best-practices,seo",
-      "--max-wait-for-load=25000",
+      # Discourse's message bus keeps a long-poll request open, so the
+      # network never goes quiet: cap the wait (the CI allows 45s a test)
+      "--max-wait-for-load=12000",
+      "--skip-audits=full-page-screenshot,screenshot-thumbnails,final-screenshot",
       "--chrome-flags=--headless=new --no-sandbox --disable-dev-shm-usage",
     ]
     args << "--preset=desktop" if desktop
 
-    pid = Process.spawn({ "CHROME_PATH" => chrome }, *args, out: File::NULL, err: File::NULL)
+    log = "#{out}.log"
+    pid = Process.spawn({ "CHROME_PATH" => chrome }, *args, %i[out err] => [log, "w"])
     begin
-      Timeout.timeout(40) { Process.wait(pid) }
+      Timeout.timeout(38) { Process.wait(pid) }
     rescue Timeout::Error
       Process.kill("KILL", pid)
       Process.wait(pid)
-      puts "IGLH #{label} #{{ error: "timed out" }.to_json}"
+    end
+    unless $?&.success? && File.exist?(out)
+      tail = File.exist?(log) ? File.readlines(log).last(8).join[-1500..] : ""
+      puts "IGLH #{label} #{{ error: "lighthouse failed (#{$?.inspect})", log: tail }.to_json}"
       return
     end
 
@@ -174,6 +181,8 @@ RSpec.describe "Instagram theme in Lighthouse" do
     it("runs Lighthouse on #{name} (mobile)") do
       lighthouse("mobile-#{name}", path.call(self), desktop: false)
     end
+
+    next if name != "home" # time: the CI gives all system tests 10 minutes
 
     it("runs Lighthouse on #{name} (desktop)") do
       lighthouse("desktop-#{name}", path.call(self), desktop: true)

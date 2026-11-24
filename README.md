@@ -90,7 +90,7 @@ javascripts/discourse/
                                    手机顶栏、评论栏、主页统计与网格等
   lib/                             首帖加载队列、来源页记录
 locales/en.yml, zh_CN.yml          文案
-spec/system/                       系统测试（信息流卡片、桌面端外壳开关、手机端无横向溢出与通栏图片；performance_spec 与默认主题对比性能，结果在 CI 日志的 IGPERF 行；web_vitals_seo_spec 按 Google Lighthouse 的指标和 SEO 审核项对比，结果在 IGVITALS / IGCRAWL 行；lighthouse_spec 用 Google Lighthouse 本身跑首页和帖子页的手机、桌面四项分数，结果在 IGLH 行）
+spec/system/                       系统测试（信息流卡片、桌面端外壳开关、手机端无横向溢出与通栏图片；performance_spec 与默认主题对比性能，结果在 CI 日志的 IGPERF 行；web_vitals_seo_spec 按 Google Lighthouse 的指标和 SEO 审核项对比，结果在 IGVITALS / IGCRAWL 行；lighthouse_spec 用 Google Lighthouse 本身跑首页（手机、桌面）和帖子页（手机）的分数，结果在 IGLH 行）
 assets/*.svg                       图标
 ```
 
