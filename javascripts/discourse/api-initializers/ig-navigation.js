@@ -199,6 +199,8 @@ function ensureRail(api, siteSettings) {
     const img = document.createElement("img");
     img.src = smallUrl || fullUrl;
     img.alt = "";
+    img.width = img.height = 28; // drawn at 28px (sidebar.scss)
+    img.decoding = "async";
     glyph.append(img);
   } else {
     glyph.classList.add("ig-logo-glyph--letter");
@@ -212,6 +214,17 @@ function ensureRail(api, siteSettings) {
     const img = document.createElement("img");
     img.src = fullUrl;
     img.alt = "";
+    img.decoding = "async";
+    // the file's own size as width / height (the CSS draws it 40px tall,
+    // width auto): an explicitly sized image
+    img.addEventListener(
+      "load",
+      () => {
+        img.width = img.naturalWidth;
+        img.height = img.naturalHeight;
+      },
+      { once: true }
+    );
     word.append(img);
   } else {
     word.textContent = title;

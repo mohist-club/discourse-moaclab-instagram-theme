@@ -69,8 +69,6 @@ RSpec.describe "Instagram theme in Lighthouse" do
     )
   end
 
-  before { theme.set_default! }
-
   def chrome_path
     roots = [ENV["PLAYWRIGHT_BROWSERS_PATH"], File.expand_path("~/.cache/ms-playwright")].compact
     roots.flat_map { |root| Dir.glob(File.join(root, "chromium-*", "chrome-linux*", "chrome")) }.max
@@ -138,10 +136,12 @@ RSpec.describe "Instagram theme in Lighthouse" do
               items
                 .first(3)
                 .map do |item|
-                  item.dig("node", "selector") || item.dig("node", "snippet") || item["url"] ||
-                    item.dig("source", "url") || item.to_json[0, 120]
+                  node = item["node"] || {}
+                  [node["selector"] || node["snippet"], node["explanation"]].compact
+                    .join(" | ")
+                    .presence || item["url"] || item.dig("source", "url") || item.to_json[0, 120]
                 end
-                .map { |s| s.to_s[0, 140] },
+                .map { |s| s.to_s[0, 300] },
           }
         end
     summary = {
@@ -179,13 +179,22 @@ RSpec.describe "Instagram theme in Lighthouse" do
     "topic" => ->(ctx) { ctx.topics.first.relative_url },
   }.each do |name, path|
     it("runs Lighthouse on #{name} (mobile)") do
+      theme.set_default!
       lighthouse("mobile-#{name}", path.call(self), desktop: false)
     end
 
     next if name != "home" # time: the CI gives all system tests 10 minutes
 
     it("runs Lighthouse on #{name} (desktop)") do
+      theme.set_default!
       lighthouse("desktop-#{name}", path.call(self), desktop: true)
+    end
+
+    # Discourse's default theme on the same page and data: CI serves the
+    # test build (not compressed or minified), so the performance score
+    # only means something next to this one
+    it("runs Lighthouse on #{name} with the default theme (mobile)") do
+      lighthouse("mobile-#{name}-base", path.call(self), desktop: false)
     end
   end
 end

@@ -206,6 +206,12 @@ body.ig-card-feed.tags-page:not(.admin-interface, .ig-explore) {
 .ig-post__header .ig-post__user {
   overflow: hidden;
   text-overflow: ellipsis;
+
+  // a 24px-tall tap target (WCAG 2.2 / Lighthouse target-size) at the
+  // same visual size
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
 }
 
 .ig-post__dot,
