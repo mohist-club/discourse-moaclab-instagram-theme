@@ -232,6 +232,10 @@ body.ig-desktop-shell:not(.admin-interface) {
       mask-image: url($ig-search);
     }
 
+    &--studios::before {
+      mask-image: url($ig-studio);
+    }
+
     &--activity::before {
       mask-image: url($ig-heart);
     }
@@ -311,6 +315,10 @@ body.ig-desktop-shell:not(.admin-interface) {
 
     .ig-rail-ico--search::before {
       mask-image: url($ig-search-filled);
+    }
+
+    .ig-rail-ico--studios::before {
+      mask-image: url($ig-studio-filled);
     }
 
     .ig-rail-ico--activity::before {
