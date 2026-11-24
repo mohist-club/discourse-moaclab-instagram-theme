@@ -11,13 +11,23 @@
 // =========================================================
 
 // Discovery pages: one 630px feed column, posts centred in it
-// (Explore's grid is its own layout: explore.scss)
-body.ig-card-feed.navigation-topics:not(.admin-interface, .ig-explore),
-body.ig-card-feed.navigation-categories:not(.admin-interface, .ig-explore),
+// (Explore's grid and the studios page have their own layouts:
+// explore.scss, studios.scss)
+body.ig-card-feed.navigation-topics:not(
+    .admin-interface,
+    .ig-explore,
+    .ig-studios-page
+  ),
+body.ig-card-feed.navigation-categories:not(
+    .admin-interface,
+    .ig-explore,
+    .ig-studios-page
+  ),
 body.ig-card-feed[class*="navigation-"]:not(
     [class*="archetype-"],
     .admin-interface,
-    .ig-explore
+    .ig-explore,
+    .ig-studios-page
   ),
 body.ig-card-feed.tags-page:not(.admin-interface, .ig-explore) {
   #main-outlet {
