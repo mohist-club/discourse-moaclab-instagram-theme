@@ -102,13 +102,13 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
     uri = URI.join(base, path)
     agent = LIGHTHOUSE_USER_AGENTS[desktop ? :desktop : :mobile]
     started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    Net::HTTP.start(uri.host, uri.port, open_timeout: 5, read_timeout: 15) do |http|
+    Net::HTTP.start(uri.host, uri.port, open_timeout: 3, read_timeout: 10) do |http|
       html = http.get(uri.request_uri, "User-Agent" => agent).body
       Nokogiri
         .HTML5(html)
         .css('link[rel="stylesheet"]')
         .each do |link|
-          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > 14
+          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > 10
           http.get(URI.join(base, link["href"]).request_uri, "User-Agent" => agent)
         end
     end
@@ -128,7 +128,7 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
     warm_up(path, desktop:)
     # the CI stops an example at 45s; a run that can't finish is skipped
     budget = 41 - (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started)
-    if budget < 25
+    if budget < 22
       puts "IGLH #{label} #{{ error: "theme still compiling after warm-up, skipped" }.to_json}"
       return
     end
@@ -145,7 +145,7 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
       "--only-categories=performance,accessibility,best-practices,seo",
       # Discourse's message bus keeps a long-poll request open, so the
       # network never goes quiet: cap the wait (the CI allows 45s a test)
-      "--max-wait-for-load=12000",
+      "--max-wait-for-load=8000",
       "--skip-audits=full-page-screenshot,screenshot-thumbnails,final-screenshot",
       "--chrome-flags=--headless=new --no-sandbox --disable-dev-shm-usage",
     ]
@@ -160,7 +160,7 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
       Process.wait(pid)
     end
     unless $?&.success? && File.exist?(out)
-      tail = File.exist?(log) ? File.readlines(log).last(8).join[-1500..] : ""
+      tail = File.exist?(log) ? File.readlines(log).last(8).join.to_s[-1500..] || "" : ""
       puts "IGLH #{label} #{{ error: "lighthouse failed (#{$?.inspect})", log: tail }.to_json}"
       return
     end

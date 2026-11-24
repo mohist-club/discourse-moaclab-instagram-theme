@@ -208,6 +208,11 @@ body.ig-topic-style:not(.admin-interface) {
     background: transparent;
     color: var(--ig-muted);
 
+    // core draws the labels in a lighter grey (4.4:1 on white)
+    .topic-map__stat-label {
+      color: var(--ig-muted);
+    }
+
     .number,
     .topic-map__stat-value,
     h4 {
@@ -247,13 +252,14 @@ body.ig-topic-style:not(.admin-interface) {
       }
     }
 
+    // Instagram's button blue: white text at 5:1 (WCAG AA)
     .btn-primary,
     .btn.create {
-      background: var(--ig-accent);
+      background: var(--ig-btn-primary);
       color: #fff;
 
       &:hover {
-        background: var(--ig-accent);
+        background: var(--ig-btn-primary);
         color: #fff;
         filter: brightness(0.92);
       }
