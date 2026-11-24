@@ -25,8 +25,7 @@
 // column exists (discovery + desktop shell + wide)
 // Instagram keeps the column down to 1160px (rail 72 + 630 + 64 + 319 + 64)
 @media (width >= 1160px) {
-  body.ig-rightcol.ig-desktop-shell:not(.admin-interface)
-    #main-outlet-wrapper:has(.ig-right) {
+  body.ig-rightcol.ig-desktop-shell:not(.admin-interface) #main-outlet-wrapper {
     // Instagram's right column keeps 64px on both sides; with that the
     // group lands where instagram.com draws it
     grid-template-columns:

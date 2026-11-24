@@ -232,7 +232,7 @@
     }
 
     // sub-pages: the bar is ‹ + title only (your own profile adds ≡)
-    &:has(.ig-topic-bar) .d-header {
+    &.ig-has-topic-bar .d-header {
       .d-header-icons > li {
         display: none;
       }
@@ -242,7 +242,7 @@
       }
     }
 
-    &:has(.ig-topic-bar--menu) .d-header .d-header-icons > .hamburger-dropdown {
+    &.ig-own-profile-bar .d-header .d-header-icons > .hamburger-dropdown {
       display: flex;
     }
 
@@ -282,7 +282,7 @@
     // "new topic" button (+ is in the tab bar), and the studio's / Explore's
     // category breadcrumbs (their own header replaces them)
     &.navigation-topics .list-controls,
-    &:has(.ig-studio, .ig-search) .list-controls {
+    &:is(.ig-studio-page, .ig-explore-search-page) .list-controls {
       display: none;
     }
 
@@ -362,7 +362,7 @@
 
 // on every page the open composer owns the bottom of the screen (new
 // topic from the tab bar's +, a message, a reply)
-body:has(#reply-control.open) .ig-bottom-nav {
+html.composer-open .ig-bottom-nav {
   display: none;
 }
 

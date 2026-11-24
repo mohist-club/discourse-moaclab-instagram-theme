@@ -5,6 +5,7 @@ import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
+import bodyClass from "discourse/helpers/body-class";
 import { modifier } from "ember-modifier";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
@@ -282,6 +283,7 @@ export default class IgExploreSearch extends Component {
 
   <template>
     {{#if this.show}}
+      {{bodyClass "ig-explore-search-page"}}
       <div class="ig-search {{if this.open 'is-open'}}" {{this.outside}}>
         <div class="ig-search__field">
           <span class="ig-search__icon" aria-hidden="true"></span>

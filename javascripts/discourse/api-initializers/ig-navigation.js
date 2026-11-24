@@ -69,9 +69,14 @@ export default apiInitializer((api) => {
       if (explore || categoriesGrid) {
         document.querySelector(".ig-right")?.remove();
       } else if (settings.instagram_right_sidebar && desktop) {
-        document.body.classList.add("ig-rightcol");
         ensureRightSidebar(api, siteSettings);
       }
+      // the grid only makes room for the column while it is there (a class,
+      // not a :has() rule: :has on the page wrapper re-checks on every change)
+      document.body.classList.toggle(
+        "ig-rightcol",
+        !!document.querySelector("#main-outlet-wrapper > .ig-right")
+      );
       syncActive();
     } catch {
       // never let decoration break navigation

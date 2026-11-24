@@ -167,6 +167,11 @@ export default class IgTopicBar extends Component {
       {{bodyClass "ig-group-chat"}}
     {{/if}}
     {{#if this.show}}
+      {{! page classes for the stylesheet (cheaper than :has() on body) }}
+      {{bodyClass "ig-has-topic-bar"}}
+      {{#if this.isOwnProfile}}
+        {{bodyClass "ig-own-profile-bar"}}
+      {{/if}}
       <div class="ig-topic-bar {{if this.isOwnProfile 'ig-topic-bar--menu'}}">
         <button
           type="button"

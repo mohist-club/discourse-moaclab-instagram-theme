@@ -3,11 +3,6 @@
   "license_url": null,
   "assets": {
     "ig-share": "assets/ig-share.svg",
-    "nav-home": "assets/nav-home.svg",
-    "nav-search": "assets/nav-search.svg",
-    "nav-create": "assets/nav-create.svg",
-    "nav-activity": "assets/nav-activity.svg",
-    "nav-profile": "assets/nav-profile.svg",
     "ig-home": "assets/ig-home.svg",
     "ig-search": "assets/ig-search.svg",
     "ig-explore": "assets/ig-explore.svg",

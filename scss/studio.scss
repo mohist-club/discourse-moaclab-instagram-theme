@@ -10,13 +10,13 @@
 // =========================================================
 
 // the native category heading is replaced by the header
-#main-outlet:has(.ig-studio) .category-heading {
+body.ig-studio-page #main-outlet .category-heading {
   display: none;
 }
 
 // a background image becomes the hero's cover, not the page background
 // (core paints it on body.category-<slug>, see d-styles)
-body.category:has(.ig-studio--cover) {
+body.category.ig-studio-cover-page {
   background-image: none;
 }
 
@@ -397,7 +397,7 @@ body.category:has(.ig-studio--cover) {
 }
 
 // the grid sits right under the tabs
-body.ig-explore #main-outlet:has(.ig-studio) .topic-list {
+body.ig-explore.ig-studio-page #main-outlet .topic-list {
   margin-top: 0;
 }
 

@@ -19,7 +19,7 @@
 
 @media (width < 768px) {
   // ---- top bar: back + 帖子 / username (topic and profile pages) ----
-  body.ig-mobile-shell:not(.admin-interface):has(.ig-topic-bar) {
+  body.ig-mobile-shell.ig-has-topic-bar:not(.admin-interface) {
     .ig-topic-bar {
       display: flex;
       flex: 1;
@@ -448,7 +448,7 @@
     }
 
     // while the composer is open it owns the bottom of the screen
-    &:has(#reply-control.open) {
+    html.composer-open & {
       .ig-comment-bar,
       .ig-bottom-nav {
         display: none;

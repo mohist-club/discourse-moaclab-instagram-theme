@@ -7,7 +7,7 @@
 // The category heading and list controls give way to it.
 // Markup: components/ig-explore-search.gjs
 // =========================================================
-#main-outlet:has(.ig-search) {
+body.ig-explore-search-page #main-outlet {
   .category-heading,
   .list-controls {
     display: none;
@@ -333,7 +333,7 @@
     padding-inline: 16px;
   }
 
-  body.ig-mobile-shell:not(.admin-interface):has(.ig-search) {
+  body.ig-mobile-shell.ig-explore-search-page:not(.admin-interface) {
     .d-header-wrap {
       display: none;
     }

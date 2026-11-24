@@ -30,26 +30,31 @@ body.ig-card-feed.tags-page:not(.admin-interface, .ig-explore) {
 
   // only a list of cards drops its table layout (card feed off, or bulk
   // select, keeps Discourse's own rows)
-  .topic-list:has(.ig-post),
-  .topic-list:has(.ig-post) tbody {
+  .topic-list:not(.bulk-select-enabled),
+  .topic-list:not(.bulk-select-enabled) tbody {
     display: block;
     width: 100%;
   }
 
-  .topic-list:has(.ig-post) .topic-list-header {
+  .topic-list:not(.bulk-select-enabled) .topic-list-header {
     display: none;
   }
 
-  .topic-list:has(.ig-post) tbody {
+  .topic-list:not(.bulk-select-enabled) tbody {
     display: flex;
     flex-direction: column;
     border: 0;
   }
 
-  .topic-list-item:has(.ig-post) {
+  .topic-list:not(.bulk-select-enabled) .topic-list-item {
     display: block;
     padding: 0;
     border: 0;
+
+    // posts far off screen skip style, layout and paint until they come
+    // near; "auto" keeps each post's real height once it has been drawn
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
 
     // never let a table cell shrink-wrap the post
     > td {

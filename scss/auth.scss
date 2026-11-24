@@ -33,20 +33,21 @@ body.ig-auth-modal:is(.login-page, .signup-page) {
     padding: 32px 16px;
     overflow: hidden;
 
-    // the aurora
+    // the aurora: soft-edged gradients (no blur filter: a 70px blur over
+    // 140% of the screen, re-blurred under the glass card every frame, kept
+    // phones' GPUs busy); it drifts for two slow cycles, then rests
     &::before {
       content: "";
       position: fixed;
       inset: -20%;
       z-index: 0;
       background:
-        radial-gradient(38% 38% at 22% 30%, #f7c50d, transparent 70%),
-        radial-gradient(34% 34% at 78% 22%, #d1099f, transparent 70%),
-        radial-gradient(44% 44% at 72% 82%, #4f5bd5, transparent 70%),
-        radial-gradient(34% 34% at 26% 84%, #ea3748, transparent 70%);
+        radial-gradient(46% 46% at 22% 30%, #f7c50d, transparent 100%),
+        radial-gradient(42% 42% at 78% 22%, #d1099f, transparent 100%),
+        radial-gradient(52% 52% at 72% 82%, #4f5bd5, transparent 100%),
+        radial-gradient(42% 42% at 26% 84%, #ea3748, transparent 100%);
       opacity: var(--ig-auth-glow);
-      filter: blur(70px);
-      animation: ig-aurora 26s ease-in-out infinite alternate;
+      animation: ig-aurora 26s ease-in-out 2 alternate;
       pointer-events: none;
     }
 

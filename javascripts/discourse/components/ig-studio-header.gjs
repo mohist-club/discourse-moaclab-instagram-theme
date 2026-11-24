@@ -4,6 +4,7 @@ import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
+import bodyClass from "discourse/helpers/body-class";
 import { modifier } from "ember-modifier";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
@@ -286,6 +287,10 @@ export default class IgStudioHeader extends Component {
 
   <template>
     {{#if this.show}}
+      {{bodyClass "ig-studio-page"}}
+      {{#if this.coverUrl}}
+        {{bodyClass "ig-studio-cover-page"}}
+      {{/if}}
       <section
         class="ig-studio {{if this.coverUrl 'ig-studio--cover'}}"
         {{this.loadStudio}}

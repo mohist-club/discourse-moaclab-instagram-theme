@@ -11,7 +11,7 @@
 
 // the list carries rows, not table columns
 body.user-messages-page:not(.admin-interface) {
-  .topic-list:has(.ig-dm) {
+  .topic-list:not(.bulk-select-enabled) {
     display: block;
     width: 100%;
     border: 0;
@@ -25,7 +25,7 @@ body.user-messages-page:not(.admin-interface) {
       border: 0;
     }
 
-    .topic-list-item:has(.ig-dm) {
+    .topic-list-item {
       display: block;
       margin: 0;
       padding: 0;
