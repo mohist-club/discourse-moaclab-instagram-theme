@@ -146,7 +146,23 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
       # Discourse's message bus keeps a long-poll request open, so the
       # network never goes quiet: cap the wait (the CI allows 45s a test)
       "--max-wait-for-load=8000",
-      "--skip-audits=full-page-screenshot,screenshot-thumbnails,final-screenshot",
+      # screenshots, and audits that read every byte of the scripts and
+      # styles: slow on the test build (16MB, uncompressed, unminified) and
+      # only about that build, not the site
+      "--skip-audits=" +
+        %w[
+          full-page-screenshot
+          screenshot-thumbnails
+          final-screenshot
+          unused-javascript
+          unminified-javascript
+          unminified-css
+          unused-css-rules
+          uses-text-compression
+          valid-source-maps
+          legacy-javascript
+          duplicated-javascript
+        ].join(","),
       "--chrome-flags=--headless=new --no-sandbox --disable-dev-shm-usage",
     ]
     args << "--preset=desktop" if desktop
@@ -161,7 +177,8 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
     end
     unless $?&.success? && File.exist?(out)
       tail = File.exist?(log) ? File.readlines(log).last(8).join.to_s[-1500..] || "" : ""
-      puts "IGLH #{label} #{{ error: "lighthouse failed (#{$?.inspect})", log: tail }.to_json}"
+      elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started).round
+      puts "IGLH #{label} #{{ error: "lighthouse failed (#{$?.inspect})", budget: budget.round, elapsed:, log: tail }.to_json}"
       return
     end
 
