@@ -48,11 +48,36 @@ export function isStudio(category) {
   );
 }
 
+function studioFromTopics(topics, userOf) {
+  const seen = new Map();
+  for (const topic of topics) {
+    for (const poster of topic.posters || []) {
+      const user = userOf(poster);
+      if (user && user.id > 0 && !seen.has(user.id)) {
+        seen.set(user.id, user);
+      }
+    }
+  }
+  const highlights = [
+    ...topics.filter((t) => t.pinned && t.image_url),
+    ...topics.filter((t) => !t.pinned && t.image_url),
+  ]
+    .slice(0, HIGHLIGHTS_MAX)
+    .map((t) => ({
+      title: t.title,
+      url: `/t/${t.slug}/${t.id}`,
+      image: t.image_url,
+      pinned: !!t.pinned,
+    }));
+  return { members: [...seen.values()], highlights };
+}
+
 export default class IgStudioHeader extends Component {
   @service currentUser;
   @service composer;
   @service router;
   @service interfaceColor;
+  @service discovery;
 
   @tracked level = this.args.category?.notification_level;
   @tracked members = null;
@@ -185,7 +210,9 @@ export default class IgStudioHeader extends Component {
   }
 
   // from the studio's latest topics: recent posters (newest first) and
-  // highlights — pinned topics first, then the newest with an image
+  // highlights — pinned topics first, then the newest with an image. On the
+  // studio's own Latest list that list is already on the page (core's
+  // discovery service); otherwise it is fetched once per studio
   loadStudio = modifier(() => {
     if (!this.show) {
       return;
@@ -193,35 +220,29 @@ export default class IgStudioHeader extends Component {
     const id = this.category.id;
     let promise = studioCache.get(id);
     if (!promise) {
-      promise = ajax(`${this.category.url}/l/latest.json`)
-        .then((result) => {
-          const topics = result?.topic_list?.topics || [];
-          const users = new Map(
-            (result?.users || []).map((user) => [user.id, user])
-          );
-          const seen = new Map();
-          for (const topic of topics) {
-            for (const poster of topic.posters || []) {
-              const user = users.get(poster.user_id);
-              if (user && user.id > 0 && !seen.has(user.id)) {
-                seen.set(user.id, user);
-              }
-            }
-          }
-          const highlights = [
-            ...topics.filter((t) => t.pinned && t.image_url),
-            ...topics.filter((t) => !t.pinned && t.image_url),
-          ]
-            .slice(0, HIGHLIGHTS_MAX)
-            .map((t) => ({
-              title: t.title,
-              url: `/t/${t.slug}/${t.id}`,
-              image: t.image_url,
-              pinned: !!t.pinned,
-            }));
-          return { members: [...seen.values()], highlights };
-        })
-        .catch(() => ({ members: [], highlights: [] }));
+      const pageList = this.discovery?.currentTopicList;
+      const onPage =
+        !this.onTop &&
+        (pageList?.category?.id === id ||
+          pageList?.topics?.some((t) => t.category_id === id)) &&
+        pageList.topics?.length
+          ? pageList.topics
+          : null;
+      promise = onPage
+        ? Promise.resolve(studioFromTopics(onPage, (poster) => poster.user))
+        : ajax(`${this.category.url}/l/latest.json`).then((result) => {
+            const users = new Map(
+              (result?.users || []).map((user) => [user.id, user])
+            );
+            return studioFromTopics(
+              result?.topic_list?.topics || [],
+              (poster) => users.get(poster.user_id)
+            );
+          });
+      promise = promise.catch(() => {
+        studioCache.delete(id); // try again next visit
+        return { members: [], highlights: [] };
+      });
       studioCache.set(id, promise);
     }
     promise.then(({ members, highlights }) => {

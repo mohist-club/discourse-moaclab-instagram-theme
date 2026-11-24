@@ -1,5 +1,5 @@
 import Component from "@glimmer/component";
-import { tracked } from "@glimmer/tracking";
+import { cached, tracked } from "@glimmer/tracking";
 import { fn } from "@ember/helper";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
@@ -107,6 +107,8 @@ class IgStudioDirectory extends Component {
     return this.args.card;
   }
 
+  // cached: read by visible, hiddenCount, canCollapse and the template
+  @cached
   get studios() {
     const q = this.query.trim().toLowerCase();
     const list = this.card.studios.filter(
@@ -311,6 +313,9 @@ export default class IgCategoriesGrid extends Component {
     return list ? [...list] : [];
   }
 
+  // cached: each read rebuilt every card object, which re-rendered the
+  // whole grid (and reset each card's follow button)
+  @cached
   get cards() {
     const studioParents = studioParentIds();
     const cards = this.categories

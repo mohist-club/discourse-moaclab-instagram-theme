@@ -17,8 +17,14 @@ export default class IgProfileStats extends Component {
     return this.args.user;
   }
 
+  // phones only (hidden by CSS from 768px up): checked when rendering, so
+  // desktop profiles don't fetch data nobody sees
   get show() {
-    return !!settings.instagram_mobile_layout && !!this.user?.username;
+    return (
+      !!settings.instagram_mobile_layout &&
+      !!this.user?.username &&
+      !!window.matchMedia?.("(width < 768px)").matches
+    );
   }
 
   load = modifier(() => {

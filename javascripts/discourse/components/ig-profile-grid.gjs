@@ -18,8 +18,14 @@ export default class IgProfileGrid extends Component {
     return this.args.user;
   }
 
+  // phones only (hidden by CSS from 768px up): checked when rendering, so
+  // desktop profiles don't fetch data nobody sees
   get show() {
-    return !!settings.instagram_mobile_layout && !!this.user?.username;
+    return (
+      !!settings.instagram_mobile_layout &&
+      !!this.user?.username &&
+      !!window.matchMedia?.("(width < 768px)").matches
+    );
   }
 
   load = modifier(() => {
@@ -43,7 +49,13 @@ export default class IgProfileGrid extends Component {
 
   get tiles() {
     return (this.result?.topic_list?.topics || []).map((topic) => {
-      const image = topic.thumbnails?.[0]?.url || topic.image_url;
+      // tiles are a third of a phone's width: the smallest generated
+      // thumbnail that is still sharp there, not the original ([0])
+      const sizes = (topic.thumbnails || []).filter((t) => t?.url);
+      const image =
+        sizes.filter((t) => Number(t.width) >= 300).at(-1)?.url ||
+        topic.image_url ||
+        sizes[0]?.url;
       return {
         url: `/t/${topic.slug}/${topic.id}`,
         title: topic.title,

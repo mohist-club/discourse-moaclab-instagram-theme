@@ -3,6 +3,7 @@ import { tracked } from "@glimmer/tracking";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
+import { modifier } from "ember-modifier";
 import formatDate from "discourse/helpers/format-date";
 import { ajax } from "discourse/lib/ajax";
 import { i18n } from "discourse-i18n";
@@ -34,12 +35,25 @@ export default class IgMessagesDock extends Component {
   @tracked loading = false;
   @tracked items = cache?.items ?? null;
 
-  constructor() {
-    super(...arguments);
-    if (this.enabled) {
-      this.load();
+  // the first load waits until the dock is on screen (not on admin, the
+  // inbox or tool pages) and the browser is idle, after the page's own
+  // requests
+  loadWhenShown = modifier(() => {
+    if (this.items !== null || this.loading) {
+      return;
     }
-  }
+    const run = () => {
+      if (!this.isDestroying && !this.isDestroyed) {
+        this.load();
+      }
+    };
+    if (window.requestIdleCallback) {
+      const id = window.requestIdleCallback(run, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timer = setTimeout(run, 1500);
+    return () => clearTimeout(timer);
+  });
 
   get enabled() {
     return (
@@ -205,7 +219,7 @@ export default class IgMessagesDock extends Component {
   <template>
     {{! template-lint-disable no-invalid-interactive }}
     {{#if this.visible}}
-      <div class="ig-dock {{if this.open 'is-open'}}">
+      <div class="ig-dock {{if this.open 'is-open'}}" {{this.loadWhenShown}}>
         {{#if this.open}}
           <section
             class="ig-dock__panel"
