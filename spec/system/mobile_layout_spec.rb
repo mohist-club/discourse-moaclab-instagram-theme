@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
+# Measurement specs (performance, web vitals / SEO, Lighthouse) and the
+# other system specs together need more than the CI's 10 minutes, so the
+# measurements run in their own workflow (.github/workflows/
+# theme-measurements.yml: weekly, or started by hand) and pushes run the rest
+MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME"]) unless defined?(
+  MEASUREMENT_RUN
+)
+
 # Phones (390px, touch): no page may pan sideways, and posts and their
 # images run edge to edge. Each page also prints a report and a small
 # screenshot to the CI log (IGREPORT / IGSHOT lines) for visual review.
-RSpec.describe "Instagram theme on phones", mobile: true do
+RSpec.describe "Instagram theme on phones", mobile: true, unless: MEASUREMENT_RUN do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
   fab!(:theme) { upload_theme(set_theme_as_default: false) }
 

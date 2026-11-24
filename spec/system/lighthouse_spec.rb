@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Measurement specs (performance, web vitals / SEO, Lighthouse) and the
+# other system specs together need more than the CI's 10 minutes, so the
+# measurements run in their own workflow (.github/workflows/
+# theme-measurements.yml: weekly, or started by hand) and pushes run the rest
+MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME"]) unless defined?(
+  MEASUREMENT_RUN
+)
+
 # Google Lighthouse (the engine behind PageSpeed Insights) against the theme,
 # signed out as a search engine or a new visitor sees it: performance,
 # accessibility, best practices and SEO scores, the lab metrics, and every
@@ -12,7 +20,7 @@
 # installed for the system tests.
 LIGHTHOUSE_VERSION = "12.2.1"
 
-RSpec.describe "Instagram theme in Lighthouse" do
+RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RUN do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
   fab!(:theme) { upload_theme(set_theme_as_default: false) }
 

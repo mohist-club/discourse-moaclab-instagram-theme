@@ -101,7 +101,9 @@ pnpm install --frozen-lockfile
 pnpm lint
 ```
 
-系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行。
+系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行，每次推送跑功能测试（信息流卡片、桌面端外壳、手机端布局）。
+
+性能、Web Vitals / SEO 和 Lighthouse 测量较慢，单独放在 `.github/workflows/theme-measurements.yml`：每周一自动跑一次，也可以在 GitHub 的 Actions 页选「Theme Measurements」→「Run workflow」随时运行。结果在系统测试日志的 `IGPERF`、`IGVITALS`、`IGCRAWL`、`IGLH` 行。
 
 当前版本：1.42.0（`about.json` 的 `theme_version`）。
 

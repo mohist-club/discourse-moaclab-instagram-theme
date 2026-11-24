@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Measurement specs (performance, web vitals / SEO, Lighthouse) and the
+# other system specs together need more than the CI's 10 minutes, so the
+# measurements run in their own workflow (.github/workflows/
+# theme-measurements.yml: weekly, or started by hand) and pushes run the rest
+MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME"]) unless defined?(
+  MEASUREMENT_RUN
+)
+
 # Google's lab checks, measured against Discourse's default theme on the same
 # pages and data, signed out (as a search engine or a new visitor sees them):
 #   - Core Web Vitals and Lighthouse's other lab metrics: LCP (and its
@@ -12,7 +20,7 @@
 #     canonical, robots, h1, crawlable links, link text, image alt, legible
 #     font sizes, tap targets — plus the crawler view Googlebot is served.
 # Prints one IGVITALS / IGCRAWL line per run to the CI log.
-RSpec.describe "Instagram theme web vitals and SEO" do
+RSpec.describe "Instagram theme web vitals and SEO", if: !ENV["CI"] || MEASUREMENT_RUN do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
   # (CI gives all system tests 10 minutes)
   fab!(:theme) { upload_theme(set_theme_as_default: false) }
