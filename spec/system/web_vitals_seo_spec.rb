@@ -275,7 +275,10 @@ RSpec.describe "Instagram theme web vitals and SEO" do
           imgsNoAlt: doc.css("img:not([alt])").size,
           jsonLd: doc.css('script[type="application/ld+json"]').size,
           itemprops: doc.css("[itemprop]").size,
-          stylesheets: doc.css('link[rel="stylesheet"]').map { |l| l["href"].to_s.split("/")[-1].to_s.split("?")[0] },
+          stylesheets:
+            doc
+              .css('link[rel="stylesheet"]')
+              .map { |l| l["href"].to_s.split("/")[-1].to_s.split("?")[0] },
           themeColor: doc.css('meta[name="theme-color"]').size,
         }
         puts "IGCRAWL #{on ? "theme" : "base"}-#{name} #{info.to_json}"
