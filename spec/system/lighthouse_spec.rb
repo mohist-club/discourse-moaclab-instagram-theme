@@ -82,6 +82,40 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
     roots.flat_map { |root| Dir.glob(File.join(root, "chromium-*", "chrome-linux*", "chrome")) }.max
   end
 
+  # Lighthouse's own user agents: the server picks phone or desktop assets
+  # by user agent, so the warm-up compiles the ones Lighthouse will load
+  LIGHTHOUSE_USER_AGENTS = {
+    mobile:
+      "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 " \
+        "(KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+    desktop:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " \
+        "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+  }.freeze
+
+  # The first request after a theme change compiles its CSS: seconds when
+  # tests run one at a time, longer with parallel test processes. Fetched
+  # over plain HTTP with its own time limits — a browser visit cut off by
+  # the CI's 45s example timeout left the test process hanging
+  def warm_up(path, desktop:)
+    base = Capybara.current_session.server.base_url
+    uri = URI.join(base, path)
+    agent = LIGHTHOUSE_USER_AGENTS[desktop ? :desktop : :mobile]
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    Net::HTTP.start(uri.host, uri.port, open_timeout: 5, read_timeout: 15) do |http|
+      html = http.get(uri.request_uri, "User-Agent" => agent).body
+      Nokogiri
+        .HTML5(html)
+        .css('link[rel="stylesheet"]')
+        .each do |link|
+          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > 14
+          http.get(URI.join(base, link["href"]).request_uri, "User-Agent" => agent)
+        end
+    end
+  rescue StandardError => e
+    puts "IGLH warm-up #{path}: #{e.class} #{e.message}"
+  end
+
   def lighthouse(label, path, desktop:)
     cli = self.class.lighthouse_cli
     chrome = chrome_path
@@ -90,9 +124,14 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
       return
     end
 
-    # once in the test browser first: the first request after a theme
-    # change compiles its assets (seconds, not what a visitor waits for)
-    visit(path)
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    warm_up(path, desktop:)
+    # the CI stops an example at 45s; a run that can't finish is skipped
+    budget = 41 - (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started)
+    if budget < 25
+      puts "IGLH #{label} #{{ error: "theme still compiling after warm-up, skipped" }.to_json}"
+      return
+    end
 
     url = URI.join(Capybara.current_session.server.base_url, path).to_s
     out = Rails.root.join("tmp", "lighthouse", "#{label}.json").to_s
@@ -115,7 +154,7 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
     log = "#{out}.log"
     pid = Process.spawn({ "CHROME_PATH" => chrome }, *args, %i[out err] => [log, "w"])
     begin
-      Timeout.timeout(38) { Process.wait(pid) }
+      Timeout.timeout(budget) { Process.wait(pid) }
     rescue Timeout::Error
       Process.kill("KILL", pid)
       Process.wait(pid)

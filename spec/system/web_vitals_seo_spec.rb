@@ -215,8 +215,33 @@ RSpec.describe "Instagram theme web vitals and SEO", if: !ENV["CI"] || MEASUREME
     })()
   JS
 
+  # The first request after a theme change compiles its CSS (longer with
+  # parallel test processes). Done over plain HTTP with its own time limits
+  # before the browser loads the page: a browser visit cut off by the CI's
+  # 45s example timeout leaves the test process hanging, and compiling is
+  # not what a visitor waits for
+  def warm_up(path, mobile:)
+    base = Capybara.current_session.server.base_url
+    uri = URI.join(base, path)
+    agent = mobile ? "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) Mobile" : "Mozilla/5.0"
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    Net::HTTP.start(uri.host, uri.port, open_timeout: 5, read_timeout: 15) do |http|
+      html = http.get(uri.request_uri, "User-Agent" => agent).body
+      Nokogiri
+        .HTML5(html)
+        .css('link[rel="stylesheet"]')
+        .each do |link|
+          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > 14
+          http.get(URI.join(base, link["href"]).request_uri, "User-Agent" => agent)
+        end
+    end
+  rescue StandardError => e
+    puts "IGVITALS warm-up #{path}: #{e.class} #{e.message}"
+  end
+
   def audit(label, path, mobile:)
     data = nil
+    warm_up(path, mobile:)
     page.driver.with_playwright_page do |pw|
       pw.add_init_script(script: init_js)
       cdp = pw.context.new_cdp_session(pw)
