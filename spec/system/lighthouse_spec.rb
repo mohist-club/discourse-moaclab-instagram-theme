@@ -20,7 +20,11 @@ MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME
 # installed for the system tests.
 LIGHTHOUSE_VERSION = "12.2.1"
 
-RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RUN do
+# order: :defined — the first example compiles the theme, so no Lighthouse
+# run spends its 45 seconds waiting for that
+RSpec.describe "Instagram theme in Lighthouse",
+               order: :defined,
+               if: !ENV["CI"] || MEASUREMENT_RUN do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
   fab!(:theme) { upload_theme(set_theme_as_default: false) }
 
@@ -97,18 +101,18 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
   # tests run one at a time, longer with parallel test processes. Fetched
   # over plain HTTP with its own time limits — a browser visit cut off by
   # the CI's 45s example timeout left the test process hanging
-  def warm_up(path, desktop:)
+  def warm_up(path, desktop:, limit: 10)
     base = Capybara.current_session.server.base_url
     uri = URI.join(base, path)
     agent = LIGHTHOUSE_USER_AGENTS[desktop ? :desktop : :mobile]
     started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    Net::HTTP.start(uri.host, uri.port, open_timeout: 3, read_timeout: 10) do |http|
+    Net::HTTP.start(uri.host, uri.port, open_timeout: 3, read_timeout: limit) do |http|
       html = http.get(uri.request_uri, "User-Agent" => agent).body
       Nokogiri
         .HTML5(html)
         .css('link[rel="stylesheet"]')
         .each do |link|
-          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > 10
+          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > limit
           http.get(URI.join(base, link["href"]).request_uri, "User-Agent" => agent)
         end
     end
@@ -240,6 +244,12 @@ RSpec.describe "Instagram theme in Lighthouse", if: !ENV["CI"] || MEASUREMENT_RU
       warnings: report["runWarnings"],
     }
     puts "IGLH #{label} #{summary.to_json}"
+  end
+
+  it "compiles the theme's assets before the Lighthouse runs" do
+    theme.set_default!
+    warm_up("/", desktop: false, limit: 20)
+    warm_up("/", desktop: true, limit: 20)
   end
 
   {
