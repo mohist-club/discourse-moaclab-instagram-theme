@@ -6,15 +6,17 @@ body:not(.admin-interface) {
     font-weight: 600;
   }
 
+  // Instagram's button blue (#4a5cf9): white text on it reads at 5:1
+  // (WCAG AA); on the lighter accent blue (#0095f6) it was 3.2:1
   .btn.btn-primary,
   #create-topic {
-    background: var(--ig-accent);
+    background: var(--ig-btn-primary);
     border: 0;
     color: #fff;
 
     &:hover,
     &:focus {
-      background: var(--ig-accent);
+      background: var(--ig-btn-primary);
       filter: brightness(0.92);
     }
   }

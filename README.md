@@ -103,6 +103,6 @@ pnpm lint
 
 系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行。
 
-当前版本：1.39.0（`about.json` 的 `theme_version`）。
+当前版本：1.40.0（`about.json` 的 `theme_version`）。
 
 最低 Discourse 版本随官方 CI 的 `.discourse-compatibility` 跟踪。

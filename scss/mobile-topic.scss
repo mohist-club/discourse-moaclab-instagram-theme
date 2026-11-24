@@ -430,10 +430,11 @@
       white-space: nowrap;
     }
 
+    // full strength: the bar is a working button (Instagram's faded
+    // "发布" only means "type something first", and read at 2:1)
     .ig-comment-bar__post {
       color: var(--ig-btn-primary);
       font-weight: 600;
-      opacity: 0.5;
     }
 
     #main-outlet-wrapper,
