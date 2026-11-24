@@ -66,6 +66,10 @@ $ig-love: #ed4956; // like / heart red
   --ig-hover: #{dark-light-choose(#f3f3f3, rgb(255 255 255 / 10%))};
   --ig-pill-hover: #{dark-light-choose(#e4e4e4, #262626)};
 
+  // studios page: the panel a card sits on when hovered (sampled from
+  // about.instagram.com/blog)
+  --ig-hover-panel: #{dark-light-choose(#f7f6ee, #1a1a1a)};
+
   // brand gradient (logo / story ring / optional buttons)
   --ig-gradient: linear-gradient(
     45deg,

@@ -53,4 +53,47 @@ RSpec.describe "Instagram theme" do
       expect(page).to have_no_css("body.ig-desktop-shell")
     end
   end
+
+  describe "studios page" do
+    fab!(:parent) { Fabricate(:category, name: "Keyboards") }
+    fab!(:studios) { Fabricate.times(4, :category, parent_category: parent) }
+
+    let(:studios_path) { "#{parent.url}/subcategories" }
+
+    before { update_setting(:instagram_suggested_categories, parent.id.to_s) }
+
+    it "puts 工作室 in the rail in place of Search" do
+      visit("/latest")
+
+      expect(page).to have_css("#ig-rail a.ig-rail-link[data-key='studios'][href='#{studios_path}']")
+      expect(page).to have_no_css("#ig-rail a.ig-rail-link[data-key='search']")
+    end
+
+    it "shows every studio as a card on the parent's subcategories page" do
+      visit(studios_path)
+
+      expect(page).to have_css("body.ig-studios-page")
+      expect(page).to have_css(".ig-sp-card", count: studios.size)
+      studios.each { |studio| expect(page).to have_css(".ig-sp-card", text: studio.name) }
+      expect(page).to have_css("#ig-rail a.ig-rail-link.active[data-key='studios']")
+    end
+
+    it "leaves /categories as Discourse's own page" do
+      visit("/categories")
+
+      expect(page).to have_css(".category-list, .category-boxes, .categories-list")
+      expect(page).to have_no_css(".ig-sp")
+      expect(page).to have_no_css("body.ig-studios-page")
+    end
+
+    it "keeps Search and the native page when instagram_studios_page is off" do
+      update_setting(:instagram_studios_page, false)
+
+      visit(studios_path)
+
+      expect(page).to have_css("#ig-rail a.ig-rail-link[data-key='search']")
+      expect(page).to have_no_css("#ig-rail a.ig-rail-link[data-key='studios']")
+      expect(page).to have_no_css(".ig-sp")
+    end
+  end
 end

@@ -5,10 +5,12 @@ import { NotificationLevels } from "discourse/lib/notification-levels";
 import DiscourseURL from "discourse/lib/url";
 import Category from "discourse/models/category";
 import { i18n } from "discourse-i18n";
+import { isStudiosPath, studiosPath } from "../lib/ig-studios";
 
 // Instagram desktop shell:
 //  - a fixed Instagram left rail (#ig-rail): logo glyph, Home / Explore /
-//    Messages / Search / Notifications / Create / Profile, and a bottom
+//    Messages / Search (or 工作室, instagram_studios_page) / Notifications /
+//    Create / Profile, and a bottom
 //    "More" button that opens a floating menu (like instagram.com)
 //  - a "stories" tray at the top of the discovery feed
 //  - a right column (current user, suggestions, footer)
@@ -73,11 +75,8 @@ export default apiInitializer((api) => {
       document.querySelector(".ig-stories")?.remove();
     }
 
-    // Explore and the card-grid /categories page use the full width
-    const categoriesGrid =
-      settings.instagram_categories_page &&
-      window.location.pathname.replace(/\/$/, "") === "/categories";
-    if (explore || categoriesGrid) {
+    // Explore and the studios page use the full width
+    if (explore || isStudiosPath()) {
       document.querySelector(".ig-right")?.remove();
     } else if (settings.instagram_right_sidebar && desktop && wideEnough()) {
       // below 1160px the column is hidden (right-sidebar.scss): don't
@@ -220,7 +219,8 @@ function ensureRail(api, siteSettings) {
   rail.append(logo);
 
   // primary nav, Instagram order: Home, Explore (Reels slot), Messages,
-  // Search, Notifications, Create, Profile
+  // Search, Notifications, Create, Profile. With instagram_studios_page,
+  // Search's slot opens the studios page instead.
   const nav = document.createElement("nav");
   nav.className = "ig-rail-nav";
   nav.setAttribute("aria-label", "navigation");
@@ -239,12 +239,19 @@ function ensureRail(api, siteSettings) {
       icon: "messages",
       label: railLabel("messages"),
     },
-    {
-      key: "search",
-      href: "/search",
-      icon: "search",
-      label: railLabel("search"),
-    },
+    studiosPath()
+      ? {
+          key: "studios",
+          href: studiosPath(),
+          icon: "studios",
+          label: railLabel("studios"),
+        }
+      : {
+          key: "search",
+          href: "/search",
+          icon: "search",
+          label: railLabel("search"),
+        },
     {
       key: "activity",
       href: u ? `/u/${u}/notifications` : "/login",
@@ -719,7 +726,8 @@ function exploreHref(site) {
 function isExplorePage(site) {
   const id = exploreCategoryId();
   const match = window.location.pathname.match(/^\/c\/(.+)$/);
-  if (!id || !match) {
+  // a subcategories page lists categories, not topics (the studios page)
+  if (!id || !match || /\/subcategories\/?$/.test(match[1])) {
     return false;
   }
   // /c/<parent>/<slug>/<id>[/l/<filter>|/none|/all]: the last number

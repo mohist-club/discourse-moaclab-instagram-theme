@@ -27,7 +27,7 @@ https://github.com/mohist-club/discourse-moaclab-instagram-theme.git
 - **桌面端外壳**：左侧导航竖栏（由原生侧边栏改造，含「更多」菜单和「服务」分区）、首页 Stories 横条、≥1160px 的右侧栏、右下角消息浮窗。
 - **探索**：指定类别显示为 Instagram 探索网格，悬停显示标题，顶部为 Instagram 搜索（原生搜索与搜索历史）。
 - **工作室主页**：键盘 / 键帽下的二级类别显示为 Instagram 主页头（封面背景图、精选、关注 = 类别通知）。
-- **/categories**：类别卡片网格 + 可筛选、可排序的工作室目录。
+- **工作室页**：左栏「工作室」（代替「搜索」）打开键盘 / 键帽的子类别页，按 Instagram 博客版式排列：大标题、三个精选，其余为方形卡片（最新帖子图片、#帖子数 / #已关注 标签、更新时间），悬停卡片衬米白底板。/categories 保持 Discourse 原生。
 - **登录注册**：弹窗样式（Esc 关闭），手机上为 Instagram 移动端登录页；表单与登录方式仍是原生的。
 - **手机端（<768px）**：Instagram 顶栏 / 底部标签栏；帖子详情、个人主页、探索、消息列表、私信气泡（群聊显示用户名）、通知、搜索、设置、工作室和标签页按 Instagram 移动端排版。
 - **管理后台**：完全保持 Discourse 原生样式。
@@ -59,7 +59,7 @@ https://github.com/mohist-club/discourse-moaclab-instagram-theme.git
 | `instagram_explore_category` | `13` | 「探索」打开的类别 ID |
 | `instagram_explore_search` | 开 | 探索页 Instagram 搜索 |
 | `instagram_studio_profile` | 开 | 工作室主页头 |
-| `instagram_categories_page` | 开 | /categories 卡片网格与工作室目录 |
+| `instagram_studios_page` | 开 | 左栏「搜索」换成「工作室」，打开 Instagram 博客版式的工作室页（/categories 保持原生） |
 | `instagram_auth_modal` | 开 | 登录 / 注册弹窗样式 |
 | `new_topic_composer_height` | `70` | 创建话题编辑器高度（屏幕高度 %，0 = 原生） |
 | `mobile_bottom_nav` | 开 | 手机端底部标签栏 |
@@ -75,7 +75,7 @@ settings.yml                       主题设置（en / zh_CN 说明）
 common/color_definitions.scss      调色板与设计变量
 common/common.scss                 样式入口，引入 scss/ 各分区
 scss/*.scss                        按区域分文件：feed、topic、shell、sidebar、stories、
-                                   right-sidebar、explore、studio、categories、auth、
+                                   right-sidebar、explore、studio、studios、auth、
                                    mobile-*、messages-*、custom-services 等
 desktop/、mobile/                  端上微调
 javascripts/discourse/
@@ -86,7 +86,7 @@ javascripts/discourse/
     ig-messages.js                 消息浮窗、评论栏
   connectors/topic-list-item/      信息流帖子卡片、私信列表行
   connectors/*                     其余 plugin outlet 挂载点
-  components/*.gjs                 工作室页头、探索搜索、类别网格、登录页头、
+  components/*.gjs                 工作室页头、工作室页、探索搜索、登录页头、
                                    手机顶栏、评论栏、主页统计与网格等
   lib/                             首帖加载队列、来源页记录
 locales/en.yml, zh_CN.yml          文案
@@ -103,6 +103,6 @@ pnpm lint
 
 系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行。
 
-当前版本：1.38.0（`about.json` 的 `theme_version`）。
+当前版本：1.39.0（`about.json` 的 `theme_version`）。
 
 最低 Discourse 版本随官方 CI 的 `.discourse-compatibility` 跟踪。
