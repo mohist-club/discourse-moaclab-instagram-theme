@@ -11,12 +11,12 @@ import TopicLink from "discourse/components/topic-list/topic-link";
 import UnreadIndicator from "discourse/components/topic-list/unread-indicator";
 import TopicPostBadges from "discourse/components/topic-post-badges";
 import TopicStatus from "discourse/components/topic-status";
-import avatar from "discourse/helpers/avatar";
 import formatDate from "discourse/helpers/format-date";
 import lazyHash from "discourse/helpers/lazy-hash";
 import topicFeaturedLink from "discourse/helpers/topic-featured-link";
 import { modifier } from "ember-modifier";
 import { ajax } from "discourse/lib/ajax";
+import { avatarUrl } from "discourse/lib/avatar-utils";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import { deferAnonymousAction } from "discourse/lib/anonymous-action";
 import { wantsNewWindow } from "discourse/lib/intercept-click";
@@ -62,6 +62,7 @@ export default class Item extends Component {
   @service currentUser;
   @service modal;
   @service bookmarkApi;
+  @service discovery;
 
   @tracked liked = !!this.args.outletArgs.topic.op_liked;
   @tracked likeCount =
@@ -87,6 +88,26 @@ export default class Item extends Component {
 
   get poster() {
     return this.topic.posters?.[0]?.user;
+  }
+
+  get posterAvatarUrl() {
+    return this.poster?.avatar_template
+      ? avatarUrl(this.poster.avatar_template, "medium")
+      : null;
+  }
+
+  // the first posts of a list are on screen at once: their image loads
+  // right away (the first with high priority: it is the page's Largest
+  // Contentful Paint); every other card's image waits until it is near
+  @cached
+  get listPosition() {
+    const topics = this.discovery?.currentTopicList?.topics;
+    return topics ? topics.indexOf(this.topic) : -1;
+  }
+
+  get eagerMedia() {
+    const onScreen = document.body.classList.contains("ig-explore") ? 6 : 2;
+    return this.listPosition >= 0 && this.listPosition < onScreen;
   }
 
   // the Instagram card, unless the setting is off or staff are bulk
@@ -403,7 +424,8 @@ export default class Item extends Component {
           srcset: first?.srcset || null,
           width: thumb.width,
           height: thumb.height,
-          loading: "lazy",
+          loading: this.eagerMedia ? "eager" : "lazy",
+          priority: this.listPosition === 0 ? "high" : null,
         },
       ];
     }
@@ -412,7 +434,9 @@ export default class Item extends Component {
       srcset: index === 0 ? first?.srcset || null : image.srcset,
       width: image.width,
       height: image.height,
-      loading: index === 1 ? "eager" : "lazy",
+      loading:
+        index === 1 || (index === 0 && this.eagerMedia) ? "eager" : "lazy",
+      priority: index === 0 && this.listPosition === 0 ? "high" : null,
     }));
   }
 
@@ -673,8 +697,17 @@ export default class Item extends Component {
               class="ig-post__avatar"
               data-user-card={{this.poster.username}}
               href="/u/{{this.poster.username}}"
+              aria-label={{this.poster.username}}
             >
-              {{avatar this.poster imageSize="medium"}}
+              <img
+                class="avatar"
+                src={{this.posterAvatarUrl}}
+                width="32"
+                height="32"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
             </a>
           {{/if}}
 
@@ -736,6 +769,7 @@ export default class Item extends Component {
                     src={{slide.src}}
                     srcset={{slide.srcset}}
                     sizes={{if slide.srcset this.imageSizes}}
+                    fetchpriority={{slide.priority}}
                   />
                 </div>
               {{/each}}

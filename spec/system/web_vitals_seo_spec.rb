@@ -13,7 +13,9 @@
 #     font sizes, tap targets — plus the crawler view Googlebot is served.
 # Prints one IGVITALS / IGCRAWL line per run to the CI log.
 RSpec.describe "Instagram theme web vitals and SEO" do
-  let!(:theme) { upload_theme(set_theme_as_default: false) }
+  # once per file: a stable theme id lets Discourse reuse its compiled CSS
+  # (CI gives all system tests 10 minutes)
+  fab!(:theme) { upload_theme(set_theme_as_default: false) }
 
   fab!(:posters) do
     Array.new(8) { |i| Fabricate(:user, username: "writer#{i}", trust_level: TrustLevel[2]) }
@@ -142,10 +144,12 @@ RSpec.describe "Instagram theme web vitals and SEO" do
       }
 
       // ---- SEO ----
+      // (textContent: innerText is empty for cards whose rendering
+      // content-visibility skips while they are off screen)
       const meta = (n) => document.querySelector(`meta[name="${n}"]`)?.getAttribute("content") || null;
       const links = [...document.querySelectorAll("a")].filter((a) => visible(a));
       const generic = /^(more|read more|click here|here|link|learn more|更多|查看更多|点击这里|这里|详情)$/i;
-      const linkText = (a) => (a.innerText || a.getAttribute("aria-label") || a.getAttribute("title") || [...a.querySelectorAll("img")].map((i) => i.alt).join(" ")).trim();
+      const linkText = (a) => (a.textContent || a.getAttribute("aria-label") || a.getAttribute("title") || [...a.querySelectorAll("img")].map((i) => i.alt).join(" ")).trim();
       const uncrawlable = links.filter((a) => {
         const h = a.getAttribute("href");
         return !h || h === "#" || /^javascript:/i.test(h);
@@ -211,7 +215,7 @@ RSpec.describe "Instagram theme web vitals and SEO" do
       cdp.send_message("Emulation.setCPUThrottlingRate", params: { rate: mobile ? 4 : 1 })
       begin
         visit(path)
-        sleep(mobile ? 8 : 5)
+        sleep(mobile ? 4 : 2.5)
         data = JSON.parse(page.evaluate_script(audit_js))
       ensure
         cdp.send_message("Emulation.setCPUThrottlingRate", params: { rate: 1 })

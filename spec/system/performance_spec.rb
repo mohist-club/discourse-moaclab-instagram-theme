@@ -5,7 +5,9 @@
 # tasks and MutationObserver callbacks (attributed to the file that created
 # the observer). Prints one IGPERF line per run to the CI log.
 RSpec.describe "Instagram theme performance" do
-  let!(:theme) { upload_theme(set_theme_as_default: false) }
+  # once per file: a stable theme id lets Discourse reuse its compiled CSS
+  # (CI gives all system tests 10 minutes)
+  fab!(:theme) { upload_theme(set_theme_as_default: false) }
 
   fab!(:user) { Fabricate(:user, username: "perfuser", trust_level: TrustLevel[1]) }
   fab!(:posters) do
@@ -124,7 +126,7 @@ RSpec.describe "Instagram theme performance" do
       cdp = pw.context.new_cdp_session(pw)
       cdp.send_message("Performance.enable")
       visit(path)
-      sleep 4
+      sleep 2.5
       loaded = cdp_metrics(cdp)
       data = JSON.parse(page.evaluate_script(collect_js))
       data["load"] = loaded
@@ -135,7 +137,7 @@ RSpec.describe "Instagram theme performance" do
           page.execute_script("window.scrollBy(0, 700)")
           sleep 0.35
         end
-        sleep 3
+        sleep 2
         after = cdp_metrics(cdp)
         scrolled = JSON.parse(page.evaluate_script(collect_js))
         data["scroll"] = after.to_h { |k, v| [k, (v - before[k]).round(4)] }

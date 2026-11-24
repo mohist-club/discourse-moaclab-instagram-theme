@@ -4,7 +4,8 @@
 # images run edge to edge. Each page also prints a report and a small
 # screenshot to the CI log (IGREPORT / IGSHOT lines) for visual review.
 RSpec.describe "Instagram theme on phones", mobile: true do
-  let!(:theme) { upload_theme }
+  # once per file: a stable theme id lets Discourse reuse its compiled CSS
+  fab!(:theme) { upload_theme }
 
   fab!(:user) { Fabricate(:user, username: "phoneuser", trust_level: TrustLevel[1]) }
   fab!(:friend) { Fabricate(:user, username: "keyboard_friend_99", trust_level: TrustLevel[2]) }

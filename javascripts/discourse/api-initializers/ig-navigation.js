@@ -15,14 +15,88 @@ import { i18n } from "discourse-i18n";
 export default apiInitializer((api) => {
   const siteSettings = api.container.lookup("service:site-settings");
 
-  // Read mobileView at render time (inside onPageChange), never during static
-  // initialization, to avoid discourse.static-viewport-initialization.
+  // Desktop or phone layout, from the class Discourse renders on <html>
+  // (readable before the app renders, unlike site.mobileView, which must
+  // not be read during initialization: discourse.static-viewport-
+  // initialization)
+  const desktopView = () =>
+    !document.documentElement.classList.contains("mobile-view");
+
+  // Everything that changes the page's layout is in place before the
+  // browser first paints it: a class or a column added after the first
+  // paint moves the whole page (layout shift, CLS in Core Web Vitals).
+  //  - the shell's classes (settings only) are set right away;
+  //  - the rest runs from a MutationObserver, whose callback comes after
+  //    Discourse has written the DOM and before the browser paints it.
+  const shellClasses = () => {
+    const on = !isAdminPage() && desktopView();
+    const body = document.body.classList;
+    body.toggle("ig-desktop-shell", on && !!settings.instagram_desktop_shell);
+    body.toggle(
+      "ig-hide-header",
+      on &&
+        !!settings.instagram_desktop_shell &&
+        !!settings.instagram_hide_header
+    );
+    body.toggle("ig-clean-feed", on && !!settings.instagram_clean_feed);
+  };
+  shellClasses();
+
+  // Explore grid, Stories, right column and rail: idempotent, cheap when
+  // nothing is missing (a few lookups), so safe to run on DOM changes
+  const layout = () => {
+    if (isAdminPage()) {
+      return;
+    }
+    const site = api.container.lookup("service:site");
+    const desktop = desktopView();
+
+    // Explore: the configured category (and its subcategories) as a grid
+    // of the feed's cards, so only with the card feed on
+    const explore = !!settings.card_feed && isExplorePage(site);
+    document.body.classList.toggle("ig-explore", explore);
+
+    if (settings.instagram_desktop_shell && desktop) {
+      const sections = document.querySelector(
+        ".sidebar-wrapper .sidebar-sections"
+      );
+      if (sections && !sections.querySelector(`#${RAIL_ID}`)) {
+        ensureRail(api, siteSettings);
+        syncActive();
+      }
+    }
+
+    // Stories only on the home page, as on instagram.com
+    if (settings.instagram_stories && window.location.pathname === "/") {
+      ensureStories(api);
+    } else {
+      document.querySelector(".ig-stories")?.remove();
+    }
+
+    // Explore and the card-grid /categories page use the full width
+    const categoriesGrid =
+      settings.instagram_categories_page &&
+      window.location.pathname.replace(/\/$/, "") === "/categories";
+    if (explore || categoriesGrid) {
+      document.querySelector(".ig-right")?.remove();
+    } else if (settings.instagram_right_sidebar && desktop && wideEnough()) {
+      // below 1160px the column is hidden (right-sidebar.scss): don't
+      // build it, fetch its data or load its images
+      ensureRightSidebar(api, siteSettings);
+    }
+    // the grid only makes room for the column while it is there (a class,
+    // not a :has() rule: :has on the page wrapper re-checks on every change)
+    const hasColumn = !!document.querySelector(
+      "#main-outlet-wrapper > .ig-right"
+    );
+    if (document.body.classList.contains("ig-rightcol") !== hasColumn) {
+      document.body.classList.toggle("ig-rightcol", hasColumn);
+    }
+  };
+
   const ensure = () => {
     try {
       closeMorePanel();
-
-      const site = api.container.lookup("service:site");
-      const desktop = !site?.mobileView;
 
       // admin pages stay Discourse-native: none of the theme's shell
       if (isAdminPage()) {
@@ -38,47 +112,8 @@ export default apiInitializer((api) => {
         );
         return;
       }
-
-      if (settings.instagram_desktop_shell && desktop) {
-        document.body.classList.add("ig-desktop-shell");
-        document.body.classList.toggle(
-          "ig-hide-header",
-          !!settings.instagram_hide_header
-        );
-        ensureRail(api, siteSettings);
-      }
-      // Explore: the configured category (and its subcategories) as a grid
-      // of the feed's cards, so only with the card feed on
-      const explore = !!settings.card_feed && isExplorePage(site);
-      document.body.classList.toggle("ig-explore", explore);
-
-      if (settings.instagram_clean_feed && desktop) {
-        document.body.classList.add("ig-clean-feed");
-      }
-      // Stories only on the home page, as on instagram.com
-      const home = window.location.pathname === "/";
-      if (settings.instagram_stories && home) {
-        ensureStories(api);
-      } else {
-        document.querySelector(".ig-stories")?.remove();
-      }
-      // Explore and the card-grid /categories page use the full width
-      const categoriesGrid =
-        settings.instagram_categories_page &&
-        window.location.pathname.replace(/\/$/, "") === "/categories";
-      if (explore || categoriesGrid) {
-        document.querySelector(".ig-right")?.remove();
-      } else if (settings.instagram_right_sidebar && desktop && wideEnough()) {
-        // below 1160px the column is hidden (right-sidebar.scss): don't
-        // build it, fetch its data or load its images
-        ensureRightSidebar(api, siteSettings);
-      }
-      // the grid only makes room for the column while it is there (a class,
-      // not a :has() rule: :has on the page wrapper re-checks on every change)
-      document.body.classList.toggle(
-        "ig-rightcol",
-        !!document.querySelector("#main-outlet-wrapper > .ig-right")
-      );
+      shellClasses();
+      layout();
       syncActive();
     } catch {
       // never let decoration break navigation
@@ -93,42 +128,22 @@ export default apiInitializer((api) => {
     }
   });
 
-  // Discourse re-renders the sidebar without a page change — e.g. when the
-  // window is widened again after being narrow enough for the hamburger
-  // dropdown. Put the rail back whenever the sidebar appears without it
-  // (checked at most once per frame).
-  let scheduled = false;
-  const restoreRail = () => {
-    if (scheduled) {
-      return;
-    }
-    scheduled = true;
-    window.requestAnimationFrame(() => {
-      scheduled = false;
-      if (isAdminPage() || api.container.lookup("service:site")?.mobileView) {
-        return;
-      }
-      const sections = document.querySelector(
-        ".sidebar-wrapper .sidebar-sections"
-      );
-      if (!sections || sections.querySelector(`#${RAIL_ID}`)) {
-        return;
-      }
+  // Before each paint: the first render of a page (and the sidebar when
+  // Discourse re-renders it, e.g. widening the window past the hamburger
+  // breakpoint) gets its layout in the same frame
+  const anyLayout =
+    settings.instagram_desktop_shell ||
+    settings.instagram_stories ||
+    settings.instagram_right_sidebar ||
+    settings.card_feed;
+  if (anyLayout) {
+    new MutationObserver(() => {
       try {
-        document.body.classList.add("ig-desktop-shell");
-        ensureRail(api, siteSettings);
-        syncActive();
+        layout();
       } catch {
         // never let decoration break the page
       }
-    });
-  };
-  if (settings.instagram_desktop_shell) {
-    new MutationObserver(restoreRail).observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-    window.addEventListener("resize", restoreRail, { passive: true });
+    }).observe(document.body, { childList: true, subtree: true });
   }
 });
 
