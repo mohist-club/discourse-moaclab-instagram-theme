@@ -68,7 +68,9 @@ export default apiInitializer((api) => {
         window.location.pathname.replace(/\/$/, "") === "/categories";
       if (explore || categoriesGrid) {
         document.querySelector(".ig-right")?.remove();
-      } else if (settings.instagram_right_sidebar && desktop) {
+      } else if (settings.instagram_right_sidebar && desktop && wideEnough()) {
+        // below 1160px the column is hidden (right-sidebar.scss): don't
+        // build it, fetch its data or load its images
         ensureRightSidebar(api, siteSettings);
       }
       // the grid only makes room for the column while it is there (a class,
@@ -84,6 +86,12 @@ export default apiInitializer((api) => {
   };
 
   api.onPageChange(ensure);
+  // widened past 1160px: the right column now has room
+  rightColumnQuery()?.addEventListener?.("change", (event) => {
+    if (event.matches) {
+      ensure();
+    }
+  });
 
   // Discourse re-renders the sidebar without a page change — e.g. when the
   // window is widened again after being narrow enough for the hamburger
@@ -97,16 +105,13 @@ export default apiInitializer((api) => {
     scheduled = true;
     window.requestAnimationFrame(() => {
       scheduled = false;
+      if (isAdminPage() || api.container.lookup("service:site")?.mobileView) {
+        return;
+      }
       const sections = document.querySelector(
         ".sidebar-wrapper .sidebar-sections"
       );
-      if (
-        !sections ||
-        sections.querySelector(`#${RAIL_ID}`) ||
-        !settings.instagram_desktop_shell ||
-        isAdminPage() ||
-        api.container.lookup("service:site")?.mobileView
-      ) {
+      if (!sections || sections.querySelector(`#${RAIL_ID}`)) {
         return;
       }
       try {
@@ -118,12 +123,25 @@ export default apiInitializer((api) => {
       }
     });
   };
-  new MutationObserver(restoreRail).observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
-  window.addEventListener("resize", restoreRail, { passive: true });
+  if (settings.instagram_desktop_shell) {
+    new MutationObserver(restoreRail).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+    window.addEventListener("resize", restoreRail, { passive: true });
+  }
 });
+
+// the right column's breakpoint (scss/right-sidebar.scss)
+let rightColumnMql;
+function rightColumnQuery() {
+  rightColumnMql ||= window.matchMedia?.("(min-width: 1160px)");
+  return rightColumnMql;
+}
+
+function wideEnough() {
+  return rightColumnQuery()?.matches ?? true;
+}
 
 const RAIL_ID = "ig-rail";
 
@@ -455,8 +473,9 @@ function appCategories(site) {
     .catch(() => [])
     .then((list) => {
       appCategoryList = list;
-      // nothing found (categories not loaded yet): try again next build
-      if (!list.length) {
+      // nothing found by slug because categories were not loaded yet: try
+      // again next build (ids from the setting were looked up: keep that)
+      if (!list.length && !appCategoryIds().length) {
         appCategoriesPromise = null;
       }
       return list;
@@ -735,7 +754,8 @@ function loadLatest() {
 // in this browser) and light up again when that person has something newer.
 const STORY_MAX = 20;
 const SEEN_KEY = "ig-stories-seen";
-const DIRECTORY_PERIODS = ["weekly", "monthly", "yearly", "all"];
+// "yearly" / "all" are the directory's most expensive queries: stop before
+const DIRECTORY_PERIODS = ["weekly", "monthly"];
 
 function ensureStories(api) {
   const existing = document.querySelector(".ig-stories");
@@ -961,8 +981,11 @@ async function loadStoryItems(api, me, onUpdate) {
     addTopics(collector, pageTopics);
   }
 
+  // the latest posts (a large payload: every post's HTML) only when the
+  // page's topics don't already fill the tray
+  const needPosts = collector.people.size < STORY_MAX;
   const [posts, latest] = await Promise.all([
-    ajax("/posts.json").catch(() => null),
+    needPosts ? ajax("/posts.json").catch(() => null) : null,
     pageTopics ? null : loadLatest(),
   ]);
   addPosts(collector, posts);
@@ -1174,7 +1197,8 @@ function ensureRightSidebar(api, siteSettings) {
       parents,
       site,
       user,
-      sugg.querySelector(".ig-right__refresh")
+      sugg.querySelector(".ig-right__refresh"),
+      api.container.lookup("service:session")?.topicList?.topics
     );
   });
 }
@@ -1322,36 +1346,58 @@ function shuffled(list) {
   return out;
 }
 
-async function fillStudios(listEl, parents, site, user, refreshBtn) {
-  const studios = [];
-  for (const parent of parents) {
-    // ask Discourse for the full list of subcategories (the browser may hold
-    // only some of them); fall back to what is loaded if that fails
-    let subs = [];
-    try {
-      const result = await ajax("/categories.json", {
-        data: { parent_category_id: parent.id },
-      });
-      subs = (result?.category_list?.categories || []).filter(
-        (c) => c.id !== parent.id
-      );
-    } catch {
-      subs = [];
-    }
-    if (!subs.length) {
-      subs = (site?.categories || []).filter(
-        (c) => c.parent_category_id === parent.id
-      );
-    }
-    for (const c of subs) {
-      studios.push({ category: c, parent });
-    }
-  }
+// subcategories of the suggested parents, kept for STUDIOS_TTL: the right
+// column is rebuilt on every return to a feed page
+const STUDIOS_TTL = 10 * 60 * 1000;
+let studiosCache = null;
 
-  // newest activity first: when a studio last appeared in the latest topics
-  const latest = await loadLatest();
+function loadStudios(parents, site) {
+  const key = parents.map((p) => p.id).join("|");
+  if (studiosCache?.key === key && Date.now() - studiosCache.at < STUDIOS_TTL) {
+    return studiosCache.promise;
+  }
+  const loaded = (parent) =>
+    (site?.categories || []).filter((c) => c.parent_category_id === parent.id);
+  const promise = Promise.all(
+    parents.map(async (parent) => {
+      // every category is in the browser already unless the site loads
+      // categories lazily; then ask for the parent's full list
+      let subs = site?.lazy_load_categories ? [] : loaded(parent);
+      if (!subs.length) {
+        try {
+          const result = await ajax("/categories.json", {
+            data: { parent_category_id: parent.id },
+          });
+          subs = (result?.category_list?.categories || []).filter(
+            (c) => c.id !== parent.id
+          );
+        } catch {
+          subs = loaded(parent);
+        }
+      }
+      return subs.map((category) => ({ category, parent }));
+    })
+  ).then((lists) => lists.flat());
+  studiosCache = { key, at: Date.now(), promise };
+  return promise;
+}
+
+async function fillStudios(
+  listEl,
+  parents,
+  site,
+  user,
+  refreshBtn,
+  pageTopics
+) {
+  const studios = await loadStudios(parents, site);
+
+  // newest activity first: when a studio last appeared in the latest
+  // topics — the page's own list when it has one, no second request
+  const pageList = pageTopics?.length ? pageTopics : null;
+  const latest = pageList ? null : await loadLatest();
   const lastActive = new Map();
-  for (const topic of latest?.topic_list?.topics || []) {
+  for (const topic of pageList || latest?.topic_list?.topics || []) {
     const when = Date.parse(topic.bumped_at || topic.last_posted_at) || 0;
     if (when > (lastActive.get(topic.category_id) || 0)) {
       lastActive.set(topic.category_id, when);

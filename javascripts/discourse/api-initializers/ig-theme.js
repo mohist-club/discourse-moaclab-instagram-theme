@@ -157,6 +157,10 @@ function buildBottomNav(api) {
     if (item.key === "profile" && user) {
       const img = document.createElement("img");
       img.className = "ig-bottom-nav__avatar";
+      // lazy: the tab bar is hidden (display: none) from 768px up, and a
+      // lazy image that is never shown is never downloaded
+      img.loading = "lazy";
+      img.decoding = "async";
       img.src = user.avatar_template.replace("{size}", "48");
       img.alt = "";
       el.append(img);
