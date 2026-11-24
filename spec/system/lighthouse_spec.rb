@@ -187,12 +187,10 @@ RSpec.describe "Instagram theme in Lighthouse" do
       lighthouse("mobile-#{name}", path.call(self), desktop: false)
     end
 
-    next if name != "home" # time: the CI gives all system tests 10 minutes
-
-    it("runs Lighthouse on #{name} (desktop)") do
-      theme.set_default!
-      lighthouse("desktop-#{name}", path.call(self), desktop: true)
-    end
+    # (desktop runs left out for time: the CI gives all system tests 10
+    # minutes; lighthouse(..., desktop: true) runs Lighthouse's desktop
+    # preset)
+    next if name != "home"
 
     # Discourse's default theme on the same page and data: CI serves the
     # test build (not compressed or minified), so the performance score

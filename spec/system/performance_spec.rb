@@ -167,8 +167,8 @@ RSpec.describe "Instagram theme performance" do
     "home" => ->(_) { "/" },
     "topic" => ->(ctx) { ctx.topics.first.relative_url },
     "explore" => ->(ctx) { ctx.parent.url },
-    "categories" => ->(_) { "/categories" },
-    "profile" => ->(ctx) { "/u/#{ctx.posters.first.username}/summary" },
+    # (categories and profile pages: left out for time — the CI gives all
+    # system tests 10 minutes; mobile_layout_spec still covers them)
   }
 
   [false, true].each do |mobile|
