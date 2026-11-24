@@ -126,9 +126,9 @@ RSpec.describe "Instagram theme" do
       expect(page).to have_css(".ig-stories a.ig-story--studio", count: 7)
       first_ring = find(".ig-stories a.ig-story--studio", match: :first)
       expect(first_ring[:href]).to end_with(studios.first.url)
-      studios.first(3).each do |studio|
-        expect(page).to have_css(".ig-stories a.ig-story[href$='#{studio.url}']")
-      end
+      studios
+        .first(3)
+        .each { |studio| expect(page).to have_css(".ig-stories a.ig-story[href$='#{studio.url}']") }
     end
   end
 
