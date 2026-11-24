@@ -1,5 +1,5 @@
 import Component from "@glimmer/component";
-import { tracked } from "@glimmer/tracking";
+import { cached, tracked } from "@glimmer/tracking";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
@@ -24,8 +24,8 @@ import DiscourseURL from "discourse/lib/url";
 import { i18n } from "discourse-i18n";
 import IgPostOptions from "../../components/ig-post-options";
 import {
-  imagesFromCooked,
   loadFirstPost,
+  prefetchFirstPost,
   whenNearViewport,
 } from "../../lib/ig-first-post";
 
@@ -142,8 +142,33 @@ export default class Item extends Component {
     );
   }
 
+  // Discourse lists a topic's thumbnails largest first: [0] is the
+  // original upload, used here only for its aspect ratio
   get thumbnail() {
     return this.topic.thumbnails?.[0];
+  }
+
+  // what the card downloads: the sizes the theme registers (600 / 1080
+  // wide, about.json) through srcset, so the feed's 468px column and
+  // phones never fetch the original; src is the 600 one (or the largest)
+  @cached
+  get thumbnailSource() {
+    const sizes = (this.topic.thumbnails || [])
+      .filter((t) => t?.url && Number(t.width) > 0)
+      .sort((a, b) => a.width - b.width);
+    if (!sizes.length) {
+      return null;
+    }
+    const widths = new Set();
+    const srcset = [];
+    for (const t of sizes) {
+      if (!widths.has(t.width)) {
+        widths.add(t.width);
+        srcset.push(`${t.url} ${t.width}w`);
+      }
+    }
+    const src = sizes.find((t) => t.width >= 600) || sizes.at(-1);
+    return { src: src.url, srcset: srcset.join(", ") };
   }
 
   get mediaStyle() {
@@ -291,7 +316,11 @@ export default class Item extends Component {
 
   // ---- first post: id, like / bookmark state, images ----
   async firstPost() {
-    const post = await loadFirstPost(this.topic.id);
+    return this.useFirstPost(await loadFirstPost(this.topic.id));
+  }
+
+  // post: the cached summary (id, bookmark_id, like entry, images)
+  useFirstPost(post) {
     this.postId ||= post?.id || null;
     this.bookmarkId ||= post?.bookmark_id || null;
     if (this.currentUser && this.canLike === undefined) {
@@ -330,35 +359,48 @@ export default class Item extends Component {
     ) {
       return;
     }
-    return whenNearViewport(element, () => {
+    let prefetch = null;
+    const stopWatching = whenNearViewport(element, () => {
       // the page may have become a grid after this card rendered
       if (inGrid(element)) {
         return;
       }
-      this.firstPost()
+      prefetch = prefetchFirstPost(this.topic.id);
+      prefetch.promise
         .then((post) => {
           if (!this.isDestroying && !this.isDestroyed) {
-            const images = imagesFromCooked(post?.cooked);
+            this.useFirstPost(post);
+            const images = post?.images || [];
             this.gallery = images.length > 1 ? images : null;
           }
         })
+        // cancelled, or failed: the card keeps its single image
         .catch(() => {});
     });
+    // the card is going (scrolled away in a long list, another page): a
+    // request still waiting in the queue is dropped
+    return () => {
+      stopWatching();
+      prefetch?.cancel();
+    };
   });
 
   get hasGallery() {
     return !!this.gallery;
   }
 
-  // the first slide keeps the list thumbnail (already loaded); the one
-  // after the current slide loads eagerly, the rest lazily
+  // the first slide is the list thumbnail; the second loads right away
+  // (the next swipe), the rest lazily as the track scrolls to them.
+  // Cached and keyed by src: changing slides must not rebuild the images
+  @cached
   get slides() {
     const thumb = this.thumbnail;
+    const first = this.thumbnailSource;
     if (!this.gallery) {
       return [
         {
-          src: thumb.url,
-          srcset: null,
+          src: first?.src || thumb.url,
+          srcset: first?.srcset || null,
           width: thumb.width,
           height: thumb.height,
           loading: "lazy",
@@ -366,13 +408,16 @@ export default class Item extends Component {
       ];
     }
     return this.gallery.map((image, index) => ({
-      src: index === 0 ? thumb.url : image.src,
-      srcset: index === 0 ? null : image.srcset,
+      src: index === 0 ? first?.src || thumb.url : image.src,
+      srcset: index === 0 ? first?.srcset || null : image.srcset,
       width: image.width,
       height: image.height,
-      loading: index <= this.slideIndex + 1 ? "eager" : "lazy",
+      loading: index === 1 ? "eager" : "lazy",
     }));
   }
+
+  // the feed column is 468px wide from 768px up, the full screen below
+  imageSizes = "(min-width: 768px) 468px, 100vw";
 
   // Instagram shows at most five dots: a window that follows the current
   // image, the end dots smaller while more images lie beyond them
@@ -680,7 +725,7 @@ export default class Item extends Component {
             {{on "dblclick" this.likeFromMedia}}
           >
             <div class="ig-post__slides" {{on "scroll" this.onSlidesScroll}}>
-              {{#each this.slides as |slide|}}
+              {{#each this.slides key="src" as |slide|}}
                 <div class="ig-post__slide">
                   <img
                     alt={{this.topic.title}}
@@ -690,6 +735,7 @@ export default class Item extends Component {
                     height={{slide.height}}
                     src={{slide.src}}
                     srcset={{slide.srcset}}
+                    sizes={{if slide.srcset this.imageSizes}}
                   />
                 </div>
               {{/each}}

@@ -8,25 +8,99 @@ import { ajax } from "discourse/lib/ajax";
 // apart — so a screenful of cards never trips Discourse's per-IP request
 // limit (by default 50 per 10 seconds), which would also block the list's
 // own "load more". A 429 pauses the queue for the time the server asks.
-const cache = new Map();
-const queue = [];
+//
+// Only what cards use is kept: the post id, bookmark id, the like entry of
+// actions_summary and the image list (parsed once), for the latest
+// CACHE_MAX topics. A gallery prefetch whose card has gone (scrolled
+// past, another page) leaves the queue before it is sent.
+const CACHE_MAX = 200;
 const GAP = 300;
 const DEFAULT_PAUSE = 10_000;
+const LIKE = 2;
+const cache = new Map(); // topicId -> Promise<summary>
+const queue = []; // jobs not yet sent
 let running = false;
 let pausedUntil = 0;
 
-export function loadFirstPost(topicId) {
-  if (!cache.has(topicId)) {
-    const promise = new Promise((resolve, reject) => {
-      queue.push({ topicId, resolve, reject });
-    }).catch((error) => {
+class Cancelled extends Error {}
+
+function summarize(post) {
+  return {
+    id: post?.id || null,
+    bookmark_id: post?.bookmark_id || null,
+    actions_summary: (post?.actions_summary || []).filter((a) => a.id === LIKE),
+    images: imagesFromCooked(post?.cooked),
+  };
+}
+
+function remember(topicId, promise) {
+  cache.delete(topicId);
+  cache.set(topicId, promise);
+  while (cache.size > CACHE_MAX) {
+    cache.delete(cache.keys().next().value);
+  }
+}
+
+function request(topicId) {
+  const job = { topicId, wanted: 0, keep: false };
+  job.promise = new Promise((resolve, reject) => {
+    job.resolve = resolve;
+    job.reject = reject;
+  }).catch((error) => {
+    if (cache.get(topicId) === job.promise) {
       cache.delete(topicId);
-      throw error;
-    });
-    cache.set(topicId, promise);
-    runQueue();
+    }
+    throw error;
+  });
+  queue.push(job);
+  remember(topicId, job.promise);
+  runQueue();
+  return job;
+}
+
+// for an action the reader took (like, save): never dropped
+export function loadFirstPost(topicId) {
+  const queued = queue.find((job) => job.topicId === topicId);
+  if (queued) {
+    queued.keep = true;
+    return queued.promise;
+  }
+  if (!cache.has(topicId)) {
+    request(topicId).keep = true;
+  } else {
+    remember(topicId, cache.get(topicId)); // most recently used
   }
   return cache.get(topicId);
+}
+
+// for a card's gallery: cancel() drops it if it has not been sent yet and
+// no other card or action still wants it
+export function prefetchFirstPost(topicId) {
+  let job = queue.find((queued) => queued.topicId === topicId);
+  if (!job && cache.has(topicId)) {
+    return { promise: cache.get(topicId), cancel() {} };
+  }
+  job ||= request(topicId);
+  job.wanted++;
+  let cancelled = false;
+  return {
+    promise: job.promise,
+    cancel() {
+      if (cancelled) {
+        return;
+      }
+      cancelled = true;
+      job.wanted--;
+      const index = queue.indexOf(job);
+      if (job.wanted <= 0 && !job.keep && index !== -1) {
+        queue.splice(index, 1);
+        if (cache.get(job.topicId) === job.promise) {
+          cache.delete(job.topicId);
+        }
+        job.reject(new Cancelled());
+      }
+    },
+  };
 }
 
 function wait(ms) {
@@ -43,10 +117,13 @@ async function runQueue() {
       const pause = pausedUntil - Date.now();
       if (pause > 0) {
         await wait(pause);
+        continue; // the queue may have changed while paused
       }
       const job = queue.shift();
       try {
-        job.resolve(await ajax(`/posts/by_number/${job.topicId}/1.json`));
+        job.resolve(
+          summarize(await ajax(`/posts/by_number/${job.topicId}/1.json`))
+        );
       } catch (error) {
         const xhr = error?.jqXHR;
         if (xhr?.status === 429) {
