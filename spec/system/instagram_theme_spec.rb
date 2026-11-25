@@ -152,8 +152,7 @@ RSpec.describe "Instagram theme", unless: MEASUREMENT_RUN do
       expect(page).to have_no_css(".ig-stories")
       # a dropped tray used to be built again at once, fetching again forever
       sleep 1
-      requests =
-        page.evaluate_script(<<~JS)
+      requests = page.evaluate_script(<<~JS)
           performance
             .getEntriesByType("resource")
             .filter((entry) => entry.name.includes("/categories.json"))
