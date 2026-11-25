@@ -2,9 +2,9 @@
 
 moaclab.com 的 Instagram 风格主题：信息流帖子卡片、桌面端左侧导航竖栏和 Stories 横条、移动端底部导航，内置浅色和深色两套配色。
 
-**状态：开发中，尚未安装到生产站点。** 当前默认主题仍是 `discourse-moaclab-redditish-theme`（线上主题 276）。
+**状态：已上线。** 2026-11-20 起是 moaclab.com 的默认主题（线上主题 283，从 Git 安装，跟踪 `main`）。原默认主题 `discourse-moaclab-redditish-theme`（276）保留以便回退。
 
-站点级的协作约定、发布流程和切换默认主题的步骤在私有维护仓库 `mohist-club/Moaclab`（`ops/workflow.md`、`ops/release.md`）。本文件只写这个仓库内的开发约定。
+站点级的协作约定、发布流程和回退步骤在私有维护仓库 `mohist-club/Moaclab`（`ops/workflow.md`、`ops/release.md`），线上版本和发布记录在 `components/instagram-theme.md`。本文件只写这个仓库内的开发约定。
 
 ## 目录
 
@@ -42,17 +42,19 @@ pnpm install --frozen-lockfile
 pnpm lint
 ```
 
-CI（`.github/workflows/discourse-theme.yml`）用 Discourse 官方工作流在最新 Discourse 上跑 lint 和测试。仓库目前没有 `spec/` 和 `test/`，所以 CI 只验证 lint 和主题能否安装。上线前至少补一组系统测试，覆盖信息流卡片渲染和桌面端外壳的开关。
+CI（`.github/workflows/discourse-theme.yml`）用 Discourse 官方工作流在最新 Discourse 上跑 lint 和 `spec/system/` 下的功能测试（信息流卡片、桌面端外壳、手机端布局）。性能、Web Vitals 和 Lighthouse 测量在 `.github/workflows/theme-measurements.yml`，每周一或手动运行，不阻塞 PR。
 
 ## 提交与发布
 
-- 开发中阶段可以直接推 `main`。提交信息沿用现有的 `feat:` / `fix:` 前缀加中文说明。
-- 安装到生产站点之前（包括只设为「用户可选」），先完成维护仓库 `ops/workflow.md` 的准入清单。从那以后改为分支加 PR，CI 全绿后由仓库所有者合并，并同步更新 `about.json` 的 `theme_version` 和 README。
-- 上线和切换默认主题按维护仓库 `ops/release.md` 的「切换或新增默认主题」执行。
+1. 从 `main` 开分支，一个分支只做一件事。不再直接推 `main`。
+2. 影响线上表现的改动同步更新 `about.json` 的 `theme_version` 和 README 里的「当前版本」。提交信息沿用 `feat:` / `fix:` 前缀加中文说明。
+3. 推分支，开指向 `main` 的 PR，等 CI 全绿。合并由仓库所有者决定：所有者在对话里说「合并」，Claude 即可合并。合并后的分支不用手动删除，不打 tag。
+4. 合并后更新到网站按维护仓库 `ops/release.md` 的「主题和组件」执行（主题 283 页面 **Check for Updates → Update to Latest**），并在 `components/instagram-theme.md` 的发布记录里追加一行。
+5. 回退：在本仓库 revert 对应 PR 并合并，再在主题 283 应用更新；整体回退时把默认主题改回 276，见 `ops/release.md`。
 
 ## 不要做
 
-- 不强制推送。
+- 不直接推 `main`，不强制推送。
 - 不提交密钥或站点数据。
-- 安装、设为用户可选、设为默认都属于生产操作，需要仓库所有者在当前对话里明确批准。
+- 更新线上主题 283、修改其设置、切换默认主题都属于生产操作，需要仓库所有者在当前对话里明确批准。
 - 不做任务范围以外的重构。
