@@ -1,10 +1,18 @@
 # frozen_string_literal: true
 
+# Measurement specs (performance, web vitals / SEO, Lighthouse) and the
+# other system specs together need more than the CI's 10 minutes, so the
+# measurements run in their own workflow (.github/workflows/
+# theme-measurements.yml: weekly, or started by hand) and pushes run the rest
+MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME"]) unless defined?(
+  MEASUREMENT_RUN
+)
+
 # Measures what the theme costs a browser, against Discourse's default theme
 # on the same pages and data: requests, script / style / layout time, long
 # tasks and MutationObserver callbacks (attributed to the file that created
 # the observer). Prints one IGPERF line per run to the CI log.
-RSpec.describe "Instagram theme performance" do
+RSpec.describe "Instagram theme performance", if: !ENV["CI"] || MEASUREMENT_RUN do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
   # (CI gives all system tests 10 minutes)
   fab!(:theme) { upload_theme(set_theme_as_default: false) }
@@ -167,8 +175,8 @@ RSpec.describe "Instagram theme performance" do
     "home" => ->(_) { "/" },
     "topic" => ->(ctx) { ctx.topics.first.relative_url },
     "explore" => ->(ctx) { ctx.parent.url },
-    "categories" => ->(_) { "/categories" },
-    "profile" => ->(ctx) { "/u/#{ctx.posters.first.username}/summary" },
+    # (categories and profile pages: left out for time — the CI gives all
+    # system tests 10 minutes; mobile_layout_spec still covers them)
   }
 
   [false, true].each do |mobile|

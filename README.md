@@ -90,7 +90,7 @@ javascripts/discourse/
                                    手机顶栏、评论栏、主页统计与网格等
   lib/                             首帖加载队列、来源页记录
 locales/en.yml, zh_CN.yml          文案
-spec/system/                       系统测试（信息流卡片、桌面端外壳开关、手机端无横向溢出与通栏图片；performance_spec 与默认主题对比性能，结果在 CI 日志的 IGPERF 行；web_vitals_seo_spec 按 Google Lighthouse 的指标和 SEO 审核项对比，结果在 IGVITALS / IGCRAWL 行；lighthouse_spec 用 Google Lighthouse 本身跑首页（手机、桌面）和帖子页（手机）的分数，另跑一次默认主题的手机首页作对照，结果在 IGLH 行）
+spec/system/                       系统测试（信息流卡片、桌面端外壳开关、手机端无横向溢出与通栏图片；performance_spec 与默认主题对比性能，结果在 CI 日志的 IGPERF 行；web_vitals_seo_spec 按 Google Lighthouse 的指标和 SEO 审核项对比，结果在 IGVITALS / IGCRAWL 行；lighthouse_spec 用 Google Lighthouse 本身跑手机端首页和帖子页的分数，另跑一次默认主题的手机首页作对照，结果在 IGLH 行）
 assets/*.svg                       图标
 ```
 
@@ -101,7 +101,9 @@ pnpm install --frozen-lockfile
 pnpm lint
 ```
 
-系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行。
+系统测试在 CI（`.github/workflows/discourse-theme.yml`）里随最新 Discourse 运行，每次推送跑功能测试（信息流卡片、桌面端外壳、手机端布局）。
+
+性能、Web Vitals / SEO 和 Lighthouse 测量较慢，单独放在 `.github/workflows/theme-measurements.yml`：每周一自动跑一次，也可以在 GitHub 的 Actions 页选「Theme Measurements」→「Run workflow」随时运行。结果在系统测试日志的 `IGPERF`、`IGVITALS`、`IGCRAWL`、`IGLH` 行。
 
 当前版本：1.42.0（`about.json` 的 `theme_version`）。
 

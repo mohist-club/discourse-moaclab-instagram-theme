@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
-RSpec.describe "Instagram theme" do
+# Measurement specs (performance, web vitals / SEO, Lighthouse) and the
+# other system specs together need more than the CI's 10 minutes, so the
+# measurements run in their own workflow (.github/workflows/
+# theme-measurements.yml: weekly, or started by hand) and pushes run the rest
+MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME"]) unless defined?(
+  MEASUREMENT_RUN
+)
+
+RSpec.describe "Instagram theme", unless: MEASUREMENT_RUN do
   let!(:theme) { upload_theme }
 
   fab!(:user) { Fabricate(:user, trust_level: TrustLevel[1]) }

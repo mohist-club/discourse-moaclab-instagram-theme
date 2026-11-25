@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Measurement specs (performance, web vitals / SEO, Lighthouse) and the
+# other system specs together need more than the CI's 10 minutes, so the
+# measurements run in their own workflow (.github/workflows/
+# theme-measurements.yml: weekly, or started by hand) and pushes run the rest
+MEASUREMENT_RUN = %w[schedule workflow_dispatch].include?(ENV["GITHUB_EVENT_NAME"]) unless defined?(
+  MEASUREMENT_RUN
+)
+
 # Google's lab checks, measured against Discourse's default theme on the same
 # pages and data, signed out (as a search engine or a new visitor sees them):
 #   - Core Web Vitals and Lighthouse's other lab metrics: LCP (and its
@@ -12,7 +20,7 @@
 #     canonical, robots, h1, crawlable links, link text, image alt, legible
 #     font sizes, tap targets — plus the crawler view Googlebot is served.
 # Prints one IGVITALS / IGCRAWL line per run to the CI log.
-RSpec.describe "Instagram theme web vitals and SEO" do
+RSpec.describe "Instagram theme web vitals and SEO", if: !ENV["CI"] || MEASUREMENT_RUN do
   # once per file: a stable theme id lets Discourse reuse its compiled CSS
   # (CI gives all system tests 10 minutes)
   fab!(:theme) { upload_theme(set_theme_as_default: false) }
@@ -207,8 +215,33 @@ RSpec.describe "Instagram theme web vitals and SEO" do
     })()
   JS
 
+  # The first request after a theme change compiles its CSS (longer with
+  # parallel test processes). Done over plain HTTP with its own time limits
+  # before the browser loads the page: a browser visit cut off by the CI's
+  # 45s example timeout leaves the test process hanging, and compiling is
+  # not what a visitor waits for
+  def warm_up(path, mobile:)
+    base = Capybara.current_session.server.base_url
+    uri = URI.join(base, path)
+    agent = mobile ? "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) Mobile" : "Mozilla/5.0"
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    Net::HTTP.start(uri.host, uri.port, open_timeout: 5, read_timeout: 15) do |http|
+      html = http.get(uri.request_uri, "User-Agent" => agent).body
+      Nokogiri
+        .HTML5(html)
+        .css('link[rel="stylesheet"]')
+        .each do |link|
+          break if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > 14
+          http.get(URI.join(base, link["href"]).request_uri, "User-Agent" => agent)
+        end
+    end
+  rescue StandardError => e
+    puts "IGVITALS warm-up #{path}: #{e.class} #{e.message}"
+  end
+
   def audit(label, path, mobile:)
     data = nil
+    warm_up(path, mobile:)
     page.driver.with_playwright_page do |pw|
       pw.add_init_script(script: init_js)
       cdp = pw.context.new_cdp_session(pw)
@@ -230,8 +263,8 @@ RSpec.describe "Instagram theme web vitals and SEO" do
     "topic" => ->(ctx) { ctx.topics.first.relative_url },
     "explore" => ->(ctx) { ctx.parent.url },
     "studio" => ->(ctx) { ctx.studios.first.url },
-    "categories" => ->(_) { "/categories" },
-    "profile" => ->(ctx) { "/u/#{ctx.posters.first.username}/summary" },
+    # (categories and profile pages: left out for time — the CI gives all
+    # system tests 10 minutes; mobile_layout_spec still covers them)
   }
 
   [false, true].each do |mobile|

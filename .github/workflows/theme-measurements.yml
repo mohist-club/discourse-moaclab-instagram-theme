@@ -1,0 +1,24 @@
+# Performance, Core Web Vitals / SEO and Google Lighthouse measurements
+# (spec/system/performance_spec.rb, web_vitals_seo_spec.rb,
+# lighthouse_spec.rb) on Discourse's own theme workflow. Together with the
+# other system tests they need more than its 10 minutes, so they run here —
+# every Monday, or from the Actions tab ("Run workflow") — instead of on
+# every push. Results are the IGPERF / IGVITALS / IGCRAWL / IGLH lines in
+# the system tests' log.
+name: Theme Measurements
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1" # Mondays 03:17 UTC
+
+jobs:
+  measure:
+    uses: discourse/.github/.github/workflows/discourse-theme.yml@v1
+    with:
+      skip_linting: true
+      # the same Discourse as the push workflow ("latest", a branch), spelled
+      # out: Discourse's workflow names its concurrency group after branch
+      # and core_ref, so with the same spelling this run and a push's run
+      # would cancel each other
+      core_ref: refs/heads/latest
