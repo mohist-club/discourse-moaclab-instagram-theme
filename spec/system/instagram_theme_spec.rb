@@ -140,6 +140,30 @@ RSpec.describe "Instagram theme", unless: MEASUREMENT_RUN do
     end
   end
 
+  describe "home stories tray without studios" do
+    fab!(:parent) { Fabricate(:category, name: "Keyboards") }
+
+    before { update_setting(:instagram_suggested_categories, parent.id.to_s) }
+
+    it "leaves the tray out and asks for the studios once" do
+      visit("/")
+
+      expect(page).to have_css(".topic-list-item .ig-post", count: topics.size)
+      expect(page).to have_no_css(".ig-stories")
+      # a dropped tray used to be built again at once, fetching again forever
+      sleep 1
+      requests =
+        page.evaluate_script(<<~JS)
+          performance
+            .getEntriesByType("resource")
+            .filter((entry) => entry.name.includes("/categories.json"))
+            .length
+        JS
+      expect(requests).to eq(1)
+      expect(page).to have_no_css(".ig-stories")
+    end
+  end
+
   describe "right column" do
     it "suggests people, each linking to their profile" do
       visit("/latest")

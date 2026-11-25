@@ -105,6 +105,6 @@ pnpm lint
 
 性能、Web Vitals / SEO 和 Lighthouse 测量较慢，单独放在 `.github/workflows/theme-measurements.yml`：每周一自动跑一次，也可以在 GitHub 的 Actions 页选「Theme Measurements」→「Run workflow」随时运行。结果在系统测试日志的 `IGPERF`、`IGVITALS`、`IGCRAWL`、`IGLH` 行。
 
-当前版本：1.42.0（`about.json` 的 `theme_version`）。
+当前版本：1.42.1（`about.json` 的 `theme_version`）。
 
 最低 Discourse 版本随官方 CI 的 `.discourse-compatibility` 跟踪。
