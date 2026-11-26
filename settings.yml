@@ -146,8 +146,8 @@ instagram_explore_search:
 instagram_studios_page:
   default: true
   description:
-    en: "Studios page: the desktop rail's Search becomes 工作室 (studios), opening the subcategories page of the first category in instagram_suggested_categories (/c/keyboards/13/subcategories), laid out like Instagram's blog: a large title, three featured studios, then every studio as a square card (its newest post's image, else its logo) with #post-count and #following tags, its name and when it was last updated. /categories stays Discourse's own. Off: the rail keeps Search and the subcategories page is Discourse's own."
-    zh_CN: "工作室页：桌面端左栏的「搜索」换成「工作室」，打开 instagram_suggested_categories 中第一个类别的子类别页（/c/keyboards/13/subcategories），按 Instagram 博客版式排列：大标题、三个精选工作室，其余工作室为方形卡片（最新帖子的图片，没有则显示 Logo），带 #帖子数、#已关注 标签、名称和最近更新时间。/categories 保持 Discourse 原生。关闭则左栏保留「搜索」，子类别页为 Discourse 原生。"
+    en: "Studios page: the desktop rail's Search becomes 工作室 (studios), opening the subcategories page of the first category in instagram_suggested_categories (/c/keyboards/13/subcategories), laid out like the studio pages: a profile header (the parent's logo in a story ring, studio / post / following counts, New post and Suggest a studio), tabs for Recent, All A–Z and Following; Recent shows one large and two smaller featured studios, then every studio with posts as a square card (its newest post's image, else its logo) with #post-count and #following tags, its name and when it was last updated, and the studios without posts as a compact logo grid. /categories stays Discourse's own. Off: the rail keeps Search and the subcategories page is Discourse's own."
+    zh_CN: "工作室页：桌面端左栏的「搜索」换成「工作室」，打开 instagram_suggested_categories 中第一个类别的子类别页（/c/keyboards/13/subcategories），按工作室主页的版式排列：主页式页头（彩环里是父类别 Logo，工作室数、帖子数、关注数，「发帖」「推荐工作室」按钮），标签栏分最近更新、全部 A–Z、关注中；最近更新为一大两小的精选，其余有帖子的工作室为方形卡片（最新帖子的图片，没有则显示 Logo），带 #帖子数、#已关注 标签、名称和最近更新时间，还没有帖子的工作室为紧凑的 Logo 网格。/categories 保持 Discourse 原生。关闭则左栏保留「搜索」，子类别页为 Discourse 原生。"
 
 new_topic_composer_height:
   type: integer
