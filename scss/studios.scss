@@ -1,9 +1,10 @@
 // =========================================================
 // The studios page (instagram_studios_page) in the layout of
 // about.instagram.com/blog, without its filters:
-//   960px column · 44px light title centred, one line under it
+//   the studio pages' column (975px, 20px padding, as explore.scss)
+//   36px light title centred, one grey line under it
 //   featured: a large square card | two rows (180px image + text)
-//   grid: 3 columns, 48px / 24px apart
+//   grid: 3 columns, 40px / 24px apart
 //   card: square image, 18px radius (newest post, else the logo on
 //   white) with the logo as a 40px badge · outlined bold #tags ·
 //   20px name · clock + "updated … ago"
@@ -14,8 +15,10 @@
 // =========================================================
 body.ig-studios-page #main-outlet {
   box-sizing: border-box;
-  max-width: 1008px;
-  padding-inline: 24px;
+  width: 100%;
+  max-width: 975px;
+  margin: 0 auto;
+  padding-inline: 20px;
 
   .category-heading,
   .list-controls,
@@ -30,32 +33,34 @@ body.ig-studios-page #main-outlet {
 // beat the feed's 630px, unpadded discovery column (same specificity,
 // imported later)
 body.ig-studios-page[class*="navigation-"] #main-outlet {
-  max-width: 1008px;
-  padding-inline: 24px;
+  width: 100%;
+  max-width: 975px;
+  margin: 0 auto;
+  padding-inline: 20px;
 }
 
 .ig-sp {
-  padding: 36px 0 80px;
+  padding: 24px 0 64px;
   color: var(--ig-ink);
 }
 
 .ig-sp__hero {
-  margin-bottom: 56px;
+  margin-bottom: 40px;
   text-align: center;
 
   h1 {
     margin: 0;
     color: var(--ig-ink);
-    font-size: 44px;
+    font-size: 36px;
     font-weight: 400;
     line-height: 1.1;
     letter-spacing: -0.5px;
   }
 
   p {
-    margin: 14px 0 0;
-    color: var(--ig-ink);
-    font-size: 15px;
+    margin: 10px 0 0;
+    color: var(--ig-muted);
+    font-size: 14px;
   }
 }
 
@@ -64,7 +69,7 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: 32px;
-  margin-bottom: 72px;
+  margin-bottom: 56px;
 }
 
 .ig-sp__feat-side {
@@ -77,7 +82,7 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
 .ig-sp__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 48px 24px;
+  gap: 40px 24px;
 }
 
 // ---- card ----
@@ -99,6 +104,19 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
   &:focus-visible {
     outline: 2px solid var(--ig-ink);
     outline-offset: 2px;
+  }
+}
+
+// ink in every link state: Discourse's link colours (blue, the visited
+// colour, the theme's blue hover) must not reach the cards
+body.ig-studios-page .ig-sp a.ig-sp-card {
+  &,
+  &:visited,
+  &:hover,
+  &:focus,
+  &:active {
+    color: var(--ig-ink);
+    text-decoration: none;
   }
 }
 
@@ -244,7 +262,7 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
     margin-bottom: 32px;
 
     h1 {
-      font-size: 30px;
+      font-size: 28px;
     }
 
     p {
