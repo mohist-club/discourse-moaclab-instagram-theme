@@ -579,8 +579,14 @@ body.ig-studios-page .ig-sp a.ig-sp-mini {
 
 // ---- phones and narrow windows ----
 @media (width < 768px) {
+  // the mobile shell (mobile-shell.scss, imported later) takes the
+  // discovery column edge to edge; the studios page keeps 16px sides
   body.ig-studios-page #main-outlet,
-  body.ig-studios-page[class*="navigation-"] #main-outlet {
+  body.ig-studios-page[class*="navigation-"] #main-outlet,
+  body.ig-studios-page.ig-mobile-shell:not(
+      .admin-interface
+    )[class*="navigation-"]:not([class*="archetype-"])
+    #main-outlet {
     padding-inline: 16px;
   }
 
