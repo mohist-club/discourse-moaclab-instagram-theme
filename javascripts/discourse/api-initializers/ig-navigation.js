@@ -788,6 +788,10 @@ function loadLatest() {
 // "seen" (remembered only in this browser) and light up again when the
 // studio has something newer.
 const STORY_MIN = 7;
+// topic lists whose tray was dropped (no studios, or the request failed):
+// without this the MutationObserver would build the tray again as soon as
+// it is removed, fetch again and remove it again, forever
+const storiesDropped = new WeakSet();
 const STORY_MAX = 10;
 const SEEN_KEY = "ig-stories-seen";
 
@@ -797,7 +801,7 @@ function ensureStories(api) {
     ? document.querySelector("#main-outlet .topic-list")
     : null;
 
-  if (!list) {
+  if (!list || storiesDropped.has(list)) {
     existing?.remove();
     return;
   }
@@ -871,6 +875,7 @@ function ensureStories(api) {
   loadStudioStories(site)
     .then((items) => {
       if (!items.length) {
+        storiesDropped.add(list);
         tray.remove();
         return;
       }
@@ -879,6 +884,7 @@ function ensureStories(api) {
     })
     .catch(() => {
       if (!shown) {
+        storiesDropped.add(list);
         tray.remove();
       }
     });
