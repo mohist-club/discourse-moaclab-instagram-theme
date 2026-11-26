@@ -1,10 +1,12 @@
 // =========================================================
-// The studios page (instagram_studios_page) in the layout of
-// about.instagram.com/blog, without its filters:
+// The studios page (instagram_studios_page), laid out as the studio
+// pages and /custom-services:
 //   the studio pages' column (975px, 20px padding, as explore.scss)
-//   36px light title centred, one grey line under it
-//   featured: a large square card | two rows (180px image + text)
-//   grid: 3 columns, 40px / 24px apart
+//   profile header: 163px story ring | 28px bold title, counts, label,
+//   one line, link; two 44px buttons; sticky tabs with icons
+//   sections: 24px light heading + grey line, count on the right
+//   featured: a large card (380px wide image) | two rows (180px + text)
+//   grid: 3 columns, 40px / 24px apart; logo tiles: 5 columns
 //   card: square image, 18px radius (newest post, else the logo on
 //   white) with the logo as a 40px badge · outlined bold #tags ·
 //   20px name · clock + "updated … ago"
@@ -40,28 +42,272 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
 }
 
 .ig-sp {
-  padding: 24px 0 64px;
+  padding: 0 0 64px;
   color: var(--ig-ink);
+  font-size: 14px;
+  line-height: 18px;
+
+  h1,
+  h2,
+  p,
+  ul {
+    margin: 0;
+    padding: 0;
+  }
 }
 
-.ig-sp__hero {
-  margin-bottom: 40px;
-  text-align: center;
+// ---- profile header (as the studio pages and /custom-services) ----
+.ig-sp__hd {
+  display: grid;
+  grid-template-columns: 163px minmax(0, 1fr);
+  gap: 0 40px;
+  max-width: 700px;
+  margin: 0 auto;
+  padding-top: 36px;
+}
 
-  h1 {
+.ig-sp__ring {
+  grid-row: 1 / span 2;
+  box-sizing: border-box;
+  width: 163px;
+  height: 163px;
+  margin-top: 6px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--ig-story-ring);
+}
+
+// logos are drawn for a light background
+.ig-sp__avatar {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 3.5px solid var(--ig-page);
+  border-radius: 50%;
+  background: #fff;
+
+  img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+  }
+}
+
+.ig-sp__info,
+.ig-sp__more {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.ig-sp h1 {
+  color: var(--ig-ink);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.ig-sp__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 14px !important;
+  list-style: none;
+  font-size: 16px;
+  line-height: 20px;
+
+  li {
     margin: 0;
+  }
+
+  b {
+    margin-right: 2px;
+    font-weight: 600;
+  }
+}
+
+.ig-sp__label {
+  margin-top: 18px !important;
+  color: var(--ig-muted);
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.ig-sp__bio {
+  margin-top: 6px !important;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+body.ig-studios-page .ig-sp a.ig-sp__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--ig-ink);
+  font-size: 16px;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.ig-sp__link-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  background: currentcolor;
+  mask: url($ig-link) center / 16px 16px no-repeat;
+}
+
+.ig-sp__actions {
+  display: flex;
+  gap: 8px;
+  max-width: 700px;
+  margin: 26px auto 0;
+}
+
+.ig-sp__btn {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &--primary {
+    background: var(--ig-btn-primary);
+    color: #fff;
+
+    &:hover {
+      filter: brightness(0.92);
+    }
+  }
+
+  &--grey {
+    background: var(--ig-btn-secondary);
     color: var(--ig-ink);
-    font-size: 36px;
+
+    &:hover {
+      background: var(--ig-btn-secondary-hover);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ig-ink);
+    outline-offset: 2px;
+  }
+}
+
+// ---- tabs ----
+.ig-sp__tabs {
+  position: sticky;
+  top: var(--header-offset, 0);
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin-top: 40px;
+  border-top: 1px solid var(--ig-border);
+  background: var(--ig-page);
+}
+
+.ig-sp__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  margin-top: -1px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid transparent;
+  background: none;
+  color: var(--ig-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ig-ink);
+  }
+
+  &.is-active {
+    border-top-color: var(--ig-ink);
+    color: var(--ig-ink);
+  }
+}
+
+.ig-sp__tab-icon {
+  width: 12px;
+  height: 12px;
+  background: currentcolor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+
+  &--recent {
+    mask-image: url($ig-grid);
+  }
+
+  &--all {
+    mask-image: url($ig-menu);
+  }
+
+  &--following {
+    mask-image: url($ig-heart);
+  }
+}
+
+// ---- sections ----
+.ig-sp__sec {
+  padding-top: 40px;
+}
+
+.ig-sp__sec-hd {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h2 {
+    color: var(--ig-ink);
+    font-size: 24px;
     font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.5px;
+    line-height: 30px;
+    letter-spacing: -0.3px;
   }
 
   p {
-    margin: 10px 0 0;
+    margin-top: 4px;
     color: var(--ig-muted);
     font-size: 14px;
   }
+}
+
+.ig-sp__count {
+  color: var(--ig-muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.ig-sp__empty {
+  padding: 40px 0;
+  color: var(--ig-muted);
+  text-align: center;
 }
 
 // ---- featured: one large card, two rows beside it ----
@@ -69,7 +315,7 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: 32px;
-  margin-bottom: 56px;
+  margin-bottom: 40px;
 }
 
 .ig-sp__feat-side {
@@ -83,6 +329,73 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 40px 24px;
+}
+
+// ---- compact logo tiles ----
+.ig-sp__minis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 28px 16px;
+}
+
+.ig-sp-mini {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: -8px;
+  padding: 8px;
+  border-radius: 20px;
+  transition: background-color 0.2s;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--ig-hover-panel);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ig-ink);
+    outline-offset: 2px;
+  }
+}
+
+.ig-sp-mini__logo {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ig-border);
+
+  img {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+  }
+
+  &.is-letter {
+    background: var(--ig-ink);
+    box-shadow: none;
+    color: var(--ig-page);
+    font-size: 36px;
+    font-weight: 700;
+  }
+}
+
+.ig-sp-mini__name {
+  overflow: hidden;
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-sp-mini__sub {
+  margin-top: 2px;
+  color: var(--ig-muted);
+  font-size: 12px;
+  line-height: 16px;
 }
 
 // ---- card ----
@@ -109,7 +422,8 @@ body.ig-studios-page[class*="navigation-"] #main-outlet {
 
 // ink in every link state: Discourse's link colours (blue, the visited
 // colour, the theme's blue hover) must not reach the cards
-body.ig-studios-page .ig-sp a.ig-sp-card {
+body.ig-studios-page .ig-sp a.ig-sp-card,
+body.ig-studios-page .ig-sp a.ig-sp-mini {
   &,
   &:visited,
   &:hover,
@@ -231,8 +545,24 @@ body.ig-studios-page .ig-sp a.ig-sp-card {
   mask: url($ig-clock) center / contain no-repeat;
 }
 
-.ig-sp-card--big .ig-sp-card__name {
-  font-size: 22px;
+.ig-sp-card__sub {
+  display: block;
+  margin-top: 6px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+// the large card: a wide image, as /custom-services
+.ig-sp-card--big {
+  .ig-sp-card__media {
+    aspect-ratio: auto;
+    height: 380px;
+  }
+
+  .ig-sp-card__name {
+    font-size: 24px;
+  }
 }
 
 // beside the large card: image left, text right
@@ -247,7 +577,7 @@ body.ig-studios-page .ig-sp a.ig-sp-card {
   }
 }
 
-// ---- phones and narrow windows: one column, as the blog's ----
+// ---- phones and narrow windows ----
 @media (width < 768px) {
   body.ig-studios-page #main-outlet,
   body.ig-studios-page[class*="navigation-"] #main-outlet {
@@ -255,46 +585,159 @@ body.ig-studios-page .ig-sp a.ig-sp-card {
   }
 
   .ig-sp {
-    padding: 24px 0 40px;
+    padding-bottom: 40px;
   }
 
-  .ig-sp__hero {
-    margin-bottom: 32px;
-
-    h1 {
-      font-size: 28px;
-    }
-
-    p {
-      margin-top: 8px;
-      font-size: 14px;
-    }
+  .ig-sp__hd {
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    padding-top: 16px;
   }
 
-  .ig-sp__feat,
-  .ig-sp__grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 36px;
+  .ig-sp__ring {
+    grid-row: auto;
+    width: 86px;
+    height: 86px;
+    margin: 0;
+    padding: 2px;
+  }
+
+  .ig-sp__avatar {
+    border-width: 2.5px;
+  }
+
+  .ig-sp__more {
+    grid-column: 1 / -1;
+  }
+
+  .ig-sp h1 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+
+  .ig-sp__stats {
+    gap: 2px 12px;
+    margin-top: 6px !important;
+    font-size: 14px;
+  }
+
+  .ig-sp__label {
+    margin-top: 0 !important;
+    font-size: 14px;
+  }
+
+  .ig-sp__bio,
+  body.ig-studios-page .ig-sp a.ig-sp__link {
+    font-size: 14px;
+  }
+
+  .ig-sp__actions {
+    margin-top: 16px;
+  }
+
+  .ig-sp__btn {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 14px;
+  }
+
+  .ig-sp__tabs {
+    gap: 0;
+    margin: 20px -16px 0;
+  }
+
+  .ig-sp__tab {
+    flex: 1 1 0;
+    justify-content: center;
+    height: 44px;
+    letter-spacing: 0;
+  }
+
+  .ig-sp__tab-label {
+    display: none;
+  }
+
+  .ig-sp__tab-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .ig-sp__sec {
+    padding-top: 28px;
+  }
+
+  .ig-sp__sec-hd {
+    margin-bottom: 16px;
+
+    h2 {
+      font-size: 20px;
+      line-height: 26px;
+    }
   }
 
   .ig-sp__feat {
-    margin-bottom: 36px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-bottom: 28px;
   }
 
   .ig-sp__feat-side {
-    gap: 36px;
+    gap: 24px;
+  }
+
+  .ig-sp-card--big .ig-sp-card__media {
+    height: auto;
+    aspect-ratio: 4 / 3;
   }
 
   .ig-sp-card--row {
-    display: block;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 14px;
+  }
 
-    .ig-sp-card__tags {
-      margin-top: 16px;
-    }
+  .ig-sp__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 12px;
+  }
+
+  .ig-sp-card {
+    margin: -6px;
+    padding: 6px;
+    border-radius: 16px;
+  }
+
+  .ig-sp-card__media {
+    border-radius: 12px;
+  }
+
+  .ig-sp-card__badge {
+    bottom: 8px;
+    left: 8px;
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+  }
+
+  .ig-sp-card__tags {
+    margin: 12px 0 8px;
   }
 
   .ig-sp-card__name,
   .ig-sp-card--big .ig-sp-card__name {
-    font-size: 19px;
+    font-size: 17px;
+  }
+
+  .ig-sp__minis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 10px;
+  }
+
+  .ig-sp-mini__logo {
+    border-radius: 12px;
+  }
+
+  .ig-sp-mini__name {
+    font-size: 13px;
   }
 }

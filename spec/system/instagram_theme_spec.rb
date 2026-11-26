@@ -79,13 +79,30 @@ RSpec.describe "Instagram theme", unless: MEASUREMENT_RUN do
       expect(page).to have_no_css("#ig-rail a.ig-rail-link[data-key='search']")
     end
 
-    it "shows every studio as a card on the parent's subcategories page" do
+    it "shows the studios under a profile header on the parent's subcategories page" do
+      Fabricate(:topic, category: studios.first).tap { |topic| Fabricate(:post, topic: topic) }
+      # topic counts and featured topics are kept by background jobs
+      Category.update_stats
+      CategoryFeaturedTopic.feature_topics
+
       visit(studios_path)
 
       expect(page).to have_css("body.ig-studios-page")
-      expect(page).to have_css(".ig-sp-card", count: studios.size)
-      studios.each { |studio| expect(page).to have_css(".ig-sp-card", text: studio.name) }
+      expect(page).to have_css(".ig-sp__hd .ig-sp__stats li b", text: studios.size.to_s)
+      expect(page).to have_css(".ig-sp__tab.is-active[data-tab='recent']")
+      # the studio with a post is a card, the others wait as logo tiles
+      expect(page).to have_css(
+        ".ig-sp__sec--recent .ig-sp-card",
+        count: 1,
+        text: studios.first.name,
+      )
+      expect(page).to have_css(".ig-sp__sec--waiting .ig-sp-mini", count: studios.size - 1)
       expect(page).to have_css("#ig-rail a.ig-rail-link.active[data-key='studios']")
+
+      find(".ig-sp__tab[data-tab='all']").click
+
+      expect(page).to have_css(".ig-sp__sec--all .ig-sp-mini", count: studios.size)
+      studios.each { |studio| expect(page).to have_css(".ig-sp-mini", text: studio.name) }
     end
 
     it "leaves /categories as Discourse's own page" do
